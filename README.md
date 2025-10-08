@@ -1,2 +1,2 @@
 # TasteBud
-Shoe recommendation software
+Personal Allergen and Cross Reactivity monitor
