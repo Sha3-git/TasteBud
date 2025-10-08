@@ -1,2 +1,2 @@
-# NextFeet
+# TasteBud
 Shoe recommendation software
