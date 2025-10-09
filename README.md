@@ -25,7 +25,7 @@ Where We aim to help individuals with food intolerances identify triggers and av
 
 ### Reason
 
-	Our reason for pursuing this project stems from the desire to contribute towards a solution for a common health problem.   
+Our reason for pursuing this project stems from the desire to contribute towards a solution for a common health problem.   
 Discovering allergies or intolerances can be difficult, frustrating and confusing and has been linked to the causation of [food anxiety](https://www.health.harvard.edu/diseases-and-conditions/new-allergies-in-adulthood).  
 We believe that we can empower our end users to understand their own health better through accessible data and intelligent tools.   
 By interpreting user provided data in useful ways we wanna facilitate a better health experience
