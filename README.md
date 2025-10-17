@@ -2,7 +2,10 @@
 Welcome to tastebud
 
 Where We aim to help individuals with food intolerances identify triggers and avoid problem foods through data-driven insights.
-
+### Team
+Shema Dabiri
+Ethan Goski
+Mazen Abid
 ### Project background and business need/ opportunity
 
 * Food allergies and intolerances have become increasingly common world wide. It’s prevalence likened to an [allergy pandemic](https://pmc.ncbi.nlm.nih.gov/articles/PMC11208673)   
@@ -32,7 +35,7 @@ By interpreting user provided data in useful ways we wanna facilitate a better h
 
 ### Impact and Value
 
-We hope that when we are done our current situation \[ where people with allergies or intolerance are unable to determine what makes them ill or form patterns to correlate cross reactivity with other foods\] , we will shift towards individuals who are able to identify triggers and future foods to avoid based on correlations of… (food types, protein makeup, and so on) through data driven insights.   
+We hope that when we are done our current situation [ where people with allergies or intolerance are unable to determine what makes them ill or form patterns to correlate cross reactivity with other foods] , we will shift towards individuals who are able to identify triggers and future foods to avoid based on correlations of… (food types, protein makeup, and so on) through data driven insights.   
 We will achieve this by gathering relevant data on allergens  
 Using secure applications and a stack that allows for flexible development  
 And receiving continuous feedback from our users
