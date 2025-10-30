@@ -6,7 +6,7 @@
           <p><strong>BUSINESS CASE</strong></p>
             </th></tr><tr><td>
             <p><strong>Proposed Project</strong></p></td>
-              <td><p>Allergy and Food Intolerance Food Tracker</p></td></tr>
+              <td><p>Allergy and Food Intolerance Tracker: TasteBud</p></td></tr>
               <tr><td><p><strong>Date Produced</strong></p></td><td><p>27 October, 2025</p></td></tr>
               <tr><td><p><strong>Background</strong></p></td>
                 <td><p>The following project aims to help in understanding food allergies and intolerances. Food allergies and intolerances have become more common place and without a diagnosis from a doctor it can be difficult to narrow down what the specific allergy or intolerance is.</p></td></tr>
