@@ -1,7 +1,7 @@
 # Project Roles and Responsibilities
 
 ## Project Name
-**Tastebud**
+**TasteBud**
 
 ---
 
