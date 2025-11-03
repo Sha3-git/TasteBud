@@ -1,4 +1,4 @@
-### Business Model
+# Business Model Analysis
 
 Allergen and food intolerance symptom tracking application that eases the difficulty in narrowing down allergens by utilizing the meal logs and symptoms to recognize patterns over time as well as cross reactivity.
 
