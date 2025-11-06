@@ -28,7 +28,7 @@
   </tr>
   <tr>
     <td><strong>Project Issues</strong></td>
-    <td>None</td>
+    <td>High Storage costs for storing large datasets/td>
   </tr>
   <tr>
     <td><strong>Project Changes</strong></td>
