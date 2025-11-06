@@ -20,7 +20,7 @@ _2\. Core Tracking and Workflow_
 | **Photo Tracking** (Point 3) | We focused photos only on data collection. | **Insight:** Users want photos for personal tracking and want to be able to see what they ate previously |
 | **Edit/Add to Previous Logs** (Point 4) | Limited editing was permitted. | **Insight:** Full flexibility (add new meals/symptoms) is needed for accuracy, as tracking often happens hours later. |
 | **Allergen/Food Naming** (Point 6) | We assumed standard naming conventions. | **Insight:** System must manage all potential names and aliases for synonyms and foods/allergens |
-| **Reporting of Known Allergies/Intolerances**<br><br>(Point 7) | We assumed that users would input all their allergies during onboarding | **Insight:** Users may forget to log allergies during onboarding and as such should be able to log them after onboarding |
+| **Reporting of Known Allergies/Intolerances** (Point 7) | We assumed that users would input all their allergies during onboarding | **Insight:** Users may forget to log allergies during onboarding and as such should be able to log them after onboarding |
 | **Analysis:** | The current food logging is too rigid. The application must be enhanced to support flexible, efficient data entry that matches how people actually eat and track. |     |
 
 _3\. Product Scope and Strategy_
