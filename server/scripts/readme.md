@@ -4,7 +4,9 @@ The population scripts use data information from official databases to seed our 
 Below are the sources with the download link for independent parsing and use. Each population script should be run individually
 
 **FoodData_Central_branded_food_json_2025-04-24.json:** Branded FoodDb can be downloaded from [here](https://fdc.nal.usda.gov/download-datasets)
+
 **Food.json:** FoodDb json file can be downloaded from [here](https://foodb.ca/downloads)
+
 CompareDb files can be downloaded from [here](https://hesiglobal.org/compare2025-download)
 
 **Root directory:** `server`
