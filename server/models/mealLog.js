@@ -3,15 +3,19 @@ const mongoose = require("mongoose");
 const mealLogSchema = new mongoose.Schema({
     userId:{
         type: mongoose.Schema.Types.ObjectId,
-                ref: "Users"
+                ref: "User"
     },
-    name: {
+    mealName: {
         type: String, 
         required: true
     },
     ingredients: [{ 
         type: mongoose.Schema.Types.ObjectId,
                 ref: "Ingredient"
+    }],
+    reaction: [{
+        type: mongoose.Schema.Types.ObjectId,
+                ref: "Reaction"
     }],
     hadReaction: {
         type: Boolean,
@@ -20,7 +24,9 @@ const mealLogSchema = new mongoose.Schema({
     /*photoUrl: {
         type: String
     },*/
-    deleted: Bool
+    deleted: Boolean,
+    created: { type: Date, required: true},
+    edited: Date,
 },
  { timestamps: true }
 )

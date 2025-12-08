@@ -21,6 +21,11 @@ app.listen(port, () => {
 });
 
 //routes
-
+const apiPrefix = "/api"
 const ingredientsRoutes = require("./routes/ingredientsRoute")
-app.use("/api/ingredients", ingredientsRoutes)
+const mealLogsRoutes = require("./routes/mealLogRoute")
+const reactionRoutes = require("./routes/reactionRoute")
+
+app.use(`${apiPrefix}/ingredients`, ingredientsRoutes);
+app.use(`${apiPrefix}/meallogs`, mealLogsRoutes);
+app.use(`${apiPrefix}/reactions`, reactionRoutes);

@@ -67,7 +67,8 @@ type Screen =
   
 
 function AppContent() {
-  const [currentScreen, setCurrentScreen] = useState<Screen>('splash');
+  //const [currentScreen, setCurrentScreen] = useState<Screen>('splash');
+  const [currentScreen, setCurrentScreen] = useState<Screen>('auth');
   
   // Store user data collected during onboarding
   const [userData, setUserData] = useState({

@@ -16571,66 +16571,11 @@
     "allergens": []
   },
   {
-    "name": "Icing",
-    "scientific_name": null,
-    "group": "Confectioneries",
-    "subgroup": "Other confectioneries",
-    "description": "Icing, also called frosting in the United States, is a sweet often creamy glaze made of sugar with a liquid such as water or milk, that is often enriched with ingredients such as butter, egg whites, cream cheese, or flavorings and is used to cover or decorate baked goods, such as cakes or cookies. [Wikipedia]",
-    "has_sub_ingredients": false,
-    "sub_ingredients": [],
-    "extra_ingredients": [],
-    "allergens": []
-  },
-  {
-    "name": "Snack bar",
-    "scientific_name": null,
-    "group": "Snack foods",
-    "subgroup": "Snack foods",
-    "description": null,
-    "has_sub_ingredients": false,
-    "sub_ingredients": [],
-    "extra_ingredients": [],
-    "allergens": []
-  },
-  {
     "name": "Green turtle",
     "scientific_name": "Chelonia mydas",
     "group": "Aquatic foods",
     "subgroup": "Other aquatic foods",
     "description": "The green sea turtle (Chelonia mydas), also known as the green turtle, black (sea) turtle, or Pacific green turtle, is a large sea turtle of the family Cheloniidae. It is the only species in the genus Chelonia. Its range extends throughout tropical and subtropical seas around the world, with two distinct populations in the Atlantic and Pacific Oceans. The common name comes from the usually green fat found beneath its carapace. This sea turtle's dorsoventrally flattened body is covered by a large, teardrop-shaped carapace; it has a pair of large, paddle-like flippers. It is usually lightly colored, although in the eastern Pacific populations parts of the carapace can be almost black. Unlike other members of its family, such as the hawksbill sea turtle, C. mydas is mostly a herbivorous. The adults usually inhabit shallow lagoons, feeding mostly on various species of seagrasses. Like other sea turtles, green sea turtles migrate long distances between feeding grounds and hatching beaches. Many islands worldwide are known as Turtle Island due to green sea turtles nesting on their beaches. Females crawl out on beaches, dig nests and lay eggs during the night. Later, hatchlings emerge and scramble into the water. Those that reach maturity may live to eighty years in the wild. C. mydas is listed as endangered by the IUCN and CITES and is protected from exploitation in most countries. It is illegal to collect, harm or kill them. In addition, many countries have laws and ordinances to protect nesting areas. However, turtles are still in danger because of several human practices. In some countries, turtles and their eggs are hunted for food. Pollution indirectly harms turtles at both population and individual scales. Many turtles die caught in fishing nets. Also, real estate development often causes habitat loss by eliminating nesting beaches.",
-    "has_sub_ingredients": false,
-    "sub_ingredients": [],
-    "extra_ingredients": [],
-    "allergens": []
-  },
-  {
-    "name": "Energy drink",
-    "scientific_name": null,
-    "group": "Beverages",
-    "subgroup": "Nutritional beverages",
-    "description": "Energy drinks are beverages whose producers advertise that they \"boost energy.\" Energy drinks generally contain methylxanthines (including caffeine), B vitamins, and herbs. Other commonly used ingredients are carbonated water, guarana, yerba mate, açaí, and taurine, plus various forms of ginseng, maltodextrin, inositol, carnitine, creatine, glucuronolactone, and ginkgo biloba. Some contain high levels of sugar, and many brands offer artificially sweetened 'diet' versions. A common ingredient in most energy drinks is caffeine (often in the form of guarana or yerba mate). Energy drinks contain about three times the amount of caffeine as cola. [Wikipedia]",
-    "has_sub_ingredients": false,
-    "sub_ingredients": [],
-    "extra_ingredients": [],
-    "allergens": []
-  },
-  {
-    "name": "Burrito",
-    "scientific_name": null,
-    "group": "Dishes",
-    "subgroup": "Tex-Mex cuisine",
-    "description": "A burrito, or taco de harina, is a type of Mexican food. It consists of a wheat flour tortilla wrapped or folded around a filling. The flour tortilla is usually lightly grilled or steamed, to soften it and make it more pliable. In Mexico, refried beans or meat are sometimes the only fillings. In the United States, however, fillings generally include a combination of ingredients such as Mexican-style rice or plain rice, refried beans or beans, lettuce, salsa, meat, avocado, cheese, and sour cream, and the size varies, with some burritos considerably larger than their Mexican counterparts. [Wikipedia]",
-    "has_sub_ingredients": false,
-    "sub_ingredients": [],
-    "extra_ingredients": [],
-    "allergens": []
-  },
-  {
-    "name": "Hamburger",
-    "scientific_name": null,
-    "group": "Dishes",
-    "subgroup": "Sandwiches",
-    "description": "A hamburger (also called a hamburger sandwich or burger) is a sandwich consisting of a cooked patty of ground meat (usually beef, but occasionally pork or a combination of meats) usually placed inside a sliced bread roll. Hamburgers are often served with lettuce, bacon, tomato, onion, pickles, cheese and condiments such as mustard, mayonnaise, ketchup and relish. The term hamburger or burger can also be applied to the meat patty on its own, especially in the UK where the term \"patty\" is rarely used, although the term \"hamburger\" is rarely used in Commonwealth nations (other than Canada and Australia). [Wikipedia]",
     "has_sub_ingredients": false,
     "sub_ingredients": [],
     "extra_ingredients": [],
@@ -16648,44 +16593,11 @@
     "allergens": []
   },
   {
-    "name": "Chili",
-    "scientific_name": null,
-    "group": "Dishes",
-    "subgroup": "Tex-Mex cuisine",
-    "description": "Chili con carne (often known simply as chili) is a spicy stew. The name of the dish derives from the Spanish chile con carne, \"chili pepper with meat\". Traditional versions are made, minimally, from chili peppers, garlic, onions, and cumin, along with chopped or ground beef. Beans and tomatoes are frequently included. Variations, both geographic and personal, may involve different types of meat as well as a variety of other ingredients. [Wikipedia]",
-    "has_sub_ingredients": false,
-    "sub_ingredients": [],
-    "extra_ingredients": [],
-    "allergens": []
-  },
-  {
-    "name": "Taco",
-    "scientific_name": null,
-    "group": "Dishes",
-    "subgroup": "Tex-Mex cuisine",
-    "description": "A taco is a traditional Mexican dish composed of a corn or wheat tortilla folded or rolled around a filling. A taco can be made with a variety of fillings, including beef, chicken, seafood, vegetables and cheese, allowing for great versatility and variety. A taco is generally eaten without utensils and is often accompanied by garnishes such as salsa, avocado or guacamole, cilantro, tomatoes, onions and lettuce. [Wikipedia]",
-    "has_sub_ingredients": false,
-    "sub_ingredients": [],
-    "extra_ingredients": [],
-    "allergens": []
-  },
-  {
     "name": "Tortilla",
     "scientific_name": null,
     "group": "Cereals and cereal products",
     "subgroup": "Flat breads",
     "description": "Tortilla means \"little torta\" or \"little cake\" in Spanish; the Spanish word applies to several different foods eaten in various Spanish-speaking countries. The Spanish word is used in English for a more restricted range of foods, mainly a potato-based omelette originating in Spain, and for a flatbread made from corn or wheat originally made by Mesoamerican peoples. Tortillas are used to prepare many Mexican and, more generally, Latin American dishes (e.g. burritos, quesadillas, tacos, tostadas). [Wikipedia]",
-    "has_sub_ingredients": false,
-    "sub_ingredients": [],
-    "extra_ingredients": [],
-    "allergens": []
-  },
-  {
-    "name": "Nachos",
-    "scientific_name": null,
-    "group": "Dishes",
-    "subgroup": "Tex-Mex cuisine",
-    "description": "Nachos are a popular food based on nixtamalized corn, of Mexican origin associated with Tex-Mex cuisine that can be either made quickly to serve as a snack or prepared with more ingredients to make a full meal. In their simplest form, nachos are tortilla chips or totopos covered in melted cheese and salsa. [Wikipedia]",
     "has_sub_ingredients": false,
     "sub_ingredients": [],
     "extra_ingredients": [],

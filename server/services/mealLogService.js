@@ -1,4 +1,5 @@
 const MealLog = require("../models/mealLog");
+const { dayRange, weekRange, monthRange, yearRange } = require("../utils/dateRange");
 
 const createMealLog = async (meal) => {
   return await MealLog.create(meal);
@@ -22,9 +23,50 @@ const getMealLogs = async (userId) => {
     .populate("ingredients").limit(10);
 };
 
+
+async function getMealLogsInRange(userId, start, end, page = 1, limit = 10) {
+  const skip = (page - 1) * limit;
+
+  const result =  await MealLog.find({
+    userId,
+    deleted: false,
+    created: { $gte: start, $lte: end },
+  })
+    .populate("ingredients")
+    .skip(skip)
+    .limit(limit)
+    .sort({ created: -1 });
+
+    console.log(result)
+    return result
+}
+
+async function getMealLogByDay(userId, date, page = 1, limit = 10) {
+  const { start, end } = dayRange(date);
+  console.log(date)
+  console.log(start + " | " + end)
+  return getMealLogsInRange(userId, start, end, page, limit);
+}
+
+async function getMealLogByWeek(userId, date, page = 1, limit = 10) {
+  const { start, end } = weekRange(date);
+  return getMealLogsInRange(userId, start, end, page, limit);
+}
+
+async function getMealLogByMonth(userId, year, month, page = 1, limit = 10) {
+  const { start, end } = monthRange(year, month);
+  return getMealLogsInRange(userId, start, end, page, limit);
+}
+
+async function getMealLogByYear(userId, year, page = 1, limit = 10) {
+  const { start, end } = yearRange(year);
+  return getMealLogsInRange(userId, start, end, page, limit);
+}
+
 module.exports = {
   createMealLog,
   updateMealLog,
   deleteMealLog,
-  getMealLogs
+  getMealLogs,
+  getMealLogByDay
 };
