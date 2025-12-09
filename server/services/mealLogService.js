@@ -33,6 +33,7 @@ async function getMealLogsInRange(userId, start, end, page = 1, limit = 10) {
     created: { $gte: start, $lte: end },
   })
     .populate("ingredients")
+    .populate("reaction")
     .skip(skip)
     .limit(limit)
     .sort({ created: -1 });

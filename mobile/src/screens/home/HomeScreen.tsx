@@ -35,9 +35,8 @@ import { WeekCalendar } from "../../components/modules/WeekCalendar";
 import { FeatureCard } from "../../components/cards/FeatureCard";
 import { FoodLibraryCard } from "../../components/cards/FoodLibraryCard";
 
-import { mealLogService } from "../../services/mealLogService";
 
-import { getMealLogStats } from "../../hooks/mealLogHook";
+import { getMealLogData } from "../../hooks/mealLogHook";
 
 interface HomeScreenProps {
   userName: string;
@@ -70,7 +69,7 @@ export function HomeScreen({ userName, onNavigate }: HomeScreenProps) {
    //const today = new Date().toISOString().split("T")[0];
   const today = "2025-12-07"
   const userId = "69173dd5a3866b85b59d9760";
-  const stats = getMealLogStats(today, userId);
+  const {stats} = getMealLogData(today, userId);
 
   const tabs = [
     {

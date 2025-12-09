@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { mealLogService } from "../services/mealLogService";
 import { reactionService } from "../services/reactionService";
 
-interface Stats {
+export interface Stats {
   mealCount: number;
   reacCount: number;
   unsafeFoodsCount: number;
@@ -12,7 +12,25 @@ interface Stats {
   caloriesKcal: number;
 }
 
-export function getMealLogStats(date: string, userId: string) {
+export interface Meal {
+  id: string;
+  name: string;
+  time: string;
+  ingredients: string[];
+  symptoms: { name: string; severity: number; time: string }[];
+  unsafeIngredients: string[];
+  color: string;
+}
+
+export interface DayLog {
+  date: Date;
+  dayName: string;
+  dayNumber: number;
+  meals: Meal[];
+  isExpanded: boolean;
+}
+
+export function getMealLogData(date: string, userId: string) {
   const [stats, setStats] = useState<Stats>({
     mealCount: 0,
     reacCount: 0,
@@ -23,33 +41,58 @@ export function getMealLogStats(date: string, userId: string) {
     caloriesKcal: 0,
   });
 
+  const [dayLogs, setDayLogs] = useState<DayLog[]>([]);
+
   useEffect(() => {
-    const getMealData = async () => {
+    const fetchData = async () => {
       try {
-        //const today = new Date().toISOString().split("T")[0];
-        const today = "2025-12-07";
-
-
-        const mealRes = await mealLogService.getMealLogByDay({ date: today, userId });
+        const mealRes = await mealLogService.getMealLogByDay({ date, userId });
         const mealLogs = mealRes.data;
 
-        const reacRes = await reactionService.getReactionByDay({ date: today, userId });
+        const reacRes = await reactionService.getReactionByDay({ date, userId });
         const reactions = reacRes.data;
+
         console.log(reactions)
 
         setStats(prev => ({
           ...prev,
           mealCount: mealLogs.length,
-          reacCount: reactions.length
+          reacCount: reactions.length,
         }));
+
+        const meals: Meal[] = mealLogs.map((log: any) => ({
+          id: log._id,
+          name: log.mealName,
+          time: new Date(log.created).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          ingredients: log.ingredients.map((i: any) => i.name),
+          symptoms: log.reaction?.map((r: any) => ({
+            name: r.symptom,
+            severity: r.severity ?? 0,
+            time: new Date(r.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          })) || [],
+          unsafeIngredients: log.ingredients
+            .filter((i: any) => i.allergens?.length > 0)
+            .map((i: any) => i.name),
+          color: "#FFA07A",
+        }));
+
+        const dateObj = new Date(date);
+        const dailyLog: DayLog = {
+          date: dateObj,
+          dayName: dateObj.toLocaleString("en-US", { weekday: "short" }).toUpperCase(),
+          dayNumber: dateObj.getDate(),
+          isExpanded: true,
+          meals,
+        };
+
+        setDayLogs([dailyLog]);
       } catch (err) {
-        console.error("Failed to fetch daily meals", err);
+        console.error("Failed to fetch meal log data", err);
       }
     };
-    
 
-    getMealData();
-  }, [date]);
+    fetchData();
+  }, [date, userId]);
 
-  return stats;
+  return { stats, dayLogs };
 }
