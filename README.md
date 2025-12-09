@@ -156,7 +156,7 @@ December:
 
 ## Vlogs
 [Vlog 1](https://youtu.be/XUzZLrhF774)
-
+[Vlog 2](https://youtu.be/vXvnteLl2Qs)
 
 
 
