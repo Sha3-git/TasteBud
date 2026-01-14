@@ -14,7 +14,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../theme/ThemeContext';
-import { LiquidGlassTabBar } from '../LiquidGlassTabBar';
+import { LiquidGlassTabBar } from '../modules/LiquidGlassTabBar';
 
 
 export function NutritionCard({

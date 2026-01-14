@@ -8,5 +8,6 @@ router.put("/update/:id", mealLogController.updateMealLog);
 router.delete("/delete/:id", mealLogController.deleteMealLog);
 router.get("/get/:id", mealLogController.getMealLogs)
 router.get("/daily", mealLogController.getMealLogByDay);
+router.get("/weekly", mealLogController.getMealLogByWeek);
 
 module.exports = router

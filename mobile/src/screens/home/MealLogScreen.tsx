@@ -27,8 +27,11 @@ import { useTheme } from "../../theme/ThemeContext";
 
 import { DayLogCard } from "../../components/cards/DayLogCard";
 import { AddMealForm } from "../../components/forms/AddMealForm";
+import { MonthYearSelector } from "../../components/modules/MonthYearSelector";
+import { MonthPicker } from "../../components/modals/MonthPicker";
 
-import { getMealLogData } from "../../hooks/mealLogHook";
+import { getMealLogByDay } from "../../hooks/mealLogByDay";
+import { getMealLogByWeek } from "../../hooks/mealLogByweek";
 
 interface MealLogScreenProps {
   onBack: () => void;
@@ -56,20 +59,7 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
   const { theme, isDark } = useTheme();
 
   // Month/Year state
-  const months = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-  ];
+
   const currentDate = new Date();
   const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth());
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
@@ -88,10 +78,9 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
     { name: string; severity: number; time: string }[]
   >([]);
 
-
   const today = "2025-12-07";
   const userId = "69173dd5a3866b85b59d9760";
-  const { dayLogs: fetchedLogs } = getMealLogData(today, userId);
+  const { dayLogs: fetchedLogs } = getMealLogByDay(today, userId);
   /*const [dayLogs, setDayLogs] = useState<DayLog[]>([
     {
       date: new Date(2021, 6, 19),
@@ -129,16 +118,15 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
       meals: [],
     },
   ]);*/
-  const [dayLogs, setDayLogs] = useState<DayLog[]>([]);
+  const [dayLogs, setDayLogs] = useState<DayLog[]>([]); //says day logs but is the meal log data for a month grouped by day
 
   useEffect(() => {
     if (fetchedLogs) {
       setDayLogs(fetchedLogs);
-      
     }
   }, [fetchedLogs]);
 
-
+  console.log("fetched logs: " + JSON.stringify(fetchedLogs));
   const toggleDay = (index: number) => {
     setDayLogs(
       dayLogs.map((day, i) =>
@@ -269,7 +257,7 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
   const goToPreviousMonth = () => {
     if (selectedMonth === 0) {
       setSelectedMonth(11);
-      setSelectedYear(selectedYear - 1);
+      //setSelectedYear(selectedYear - 1);
     } else {
       setSelectedMonth(selectedMonth - 1);
     }
@@ -278,7 +266,7 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
   const goToNextMonth = () => {
     if (selectedMonth === 11) {
       setSelectedMonth(0);
-      setSelectedYear(selectedYear + 1);
+      //setSelectedYear(selectedYear + 1);
     } else {
       setSelectedMonth(selectedMonth + 1);
     }
@@ -338,35 +326,14 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
         showsVerticalScrollIndicator={false}
       >
         {/* Month/Year Selector - WORKING */}
-        <View style={styles.monthSelector}>
-          <TouchableOpacity
-            onPress={goToPreviousMonth}
-            style={styles.monthButton}
-          >
-            <Ionicons name="chevron-back" size={24} color={theme.textPrimary} />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.monthDisplay}
-            onPress={() => setShowMonthPicker(true)}
-          >
-            <Text style={[styles.monthText, { color: theme.textPrimary }]}>
-              {months[selectedMonth]}
-            </Text>
-            <Ionicons name="chevron-down" size={20} color={theme.textPrimary} />
-            <Text style={[styles.yearText, { color: theme.textSecondary }]}>
-              {selectedYear}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={goToNextMonth} style={styles.monthButton}>
-            <Ionicons
-              name="chevron-forward"
-              size={24}
-              color={theme.textPrimary}
-            />
-          </TouchableOpacity>
-        </View>
+        <MonthYearSelector
+          goToPreviousMonth={goToPreviousMonth}
+          goToNextMonth={goToNextMonth}
+          theme={theme}
+          setShowMonthPicker={setShowMonthPicker}
+          selectedMonth={selectedMonth}
+          selectedYear={selectedYear}
+        />
 
         {/* Past Meal Logs Section */}
         <View style={styles.section}>
@@ -406,58 +373,15 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
       </TouchableOpacity>
 
       {/* Month Picker Modal */}
-      <Modal
-        visible={showMonthPicker}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowMonthPicker(false)}
-      >
-        <TouchableOpacity
-          style={styles.modalOverlay}
-          activeOpacity={1}
-          onPress={() => setShowMonthPicker(false)}
-        >
-          <View
-            style={[
-              styles.monthPickerContainer,
-              { backgroundColor: theme.card },
-            ]}
-          >
-            <Text style={[styles.pickerTitle, { color: theme.textPrimary }]}>
-              Select Month & Year
-            </Text>
-            <ScrollView style={styles.pickerScroll}>
-              {months.map((month, index) => (
-                <TouchableOpacity
-                  key={index}
-                  onPress={() => {
-                    setSelectedMonth(index);
-                    setShowMonthPicker(false);
-                  }}
-                  style={[
-                    styles.pickerItem,
-                    index === selectedMonth && {
-                      backgroundColor: theme.primary,
-                    },
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.pickerItemText,
-                      {
-                        color:
-                          index === selectedMonth ? "#FFF" : theme.textPrimary,
-                      },
-                    ]}
-                  >
-                    {month} {selectedYear}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-        </TouchableOpacity>
-      </Modal>
+      <MonthPicker
+        showMonthPicker={showMonthPicker}
+        setShowMonthPicker={setShowMonthPicker}
+        theme={theme}
+        setSelectedMonth={setSelectedMonth}
+        selectedMonth={selectedMonth}
+        selectedYear={selectedYear}
+        setSelectedYear={setSelectedYear}
+      />
     </SafeAreaView>
   );
 }
@@ -488,32 +412,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "700",
   },
-  monthSelector: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-  },
-  monthButton: {
-    width: 40,
-    height: 40,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  monthDisplay: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  monthText: {
-    fontSize: 18,
-    fontWeight: "700",
-  },
-  yearText: {
-    fontSize: 14,
-    fontWeight: "500",
-  },
+
   section: {
     paddingHorizontal: 24,
     marginBottom: 24,
@@ -544,36 +443,4 @@ const styles = StyleSheet.create({
   },
 
   // MODAL
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  monthPickerContainer: {
-    width: "80%",
-    maxHeight: "70%",
-    borderRadius: 20,
-    padding: 20,
-  },
-  pickerTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    marginBottom: 16,
-    textAlign: "center",
-  },
-  pickerScroll: {
-    maxHeight: 400,
-  },
-  pickerItem: {
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    marginBottom: 8,
-  },
-  pickerItemText: {
-    fontSize: 16,
-    fontWeight: "600",
-    textAlign: "center",
-  },
 });

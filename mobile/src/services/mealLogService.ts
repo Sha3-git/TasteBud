@@ -16,4 +16,11 @@ export const mealLogService = {
       params: { userId, date, page, limit },
     });
   },
+  getMealLogByWeek: (params: MealParam) => {
+    const { userId, date, page = 1, limit = 10 } = params;
+    
+    return api.get("/meallogs/weekly", {
+      params: { userId, date, page, limit },
+    });
+  },
 };

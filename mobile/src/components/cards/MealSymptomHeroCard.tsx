@@ -76,7 +76,7 @@ export function MealSymptomHeroCard({
                 <Text style={styles.heroStatBold}>{reacCount}</Text> reactions
               </Text>
             </View>
-            <TouchableOpacity style={styles.heroAction}>
+            <TouchableOpacity style={styles.heroAction} onPress={onPress}>
               <Text style={styles.heroActionText}>View details</Text>
               <Ionicons name="arrow-forward" size={16} color="#92400E" />
             </TouchableOpacity>

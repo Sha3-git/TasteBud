@@ -16,4 +16,5 @@ export const reactionService = {
       params: { userId, date, page, limit },
     });
   },
+  getReactionCountByDay: () => {}
 };

@@ -30,7 +30,7 @@ export interface DayLog {
   isExpanded: boolean;
 }
 
-export function getMealLogData(date: string, userId: string) {
+export function getMealLogByDay(date: string, userId: string) {
   const [stats, setStats] = useState<Stats>({
     mealCount: 0,
     reacCount: 0,
@@ -52,7 +52,6 @@ export function getMealLogData(date: string, userId: string) {
         const reacRes = await reactionService.getReactionByDay({ date, userId });
         const reactions = reacRes.data;
 
-        console.log(reactions)
 
         setStats(prev => ({
           ...prev,

@@ -69,5 +69,7 @@ module.exports = {
   updateMealLog,
   deleteMealLog,
   getMealLogs,
-  getMealLogByDay
+  getMealLogByDay,
+  getMealLogByWeek,
+  getMealLogByMonth
 };

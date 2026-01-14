@@ -5,18 +5,25 @@ function dayRange(date) {
   return { start, end }
 }
 
-function weekRange(anyDate) {
-  const date = new Date(anyDate);
-  const day = date.getDay();
-  const diff = date.getDate() - day;
-  const start = new Date(date.setDate(diff));
-  start.setHours(0, 0, 0, 0);
+function weekRange(weekDate) {
+  const date = new Date(weekDate);
+  const day = date.getUTCDay();
+  const diff = date.getUTCDate() - day;
 
-  const end = new Date(start);
-  end.setDate(start.getDate() + 6);
-  end.setHours(23, 59, 59, 999);
-
+  const start = new Date(Date.UTC(
+    date.getUTCFullYear(),
+    date.getUTCMonth(),
+    diff,
+    0, 0, 0, 0
+  ));
+  const end = new Date(Date.UTC(
+    start.getUTCFullYear(),
+    start.getUTCMonth(),
+    start.getUTCDate() + 6,
+    23, 59, 59, 999
+  ));
   return { start, end };
+  
 }
 
 function monthRange(year, month) {
