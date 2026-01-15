@@ -78,7 +78,7 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
     { name: string; severity: number; time: string }[]
   >([]);
 
-  const today = "2025-12-07";
+  const today = new Date().toISOString().split("T")[0];
   const userId = "69173dd5a3866b85b59d9760";
   const { dayLogs: fetchedLogs } = getMealLogByDay(today, userId);
   /*const [dayLogs, setDayLogs] = useState<DayLog[]>([

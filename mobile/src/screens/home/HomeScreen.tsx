@@ -66,8 +66,8 @@ export function HomeScreen({ userName, onNavigate }: HomeScreenProps) {
    *   caloriesKcal: number
    * }
    */
-   //const today = new Date().toISOString().split("T")[0];
-  const today = "2025-12-07"
+
+  const today = new Date().toISOString().split("T")[0];
   const userId = "69173dd5a3866b85b59d9760";
   const {stats} = getMealLogByDay(today, userId);
 
