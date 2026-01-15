@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const mealLogController = require("../controllers/mealLogController")
+const mealLogController = require("../controllers/mealLogsController")
 
 router.post("/create", mealLogController.createMealLog);
 router.put("/update/:id", mealLogController.updateMealLog);

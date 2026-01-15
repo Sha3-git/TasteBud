@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
+const auth = require("./middlewares/auth")
 require("dotenv").config();
 
 
@@ -22,10 +23,12 @@ app.listen(port, () => {
 
 //routes
 const apiPrefix = "/api"
-const ingredientsRoutes = require("./routes/ingredientsRoute")
-const mealLogsRoutes = require("./routes/mealLogRoute")
-const reactionRoutes = require("./routes/reactionRoute")
+const ingredientsRoute = require("./routes/ingredientsRoute")
+const mealLogsRoute = require("./routes/mealLogsRoute")
+const reactionRoute = require("./routes/reactionRoute")
+const unsafeFoodsRoute = require("./routes/unsafeFoodsRoute")
 
-app.use(`${apiPrefix}/ingredients`, ingredientsRoutes);
-app.use(`${apiPrefix}/meallogs`, mealLogsRoutes);
-app.use(`${apiPrefix}/reactions`, reactionRoutes);
+app.use(`${apiPrefix}/ingredients`, /*auth,*/ ingredientsRoute);
+app.use(`${apiPrefix}/meallogs`, /*auth,*/ mealLogsRoute);
+app.use(`${apiPrefix}/reactions`, /*auth,*/ reactionRoute);
+app.use(`${apiPrefix}/reactions`, /*auth,*/ unsafeFoodsRoute);

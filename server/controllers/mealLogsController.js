@@ -2,7 +2,9 @@ const mealService = require("../services/mealLogService");
 
 const createMealLog = async (req, res) => {
     try {
-        const mealLog = await mealService.createMealLog(req.body);
+      const {userId} = req.query // const userId = req.user;
+        const mealLog = await mealService.createMealLog(userId, req.body);
+        
         res.status(201).json(mealLog);
     } catch (err) {
         res.status(400).json({ error: err.message });

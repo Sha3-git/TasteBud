@@ -1,8 +1,14 @@
-const MealLog = require("../models/mealLog");
+const MealLog = require("../models/mealLogs");
 const { dayRange, weekRange, monthRange, yearRange } = require("../utils/dateRange");
 
-const createMealLog = async (meal) => {
-  return await MealLog.create(meal);
+const createMealLog = async (userId, data) => {
+  input = {
+    userId: userId,
+    ...data,
+    created: new Date(),
+  }
+  console.log(input)
+  return await MealLog.create(input);
 };
 
 const updateMealLog = async (id, updateData) => {
