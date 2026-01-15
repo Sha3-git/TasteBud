@@ -80,7 +80,7 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
 
   const today = new Date().toISOString().split("T")[0];
   const userId = "69173dd5a3866b85b59d9760";
-  const { dayLogs: fetchedLogs } = getMealLogByDay(today, userId);
+const { dayLogs: fetchedLogs, loading, error, refetch } = getMealLogByDay(today, userId);
   /*const [dayLogs, setDayLogs] = useState<DayLog[]>([
     {
       date: new Date(2021, 6, 19),
@@ -302,7 +302,45 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
       />
     );
   }
+// Show loading spinner while fetching data
+if (loading) {
+  return (
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text style={{ color: theme.textSecondary, fontSize: 16 }}>Loading meals...</Text>
+      </View>
+    </SafeAreaView>
+  );
+}
 
+// Show error message if something went wrong
+if (error) {
+  return (
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 24 }}>
+        <Text style={{ color: theme.danger, fontSize: 18, fontWeight: "600", marginBottom: 8 }}>
+          Oops!
+        </Text>
+        <Text style={{ color: theme.textSecondary, fontSize: 14, textAlign: "center", marginBottom: 16 }}>
+          {error}
+        </Text>
+        <TouchableOpacity
+          onPress={refetch}
+          style={{
+            backgroundColor: theme.primary,
+            paddingHorizontal: 24,
+            paddingVertical: 12,
+            borderRadius: 8,
+          }}
+        >
+          <Text style={{ color: "#FFF", fontWeight: "600" }}>Try Again</Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
+  );
+}
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: theme.background }]}
