@@ -100,115 +100,131 @@ export function getMealLogByDay(date: string, userId: string): UseMealLogByDayRe
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // FETCH FUNCTION
+  // REFETCH FUNCTION
   // ----------------------
-  // This does the actual work of calling our backend API.
-  // We wrap it in useCallback so it doesn't get recreated on every render.
-  // We use Promise.all to fetch meals AND reactions at the same time (faster!)
- 
+  // A counter that triggers re-fetch when incremented.
+  // Used by the "Try Again" button after errors.
+  
+  const [refreshCounter, setRefreshCounter] = useState(0);
+  
+  const refetch = useCallback(() => {
+    setRefreshCounter(prev => prev + 1);
+  }, []);
 
-  const fetchData = useCallback(async () => {
-    // Guard clause: don't fetch if we're missing required params
-    if (!date || !userId) {
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      // Fetch meals and reactions in parallel for better performance
-      const [mealRes, reacRes] = await Promise.all([
-        mealLogService.getMealLogByDay({ date, userId }),
-        reactionService.getReactionByDay({ date, userId }),
-      ]);
-
-      const mealLogs = mealRes.data;
-      const reactions = reacRes.data;
-
-      // Update stats
-      setStats(prev => ({
-        ...prev,
-        mealCount: mealLogs.length,
-        reacCount: reactions.length,
-      }));
-
-      // TRANSFORM DATA
-      // --------------------
-      // The backend returns raw database objects. Here we transform them
-      // into the exact shape our UI components expect. This keeps our
-      // components clean.. database structure is a separate matter.
-
-      const meals: Meal[] = mealLogs.map((log: any) => ({
-        id: log._id,
-        name: log.mealName,
-        time: new Date(log.created).toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        ingredients: log.ingredients.map((i: any) => i.name),
-        symptoms:
-          log.reaction?.map((r: any) => ({
-            name: r.symptom,
-            severity: r.severity ?? 0,
-            time: new Date(r.time).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-          })) || [],
-        unsafeIngredients: log.ingredients
-          .filter((i: any) => i.allergens?.length > 0)
-          .map((i: any) => i.name),
-        color: "#FFA07A",
-      }));
-
-      // Create the day log structure
-      const dateObj = new Date(date);
-      const dailyLog: DayLog = {
-        date: dateObj,
-        dayName: dateObj.toLocaleString("en-US", { weekday: "short" }).toUpperCase(),
-        dayNumber: dateObj.getDate(),
-        isExpanded: true,
-        meals,
-      };
-
-      setDayLogs([dailyLog]);
-      setError(null);
-
-    } catch (err) {
-
-      // ERROR HANDLING
-      // ----------------
-      // We catch errors and set user-friendly messages.
-      // The actual error still logs to console for debugging.
-      
-      console.error("Failed to fetch meal log data:", err);
-
-      if (err instanceof Error) {
-        if (err.message.includes("Network")) {
-          setError("Unable to connect. Please check your internet connection.");
-        } else {
-          setError("Failed to load meal data. Please try again.");
-        }
-      } else {
-        setError("Something went wrong. Please try again.");
-      }
-    } finally {
-      // This runs whether we succeeded or failed.. always stop loading
-      setLoading(false);
-    }
-  }, [date, userId]);
 
   // EFFECT
-  // ----------------
+  // --------------
   // useEffect runs our fetch when the component mounts, and again whenever
   // date or userId changes. This keeps our data in sync automatically.
-
+  // 
+  // MEMORY LEAK PREVENTION:
+  // We use an 'isCancelled' flag to prevent state updates after unmount.
+  // If the user navigates away before the fetch completes, we simply
+  // ignore the response instead of trying to update state on an
+  // unmounted component (which causes React warnings).
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    let isCancelled = false;
+
+    const fetchDataSafe = async () => {
+      // Don't fetch if we don't have required params
+      if (!date || !userId) {
+        if (!isCancelled) setLoading(false);
+        return;
+      }
+
+      if (!isCancelled) {
+        setLoading(true);
+        setError(null);
+      }
+
+      try {
+        // Fetch meals and reactions in parallel for better performance
+        const [mealRes, reacRes] = await Promise.all([
+          mealLogService.getMealLogByDay({ date, userId }),
+          reactionService.getReactionByDay({ date, userId }),
+        ]);
+
+        // If component unmounted, don't update state
+        if (isCancelled) return;
+
+        const mealLogs = mealRes.data;
+        const reactions = reacRes.data;
+
+        // Update stats
+        setStats(prev => ({
+          ...prev,
+          mealCount: mealLogs.length,
+          reacCount: reactions.length,
+        }));
+
+        // Transform meal data
+        const meals: Meal[] = mealLogs.map((log: any) => ({
+          id: log._id,
+          name: log.mealName,
+          time: new Date(log.created).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          ingredients: log.ingredients.map((i: any) => i.name),
+          symptoms:
+            log.reaction?.map((r: any) => ({
+              name: r.symptom,
+              severity: r.severity ?? 0,
+              time: new Date(r.time).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+            })) || [],
+          unsafeIngredients: log.ingredients
+            .filter((i: any) => i.allergens?.length > 0)
+            .map((i: any) => i.name),
+          color: "#FFA07A",
+        }));
+
+        // Create the day log structure
+        const dateObj = new Date(date);
+        const dailyLog: DayLog = {
+          date: dateObj,
+          dayName: dateObj.toLocaleString("en-US", { weekday: "short" }).toUpperCase(),
+          dayNumber: dateObj.getDate(),
+          isExpanded: true,
+          meals,
+        };
+
+        setDayLogs([dailyLog]);
+        setError(null);
+
+      } catch (err) {
+        // If component unmounted, don't update state
+        if (isCancelled) return;
+
+        console.error("Failed to fetch meal log data:", err);
+
+        if (err instanceof Error) {
+          if (err.message.includes("Network")) {
+            setError("Unable to connect. Please check your internet connection.");
+          } else {
+            setError("Failed to load meal data. Please try again.");
+          }
+        } else {
+          setError("Something went wrong. Please try again.");
+        }
+      } finally {
+        // If component unmounted, don't update state
+        if (!isCancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchDataSafe();
+
+    // Cleanup functionruns when component unmounts or dependencies change
+    return () => {
+      isCancelled = true;
+    };
+  }, [date, userId, refreshCounter]);
 
   // RETURN VALUE
   // ----------------
@@ -223,6 +239,6 @@ export function getMealLogByDay(date: string, userId: string): UseMealLogByDayRe
     dayLogs,
     loading,
     error,
-    refetch: fetchData,
+    refetch,
   };
 }
