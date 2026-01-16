@@ -1,4 +1,4 @@
-const BrandedFood = require("../models/brandedFood");
+const BrandedFood = require("../models/brandedFoods");
 
 const searchBrandedFoods = async (query, limit = 20) => {
   try {
@@ -14,7 +14,6 @@ const searchBrandedFoods = async (query, limit = 20) => {
 
       results = await BrandedFood.find({
         $or: [
-          { description: regex },
           { ingredients: regex },
           { brandName: regex },
           { brandOwner: regex }

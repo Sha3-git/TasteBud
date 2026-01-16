@@ -16263,17 +16263,6 @@
     "allergens": []
   },
   {
-    "name": "Unclassified food or beverage",
-    "scientific_name": null,
-    "group": "Unclassified",
-    "subgroup": "Unclassified",
-    "description": null,
-    "has_sub_ingredients": false,
-    "sub_ingredients": [],
-    "extra_ingredients": [],
-    "allergens": []
-  },
-  {
     "name": "Syrup",
     "scientific_name": null,
     "group": "Baking goods",
@@ -16296,28 +16285,6 @@
     "allergens": []
   },
   {
-    "name": "Remoulade",
-    "scientific_name": null,
-    "group": "Baking goods",
-    "subgroup": "Condiments",
-    "description": "Remoulade or rémoulade, invented in France, is a popular condiment in many countries. Very much like the tartar sauce of some English-speaking cultures, remoulade is often aioli- or mayonnaise-based. Although similar to tartar sauce, it is often more yellowish (or reddish in Louisiana), often flavored with curry, and sometimes contains chopped pickles or piccalilli. It can also contain horseradish, paprika, anchovies, capers and a host of other items. While its original purpose was possibly for serving with meats, it is now more often used as an accompaniment to seafood dishes, especially pan-fried breaded fish fillets and seafood cakes.",
-    "has_sub_ingredients": false,
-    "sub_ingredients": [],
-    "extra_ingredients": [],
-    "allergens": []
-  },
-  {
-    "name": "Chocolate spread",
-    "scientific_name": null,
-    "group": "Confectioneries",
-    "subgroup": "Spreads",
-    "description": "Chocolate spread is a chocolate-flavoured paste which is eaten mostly spread on breads and toasts or similar pastries such as muffins and pitas. Chocolate spread is a product often favored by children and serves as a prevalent spread on their sandwiches. Some adults enjoy chocolate spread sandwiches as a comfort food. Although it tastes, smells, and looks like chocolate it does not solidify. The paste usually contains cocoa and oil, and is also likely to contain milk and additional taste and smell components. At times it also includes nuts or honey. Chocolate spread is normally sold in glass jars or plastic tubs.",
-    "has_sub_ingredients": false,
-    "sub_ingredients": [],
-    "extra_ingredients": [],
-    "allergens": []
-  },
-  {
     "name": "Fruit gum",
     "scientific_name": null,
     "group": "Confectioneries",
@@ -16334,28 +16301,6 @@
     "group": "Herbs and Spices",
     "subgroup": "Herb and spice mixtures",
     "description": "Curry powder is a spice mix of widely varying composition based on South Asian cuisine. Curry powder and the contemporary English use of the word curry are Western inventions and do not reflect any specific Indian food, though a similar mixture of spices used in north India is called garam masala. Curry powder is actually closer to the Tamil sambar powder, and the word curry is widely believed to be a corruption of the Tamil word kari, variously meaning something like sauce, cooked vegetables or meat. In the western world, curry powder mixtures tend to have a fairly standardized taste, though a great variety of spice mixtures are used in Indian cuisine. Curry powder was largely popularized during the nineteenth and twentieth centuries through the mass export of the condiment to the western table, throughout Europe and North and South America and through its use in British Army nations. Curry powder did not become standardized, as many of the original blends of curry powder were still available throughout the world. The late 1960s and early 1970s saw a growth of Indian-based food consumption in the west and internationally. This led to an increase of Indian restaurants throughout the world. The tradition of keeping special blends of curry powder simply became uneconomical, and curry powder became increasingly standardized outside India. Indian cooks often have readier access to a variety of fresh spices than their foreign counterparts. Some curry cooks will have their own specific mixtures for different recipes. These are often passed down from parent to child.",
-    "has_sub_ingredients": false,
-    "sub_ingredients": [],
-    "extra_ingredients": [],
-    "allergens": []
-  },
-  {
-    "name": "Other candy",
-    "scientific_name": null,
-    "group": "Confectioneries",
-    "subgroup": "Candies",
-    "description": "Candy, also called sweets or lollies, is a confection that features sugar as a principal ingredient. The category, called sugar confectionery, encompasses any sweet confection, including chocolate, chewing gum, and sugar candy. Vegetables, fruit, or nuts which have been glazed and coated with sugar are said to be candied.\nPhysically, candy is characterized by the use of a significant amount of sugar, or, in the case of sugar-free candies, by the presence of sugar substitutes. Unlike a cake or loaf of bread that would be shared among many people, candies are usually made in smaller pieces. However, the definition of candy also depends upon how people treat the food. Unlike sweet pastries served for a dessert course at the end of a meal, candies are normally eaten casually, often with the fingers, as a snack between meals. Each culture has its own ideas of what constitutes candy rather than dessert. The same food may be a candy in one culture and a dessert in another.",
-    "has_sub_ingredients": false,
-    "sub_ingredients": [],
-    "extra_ingredients": [],
-    "allergens": []
-  },
-  {
-    "name": "Meringue",
-    "scientific_name": null,
-    "group": "Confectioneries",
-    "subgroup": "Other confectioneries",
-    "description": "Meringue, is a type of dessert, often associated with Swiss and French cuisine, made from whipped egg whites and sugar, and occasionally an acid such as cream of tartar or a small amount of vinegar. A binding agent such as cornstarch or gelatin may also be added. The addition of powdered sugar, which usually contains corn starch, to the uncooked meringue produces a pavlova, a national dish of Australia and New Zealand. The key to the formation of a good meringue is the formation of stiff peaks formed by denaturing the protein ovalbumin (a protein in the egg whites) via mechanical shear. Meringues are often flavoured with vanilla and a small amount of almond or coconut extract although if these extracts are based on an oil infusion then this, if used in excess, may inhibit the egg whites into forming a foam due to the fat from the oil. They are light, airy and sweet confections. Homemade meringues are often chewy and soft with a crisp exterior, although a uniform crisp texture may be achieved at home, whilst commercial meringues are crisp throughout.",
     "has_sub_ingredients": false,
     "sub_ingredients": [],
     "extra_ingredients": [],

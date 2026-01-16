@@ -27,8 +27,10 @@ const ingredientsRoute = require("./routes/ingredientsRoute")
 const mealLogsRoute = require("./routes/mealLogsRoute")
 const reactionRoute = require("./routes/reactionRoute")
 const unsafeFoodsRoute = require("./routes/unsafeFoodsRoute")
+const brandedFoodRoute = require("./routes/brandedFoodRoute")
 
 app.use(`${apiPrefix}/ingredients`, /*auth,*/ ingredientsRoute);
 app.use(`${apiPrefix}/meallogs`, /*auth,*/ mealLogsRoute);
 app.use(`${apiPrefix}/reactions`, /*auth,*/ reactionRoute);
-app.use(`${apiPrefix}/reactions`, /*auth,*/ unsafeFoodsRoute);
+app.use(`${apiPrefix}/unsafefood`, /*auth,*/ unsafeFoodsRoute);
+app.use(`${apiPrefix}/brandedfood`, /*auth,*/ brandedFoodRoute);

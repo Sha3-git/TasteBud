@@ -1,52 +1,97 @@
-const mongoose = require("mongoose");
-const BrandedFood = require("../../models/brandedFoods");
-require("dotenv").config({ path: "../../.env" });
-
-const { chain } = require("stream-chain");
-const { parser } = require("stream-json");
-const { streamArray } = require("stream-json/streamers/StreamArray");
-const { pick } = require("stream-json/filters/Pick");
 const fs = require("fs");
+const csv = require("csv-parser");
+require("dotenv").config();
+const BrandedFood = require("../../models/brandedFoods");
 
-mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log("Connected to MongoDB"))
-    .catch(err => {
-        console.error("MongoDB connection error:", err);
-        process.exit(1);
-    });
+const filePath = "your_path/FoodData_Central_csv_2025-12-18/branded_food.csv";
 
-const fileStream = fs.createReadStream(
-    "your_path/FoodData_Central_branded_food_json_2025-04-24.json"
-);
+const BATCH_SIZE = 1000;
+let batch = [];
+let count = 0;
 
-const pipeline = chain([
-    fileStream,
-    parser(),
-    pick({ filter: "BrandedFoods" }),
-    streamArray()
-]);
+const FOOD_CSV_PATH =
+  "your_path/FoodData_Central_csv_2025-12-18/food.csv";
 
-pipeline.on("data", async ({ value }) => {
-    if (!value.ingredients) return;
+const loadFoodDescriptions = () => {
+  return new Promise((resolve, reject) => {
+    const foodMap = new Map();
 
-    const ingredientsArray = value.ingredients
+    fs.createReadStream(FOOD_CSV_PATH)
+      .pipe(csv())
+      .on("data", (row) => {
+        if (row.fdc_id && row.description) {
+          foodMap.set(row.fdc_id, row.description);
+        }
+      })
+      .on("end", () => {
+        console.log(`Loaded ${foodMap.size} food descriptions`);
+        resolve(foodMap);
+      })
+      .on("error", reject);
+  });
+};
+
+const startImport = async () => {
+  BrandedFood.db.once("connected", () => console.log("BrandedFoods DB ready"));
+  const foodDescriptions = await loadFoodDescriptions();
+
+  console.log("Starting import...");
+
+  const stream = fs.createReadStream(filePath)
+    .pipe(csv()); // default separator = comma
+
+  stream.on("data", async (row) => {
+    stream.pause();
+
+    try {
+      // skip header rows
+      if (!row.ingredients || row.fdc_id === "fdc_id") {
+        stream.resume();
+        return;
+      }
+
+      const ingredientsArray = row.ingredients
         .split(",")
         .map(i => i.trim())
-        .filter(i => i);
+        .filter(Boolean);
 
-    const food = new BrandedFood({
-        description: value.description || "Unnamed Food",
+        const description =
+        foodDescriptions.get(row.fdc_id) || row.description || "Unnamed Food";
+
+      const food = {
+        description,
         ingredients: ingredientsArray,
-        brandedFoodCategory: value.brandedFoodCategory || "Unknown",
-        brandName: value.brandName || "Unknown",
-        brandOwner: value.brandOwner || "Unknown",
-    });
+        brandedFoodCategory: row.branded_food_category || "Unknown",
+        brandOwner: row.brand_owner || "Unknown",
+      };
 
-    await food.save();
-    console.log(`Saved: ${food}`);
-});
+      batch.push(food);
 
-pipeline.on("end", () => {
-    console.log("All data inserted!");
-    mongoose.connection.close();
-});
+      if (batch.length >= BATCH_SIZE) {
+        await BrandedFood.insertMany(batch, { ordered: false });
+        count += batch.length;
+        console.log(`Inserted ${count} foods`);
+        batch = [];
+      }
+    } catch (err) {
+      console.error("Insert error:", err.message);
+    } finally {
+      stream.resume();
+    }
+  });
+
+  stream.on("end", async () => {
+    if (batch.length > 0) {
+      await BrandedFood.insertMany(batch, { ordered: false });
+      count += batch.length;
+    }
+    console.log(`Finished inserting ${count} foods`);
+    await BrandedFood.db.close();
+  });
+
+  stream.on("error", err => {
+    console.error("Stream error:", err);
+  });
+};
+
+startImport();

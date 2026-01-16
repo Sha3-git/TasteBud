@@ -1,26 +1,34 @@
 const mongoose = require("mongoose");
+require("dotenv").config();
+
+
+const brandedFoodsConnection = mongoose.createConnection(
+  process.env.MONGO_FOODS_URI);
+
+brandedFoodsConnection.on("connected", () =>
+  console.log("Foods DB connected")
+);
 
 const brandedFoodSchema = new mongoose.Schema({
-  description: { type: String, required: true },
-  ingredients: [{ type: String, required: true }],
+  ingredients: [String],
+  description: String,
   brandedFoodCategory: { type: String, required: true },
-  brandName: { type: String, required: true },
   brandOwner: { type: String, required: true }
 });
 
 brandedFoodSchema.index({
-  description: "text",
   ingredients: "text",
   brandName: "text",
+  brandedFoodCategory: "text",
   brandOwner: "text",
 }, {
   weights: {
-    description: 5,
     ingredients: 6,
-    brandName: 1,
+    brandedFoodCategory: 4,
+    description: 2,
     brandOwner: 1
   },
   name: "FoodTextIndex"
 });
 
-module.exports = mongoose.model("BrandedFood", brandedFoodSchema);
+module.exports = brandedFoodsConnection.model("BrandedFood", brandedFoodSchema);
