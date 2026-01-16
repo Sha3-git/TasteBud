@@ -2,15 +2,19 @@
  * APP NAVIGATOR
  * 
  * Handles all screen navigation using React Navigation.
- * lil update: it replaces the previous switch statement in App.tsx with proper navigation.
- * This is done to enable smooth transitions and a better user experience 
- * as well as deep linking capabilities and better UX for Android.
  * 
+ * Structure:
+ * - Stack Navigator: Onboarding flow (Splash → Auth → Home)
+ * - Tab Navigator: Main app screens (all show tab bar)
  */
 
 import React, { useState } from "react";
+import { View, Text } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "../theme/ThemeContext";
 
 // Onboarding screens
 import { SplashScreen } from "../screens/onboarding/SplashScreen";
@@ -27,13 +31,11 @@ import {
 // Home screens
 import { HomeScreen } from "../screens/home/HomeScreen";
 import { MealLogScreen } from "../screens/home/MealLogScreen";
-import { SymptomAnalysisScreen } from "../screens/home/SymptomAnalysisScreen";
-import { CrossReactivityScreen } from "../screens/home/CrossReactivityScreen";
 import { FoodLibraryScreen } from "../screens/home/FoodLibraryScreen";
 import { ProfileScreen } from "../screens/home/ProfileScreen";
 import { NotificationsScreen } from "../screens/home/NotificationsScreen";
 
-// Define all screens and their params
+// Type definitions
 export type RootStackParamList = {
   Splash: undefined;
   Auth: undefined;
@@ -43,19 +45,107 @@ export type RootStackParamList = {
   SetupProgress: undefined;
   WelcomeUser: { userName: string };
   GreatChoice: { userName: string };
-  Home: { userName: string };
-  MealLog: undefined;
-  SymptomAnalysis: undefined;
-  CrossReactivity: undefined;
-  FoodLibrary: undefined;
-  Profile: undefined;
+  MainApp: { userName: string };
   Notifications: undefined;
 };
 
+export type MainTabParamList = {
+  Home: { userName: string };
+  MealLog: undefined;
+  Scan: undefined;
+  Library: undefined;
+  Profile: undefined;
+};
+
 const Stack = createNativeStackNavigator<RootStackParamList>();
+const Tab = createBottomTabNavigator<MainTabParamList>();
+
+// Placeholder for Scan screen
+function ScanScreen() {
+  const { theme } = useTheme();
+  return (
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: theme.background }}>
+      <Ionicons name="camera" size={64} color={theme.textSecondary} />
+      <Text style={{ color: theme.textSecondary, marginTop: 16, fontSize: 18 }}>Scan Coming Soon</Text>
+    </View>
+  );
+}
+
+// Tab Navigator for main app
+function MainTabNavigator({ route }: { route: { params: { userName: string } } }) {
+  const { theme, isDark } = useTheme();
+  const userName = route.params?.userName || "User";
+
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName: keyof typeof Ionicons.glyphMap = "home";
+
+          if (route.name === "Home") {
+            iconName = focused ? "home" : "home-outline";
+          } else if (route.name === "MealLog") {
+            iconName = focused ? "restaurant" : "restaurant-outline";
+          } else if (route.name === "Scan") {
+            iconName = focused ? "camera" : "camera-outline";
+          } else if (route.name === "Library") {
+            iconName = focused ? "book" : "book-outline";
+          } else if (route.name === "Profile") {
+            iconName = focused ? "person" : "person-outline";
+          }
+
+          return <Ionicons name={iconName} size={size} color={color} />;
+        },
+        tabBarActiveTintColor: isDark ? "#FFFFFF" : "#000000",
+        tabBarInactiveTintColor: isDark ? "#888888" : "#888888",
+        tabBarStyle: {
+          position: "absolute",
+          bottom: 20,
+          left: 20,
+          right: 20,
+          height: 70,
+          borderRadius: 25,
+          backgroundColor: isDark ? "rgba(28, 28, 30, 0.95)" : "rgba(255, 255, 255, 0.95)",
+          borderTopWidth: 0,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.3,
+          shadowRadius: 8,
+          elevation: 8,
+          paddingBottom: 10,
+          paddingTop: 10,
+        },
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: "500",
+        },
+      })}
+    >
+      <Tab.Screen name="Home">
+        {() => <HomeScreen userName={userName} onNavigate={() => {}} />}
+      </Tab.Screen>
+      <Tab.Screen name="MealLog">
+        {() => <MealLogScreen onBack={() => {}} />}
+      </Tab.Screen>
+      <Tab.Screen name="Scan" component={ScanScreen} />
+      <Tab.Screen name="Library">
+        {() => <FoodLibraryScreen onBack={() => {}} />}
+      </Tab.Screen>
+      <Tab.Screen name="Profile">
+        {() => (
+          <ProfileScreen
+            onBack={() => {}}
+            onEditAllergies={() => {}}
+            onSignOut={() => {}}
+          />
+        )}
+      </Tab.Screen>
+    </Tab.Navigator>
+  );
+}
 
 export function AppNavigator() {
-  // Store user data during onboarding
   const [userData, setUserData] = useState({
     email: "",
     password: "",
@@ -76,7 +166,7 @@ export function AppNavigator() {
       >
         {/* Onboarding Flow */}
         <Stack.Screen name="Splash" component={SplashScreen} />
-        
+
         <Stack.Screen name="Auth">
           {({ navigation }) => (
             <AuthScreen
@@ -85,7 +175,7 @@ export function AppNavigator() {
                 setUserData({ ...userData, firstName: "Test User", lastName: "Demo" });
                 navigation.reset({
                   index: 0,
-                  routes: [{ name: "Home", params: { userName: "Test User" } }],
+                  routes: [{ name: "MainApp", params: { userName: "Test User" } }],
                 });
               }}
             />
@@ -127,7 +217,6 @@ export function AppNavigator() {
                   symptoms: allergyData.symptoms,
                 };
                 setUserData(updatedUserData);
-                console.log("✅ COMPLETE USER DATA:", updatedUserData);
                 navigation.navigate("SetupProgress");
               }}
             />
@@ -164,7 +253,7 @@ export function AppNavigator() {
               const timer = setTimeout(() => {
                 navigation.reset({
                   index: 0,
-                  routes: [{ name: "Home", params: { userName: route.params.userName } }],
+                  routes: [{ name: "MainApp", params: { userName: route.params.userName } }],
                 });
               }, 2500);
               return () => clearTimeout(timer);
@@ -173,67 +262,8 @@ export function AppNavigator() {
           }}
         </Stack.Screen>
 
-        {/* Main App Screens */}
-        <Stack.Screen name="Home">
-          {({ navigation, route }) => (
-            <HomeScreen
-              userName={route.params.userName}
-              onNavigate={(screen) => {
-                const screenMap: Record<string, keyof RootStackParamList> = {
-                  mealLog: "MealLog",
-                  symptomAnalysis: "SymptomAnalysis",
-                  crossReactivity: "CrossReactivity",
-                  foodLibrary: "FoodLibrary",
-                  profile: "Profile",
-                  notifications: "Notifications",
-                };
-                const targetScreen = screenMap[screen];
-                if (targetScreen) {
-                  navigation.navigate(targetScreen);
-                }
-              }}
-            />
-          )}
-        </Stack.Screen>
-
-        <Stack.Screen name="MealLog">
-          {({ navigation }) => (
-            <MealLogScreen onBack={() => navigation.goBack()} />
-          )}
-        </Stack.Screen>
-
-        <Stack.Screen name="SymptomAnalysis">
-          {({ navigation }) => (
-            <SymptomAnalysisScreen onBack={() => navigation.goBack()} />
-          )}
-        </Stack.Screen>
-
-        <Stack.Screen name="CrossReactivity">
-          {({ navigation }) => (
-            <CrossReactivityScreen onBack={() => navigation.goBack()} />
-          )}
-        </Stack.Screen>
-
-        <Stack.Screen name="FoodLibrary">
-          {({ navigation }) => (
-            <FoodLibraryScreen onBack={() => navigation.goBack()} />
-          )}
-        </Stack.Screen>
-
-        <Stack.Screen name="Profile">
-          {({ navigation }) => (
-            <ProfileScreen
-              onBack={() => navigation.goBack()}
-              onEditAllergies={() => navigation.navigate("AllergyDeclaration")}
-              onSignOut={() => {
-                navigation.reset({
-                  index: 0,
-                  routes: [{ name: "Auth" }],
-                });
-              }}
-            />
-          )}
-        </Stack.Screen>
+        {/* Main App with Tab Bar */}
+        <Stack.Screen name="MainApp" component={MainTabNavigator} />
 
         <Stack.Screen name="Notifications">
           {({ navigation }) => (
@@ -244,3 +274,4 @@ export function AppNavigator() {
     </NavigationContainer>
   );
 }
+
