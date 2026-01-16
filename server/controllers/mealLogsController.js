@@ -15,6 +15,7 @@ const updateMealLog = async (req, res) => {
     try {
         const updatedMealLog = await mealService.updateMealLog(req.params.id, req.body);
         if (!updatedMealLog) return res.status(404).json({ error: "Meal not found" });
+        res.status(200).json(updatedMealLog)
     } catch (err) {
         res.status(400).json({ error: err.message });
     }
@@ -25,7 +26,7 @@ const deleteMealLog = async (req, res) => {
     const deletedMealLog = await mealService.deleteMealLog(req.params.id);
     if (!deletedMealLog) return res.status(404).json({ error: "Meal not found" });
 
-     res.status(201).json(deletedMealLog);
+     res.status(200).json(deletedMealLog);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
