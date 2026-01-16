@@ -294,15 +294,14 @@ return (
 
       {/* Polished Tab Bar */}
       <LiquidGlassTabBar
-        tabs={tabs}
-        selectedTab={selectedTab}
-        onTabPress={(tabId) => {
-          setSelectedTab(tabId);
-          if (tabId !== "home") {
-            onNavigate(tabId);
-          }
-        }}
-      />
+      tabs={tabs}
+      selectedTab="home"
+      onTabPress={(tabId) => {
+        if (tabId !== "home") {
+          onNavigate(tabId);
+        }
+      }}
+    />
     </SafeAreaView>
   );
 }

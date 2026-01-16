@@ -97,47 +97,27 @@ function TabButton({
   isSelected: boolean; 
   onPress: () => void;
 }) {
-  const { theme } = useTheme();
-  const scale = useRef(new Animated.Value(1)).current;
+  const { theme, isDark } = useTheme();
   
-  const handlePressIn = () => {
-    Animated.spring(scale, {
-      toValue: 0.92,
-      useNativeDriver: true,
-      damping: 15,
-      stiffness: 400,
-    }).start();
-  };
-  
-  const handlePressOut = () => {
-    Animated.spring(scale, {
-      toValue: 1,
-      useNativeDriver: true,
-      damping: 15,
-      stiffness: 400,
-    }).start();
-  };
+  // Simple color: white in dark mode, black in light mode
+  const iconColor = isDark ? "#FFFFFF" : "#000000";
   
   return (
     <TouchableOpacity
       onPress={onPress}
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
-      activeOpacity={1}
+      activeOpacity={0.7}
       style={styles.tabButton}
     >
-      <Animated.View style={[styles.tabContent, { transform: [{ scale }] }]}>
+      <View style={styles.tabContent}>
         <Ionicons
           name={isSelected ? tab.iconFilled : tab.icon}
           size={24}
-          color={isSelected ? theme.primary : theme.textSecondary}
+          color={iconColor}
         />
-        {!isSelected && (
-          <Text style={[styles.tabLabel, { color: theme.textTertiary }]}>
-            {tab.label}
-          </Text>
-        )}
-      </Animated.View>
+        <Text style={[styles.tabLabel, { color: iconColor }]}>
+          {tab.label}
+        </Text>
+      </View>
     </TouchableOpacity>
   );
 }
