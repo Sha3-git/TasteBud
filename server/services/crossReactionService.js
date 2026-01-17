@@ -6,4 +6,4 @@ const getCrossReactions = async (ingredientId) => {
         return crossReactions;
 }
 
-module.exports(getCrossReactions)
+module.exports= {getCrossReactions}

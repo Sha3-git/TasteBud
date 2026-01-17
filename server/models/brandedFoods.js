@@ -17,13 +17,13 @@ const brandedFoodSchema = new mongoose.Schema({
 });
 
 brandedFoodSchema.index({
-  ingredients: "text",
-  brandName: "text",
+  //ingredients: "text",
+  description: "text",
   brandedFoodCategory: "text",
   brandOwner: "text",
 }, {
   weights: {
-    ingredients: 6,
+    //ingredients: 6,
     brandedFoodCategory: 4,
     description: 2,
     brandOwner: 1
