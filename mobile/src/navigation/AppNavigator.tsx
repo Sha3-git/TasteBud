@@ -4,14 +4,14 @@
  * Handles all screen navigation using React Navigation.
  * 
  * Structure:
- * - Stack Navigator: Onboarding flow (Splash → Auth → Home)
+ * - Stack Navigator: Onboarding flow + screens that overlay the tabs
  * - Tab Navigator: Main app screens (all show tab bar)
  */
 
 import React, { useState } from "react";
 import { View, Text } from "react-native";
-import { NavigationContainer } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { NavigationContainer, useNavigation } from "@react-navigation/native";
+import { createNativeStackNavigator, NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../theme/ThemeContext";
@@ -34,6 +34,8 @@ import { MealLogScreen } from "../screens/home/MealLogScreen";
 import { FoodLibraryScreen } from "../screens/home/FoodLibraryScreen";
 import { ProfileScreen } from "../screens/home/ProfileScreen";
 import { NotificationsScreen } from "../screens/home/NotificationsScreen";
+import { SymptomAnalysisScreen } from "../screens/home/SymptomAnalysisScreen";
+import { CrossReactivityScreen } from "../screens/home/CrossReactivityScreen";
 
 // Type definitions
 export type RootStackParamList = {
@@ -47,6 +49,8 @@ export type RootStackParamList = {
   GreatChoice: { userName: string };
   MainApp: { userName: string };
   Notifications: undefined;
+  SymptomAnalysis: undefined;
+  CrossReactivity: undefined;
 };
 
 export type MainTabParamList = {
@@ -68,6 +72,34 @@ function ScanScreen() {
       <Ionicons name="camera" size={64} color={theme.textSecondary} />
       <Text style={{ color: theme.textSecondary, marginTop: 16, fontSize: 18 }}>Scan Coming Soon</Text>
     </View>
+  );
+}
+
+// Home Screen wrapper with navigation
+function HomeScreenWrapper({ userName }: { userName: string }) {
+  const stackNavigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const tabNavigation = useNavigation<any>();
+  
+  return (
+    <HomeScreen
+      userName={userName}
+      onNavigate={(screen) => {
+        // Tab screens - use tab navigation
+        if (screen === "mealLog") {
+          tabNavigation.navigate("MealLog");
+        } else if (screen === "foodLibrary") {
+          tabNavigation.navigate("Library");
+        }
+        // Stack screens - use stack navigation
+        else if (screen === "symptomAnalysis") {
+          stackNavigation.navigate("SymptomAnalysis");
+        } else if (screen === "crossReactivity") {
+          stackNavigation.navigate("CrossReactivity");
+        } else if (screen === "notifications") {
+          stackNavigation.navigate("Notifications");
+        }
+      }}
+    />
   );
 }
 
@@ -123,24 +155,24 @@ function MainTabNavigator({ route }: { route: { params: { userName: string } } }
       })}
     >
       <Tab.Screen name="Home">
-        {() => <HomeScreen userName={userName} onNavigate={() => {}} />}
+  {() => <HomeScreenWrapper userName={userName} />}
       </Tab.Screen>
       <Tab.Screen name="MealLog">
-        {() => <MealLogScreen onBack={() => {}} />}
+        {({ navigation }) => <MealLogScreen onBack={() => navigation.navigate("Home")} />}
       </Tab.Screen>
       <Tab.Screen name="Scan" component={ScanScreen} />
       <Tab.Screen name="Library">
-        {() => <FoodLibraryScreen onBack={() => {}} />}
+        {({ navigation }) => <FoodLibraryScreen onBack={() => navigation.navigate("Home")} />}
       </Tab.Screen>
       <Tab.Screen name="Profile">
-        {() => (
+        {({ navigation }) => (
           <ProfileScreen
-            onBack={() => {}}
+            onBack={() => navigation.navigate("Home")}
             onEditAllergies={() => {}}
             onSignOut={() => {}}
           />
-        )}
-      </Tab.Screen>
+  )}
+    </Tab.Screen>
     </Tab.Navigator>
   );
 }
@@ -265,13 +297,25 @@ export function AppNavigator() {
         {/* Main App with Tab Bar */}
         <Stack.Screen name="MainApp" component={MainTabNavigator} />
 
+        {/* Overlay Screens (no tab bar) */}
         <Stack.Screen name="Notifications">
           {({ navigation }) => (
             <NotificationsScreen onBack={() => navigation.goBack()} />
+          )}
+        </Stack.Screen>
+
+        <Stack.Screen name="SymptomAnalysis">
+          {({ navigation }) => (
+            <SymptomAnalysisScreen onBack={() => navigation.goBack()} />
+          )}
+        </Stack.Screen>
+
+        <Stack.Screen name="CrossReactivity">
+          {({ navigation }) => (
+            <CrossReactivityScreen onBack={() => navigation.goBack()} />
           )}
         </Stack.Screen>
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
-
