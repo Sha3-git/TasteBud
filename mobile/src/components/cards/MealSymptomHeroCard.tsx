@@ -1,4 +1,4 @@
-import React, {  useRef } from 'react';
+import React, { useRef } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,37 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import Svg, { Path } from 'react-native-svg';
+
+/**
+ * MEAL SYMPTOM HERO CARD
+ * 
+ * Shows meal count with 3 progress arcs around the circle.
+ * - 3 arcs represent 3 main meals (breakfast, lunch, dinner)
+ * - Arcs light up as meals are logged (max 3 lit)
+ * - Number in center shows actual count (can exceed 3)
+ */
+
+// Helper function to create an arc path
+function createArc(
+  centerX: number,
+  centerY: number,
+  radius: number,
+  startAngle: number,
+  endAngle: number
+): string {
+  const start = {
+    x: centerX + radius * Math.cos((startAngle * Math.PI) / 180),
+    y: centerY + radius * Math.sin((startAngle * Math.PI) / 180),
+  };
+  const end = {
+    x: centerX + radius * Math.cos((endAngle * Math.PI) / 180),
+    y: centerY + radius * Math.sin((endAngle * Math.PI) / 180),
+  };
+  const largeArcFlag = endAngle - startAngle > 180 ? 1 : 0;
+
+  return `M ${start.x} ${start.y} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${end.x} ${end.y}`;
+}
 
 export function MealSymptomHeroCard({
   mealCount,
@@ -21,7 +52,7 @@ export function MealSymptomHeroCard({
   isDark: boolean;
 }) {
   const scale = useRef(new Animated.Value(1)).current;
-  
+
   const handlePressIn = () => {
     Animated.spring(scale, {
       toValue: 0.98,
@@ -30,7 +61,7 @@ export function MealSymptomHeroCard({
       stiffness: 400,
     }).start();
   };
-  
+
   const handlePressOut = () => {
     Animated.spring(scale, {
       toValue: 1,
@@ -39,9 +70,26 @@ export function MealSymptomHeroCard({
       stiffness: 400,
     }).start();
   };
-  
+
+  // Arc configuration
+  const size = 160;
+  const center = size / 2;
+  const radius = 65;
+  const strokeWidth = 8;
+  const gap = 12; // Gap between arcs in degrees
+  const arcLength = (360 - gap * 3) / 3; // Each arc spans this many degrees
+
+  // Calculate how many arcs should be filled (max 3)
+  const filledArcs = Math.min(mealCount, 3);
+
+  // Generate 3 arcs starting from top (-90 degrees)
+  const arcs = [
+    { start: -90, end: -90 + arcLength },
+    { start: -90 + arcLength + gap, end: -90 + arcLength * 2 + gap },
+    { start: -90 + arcLength * 2 + gap * 2, end: -90 + arcLength * 3 + gap * 2 },
+  ];
+
   return (
-    
     <TouchableOpacity
       onPress={onPress}
       onPressIn={handlePressIn}
@@ -59,19 +107,41 @@ export function MealSymptomHeroCard({
             <Text style={styles.heroTitle}>Meal & Symptom Logs</Text>
             <Ionicons name="restaurant" size={24} color="#92400E" />
           </View>
-          
-          {/* Big Radial Display */}
+
+          {/* Radial Display with Arcs */}
           <View style={styles.heroRadial}>
-            <View style={styles.heroCircle}>
-              <Text style={styles.heroValue}>{mealCount}</Text>
-              <Text style={styles.heroSubtext}>meals today</Text>
+            <View style={styles.circleContainer}>
+              {/* SVG Arcs */}
+              <Svg width={size} height={size} style={styles.svgContainer}>
+                {arcs.map((arc, index) => (
+                  <Path
+                    key={index}
+                    d={createArc(center, center, radius, arc.start, arc.end)}
+                    stroke={index < filledArcs ? '#92400E' : 'rgba(146, 64, 14, 0.25)'}
+                    strokeWidth={strokeWidth}
+                    strokeLinecap="round"
+                    fill="none"
+                  />
+                ))}
+              </Svg>
+
+              {/* Center Content */}
+              <View style={styles.centerContent}>
+                <Text style={styles.heroValue}>{mealCount}</Text>
+                <Text style={styles.heroSubtext}>meals today</Text>
+              </View>
             </View>
           </View>
-          
+
           {/* Bottom Stats */}
           <View style={styles.heroBottom}>
             <View style={styles.heroStat}>
-              <View style={[styles.heroDot, { backgroundColor: reacCount > 0 ? '#EF4444' : '#22C55E' }]} />
+              <View
+                style={[
+                  styles.heroDot,
+                  { backgroundColor: reacCount > 0 ? '#EF4444' : '#22C55E' },
+                ]}
+              />
               <Text style={styles.heroStatText}>
                 <Text style={styles.heroStatBold}>{reacCount}</Text> reactions
               </Text>
@@ -87,15 +157,11 @@ export function MealSymptomHeroCard({
   );
 }
 
-const styles = StyleSheet.create({ 
-    heroSection: {
-    paddingHorizontal: 24,
-    marginBottom: 32,
-  },
+const styles = StyleSheet.create({
   heroCard: {
     borderRadius: 32,
     padding: 24,
-    minHeight: 260,
+    minHeight: 280,
     justifyContent: 'space-between',
   },
   heroTop: {
@@ -110,21 +176,23 @@ const styles = StyleSheet.create({
   },
   heroRadial: {
     alignItems: 'center',
-    paddingVertical: 16,
+    paddingVertical: 8,
   },
-  heroCircle: {
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    backgroundColor: 'rgba(255,255,255,0.3)',
-    borderWidth: 8,
-    borderColor: '#F59E0B',
-    borderStyle: 'dashed',
+  circleContainer: {
+    width: 160,
+    height: 160,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  svgContainer: {
+    position: 'absolute',
+  },
+  centerContent: {
     justifyContent: 'center',
     alignItems: 'center',
   },
   heroValue: {
-    fontSize: 56,
+    fontSize: 52,
     fontWeight: '700',
     color: '#92400E',
   },
@@ -132,7 +200,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     color: '#92400E',
-    marginTop: 4,
+    marginTop: 2,
   },
   heroBottom: {
     flexDirection: 'row',
@@ -165,5 +233,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#92400E',
-  }
-})
+  },
+});

@@ -16,11 +16,12 @@ import {
   StatusBar,
   TouchableOpacity,
   ScrollView,
-  SafeAreaView,
   TextInput,
   Animated,
   Modal,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useTheme } from "../../theme/ThemeContext";
@@ -466,7 +467,7 @@ const styles = StyleSheet.create({
 
   fab: {
     position: "absolute",
-    bottom: 32,
+    bottom: 110,
     right: 24,
     width: 64,
     height: 64,
