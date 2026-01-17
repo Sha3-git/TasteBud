@@ -28,7 +28,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useTheme } from "../../theme/ThemeContext";
-import { LiquidGlassTabBar } from "../../components/modules/LiquidGlassTabBar";
 
 import { MealSymptomHeroCard } from "../../components/cards/MealSymptomHeroCard";
 import { WeekCalendar } from "../../components/modules/WeekCalendar";
@@ -71,32 +70,6 @@ export function HomeScreen({ userName, onNavigate }: HomeScreenProps) {
   const userId = "69173dd5a3866b85b59d9760";
   const { stats, loading, error, refetch } = getMealLogByDay(today, userId);
 
-  const tabs = [
-    {
-      id: "home",
-      icon: "home-outline" as const,
-      iconFilled: "home" as const,
-      label: "Home",
-    },
-    {
-      id: "scan",
-      icon: "camera-outline" as const,
-      iconFilled: "camera" as const,
-      label: "Scan",
-    },
-    {
-      id: "library",
-      icon: "book-outline" as const,
-      iconFilled: "book" as const,
-      label: "Library",
-    },
-    {
-      id: "profile",
-      icon: "person-outline" as const,
-      iconFilled: "person" as const,
-      label: "You",
-    },
-  ];
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -293,15 +266,6 @@ return (
       </ScrollView>
 
       {/* Polished Tab Bar */}
-      <LiquidGlassTabBar
-      tabs={tabs}
-      selectedTab="home"
-      onTabPress={(tabId) => {
-        if (tabId !== "home") {
-          onNavigate(tabId);
-        }
-      }}
-    />
     </SafeAreaView>
   );
 }
