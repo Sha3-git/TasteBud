@@ -3,7 +3,7 @@ const unsafeFoodsService = require("../services/unsafeFoodsService");
 const getUnsafeFoods = async (req, res) => {
     try {
         const { userId } = req.query
-        const unsafeFoods = unsafeFoodsService.getUnsafeFoods(userId)
+        const unsafeFoods = await unsafeFoodsService.getUnsafeFoods(userId)
         if(!unsafeFoods)return res.status(404).json({ error: "Food not found" });
         res.status(201).json(unsafeFoods)
     }
@@ -16,7 +16,7 @@ const createUnsafeFood = async (req, res) => {
     try {
         const { userId } = req.query // const userId = req.user;
         const unsafeFoods = await unsafeFoodsService.createUnsafeFood(userId, req.body)
-        if (!updatedMealLog) return res.status(404).json({ error: "Food not found" });
+        if (!unsafeFoods) return res.status(404).json({ error: "Food not found" });
         res.status(201).json(unsafeFoods)
     }
     catch (err) {

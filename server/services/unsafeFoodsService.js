@@ -1,19 +1,19 @@
 const UnsafeFood = require("../models/unsafeFoods");
 
 const getUnsafeFoods = async (userId) => {
-    return await UnsafeFood.find({ userId, deleted: false })
+    
+    const result = await UnsafeFood.findOne({ userId: userId })
         .populate("ingredients.ingredient")
-        .limit(10);
+        return result;
 };
 
-const createUnsafeFood = async ({
+const createUnsafeFood = async (
     userId,
-    data,   
-}) => {
+    data   
+) => {
     return await UnsafeFood.findOneAndUpdate(
         {
-            userId,
-            "ingredients.ingredient": { $ne: data.ingredient },
+            userId: userId,
         },
         {
             $push: {
@@ -28,7 +28,9 @@ const createUnsafeFood = async ({
             upsert: true,
             new: true,
         }
-    ).populate("ingredients.ingredient");
+    ).populate({path: "ingredients.ingredient",
+        select: "name foodGroup foodSubgroup"
+    });
 };
 
 const updateUnsafeFood = async ({ id, ingredient, status, preExisting }) => {
