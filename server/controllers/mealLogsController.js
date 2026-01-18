@@ -4,7 +4,6 @@ const createMealLog = async (req, res) => {
     try {
       const {userId} = req.query // const userId = req.user;
         const mealLog = await mealService.createMealLog(userId, req.body);
-        
         res.status(201).json(mealLog);
     } catch (err) {
         res.status(400).json({ error: err.message });

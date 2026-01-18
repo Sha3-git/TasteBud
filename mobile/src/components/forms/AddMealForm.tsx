@@ -14,6 +14,8 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useTheme } from "../../theme/ThemeContext";
+import { useSearchIngredients } from "../../hooks/useSearchIngredients";
+import { FlatList } from "react-native";
 
 export function AddMealForm({
   theme,
@@ -35,6 +37,8 @@ export function AddMealForm({
   removeSymptom,
   handleComplete,
 }: any) {
+  const [showDropdown, setShowDropdown] = useState(false);
+  const results = useSearchIngredients(ingredientInput);
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: theme.background }]}
@@ -118,7 +122,7 @@ export function AddMealForm({
             </View>
 
             <Text style={[styles.miniLabel, { color: theme.textSecondary }]}>
-              Search common products
+              Search for ingredients
             </Text>
             <View style={styles.searchContainer}>
               <TextInput
@@ -130,14 +134,45 @@ export function AddMealForm({
                     borderColor: theme.border,
                   },
                 ]}
-                placeholder="Search for products (e.g cheerios)"
+                placeholder="Search for ingredients (e.g wheat)"
                 placeholderTextColor={theme.textTertiary}
                 value={ingredientInput}
-                onChangeText={setIngredientInput}
-                onSubmitEditing={addIngredient}
+                onChangeText={(text) => {
+                  setIngredientInput(text);
+                  setShowDropdown(true);
+                }}
                 returnKeyType="done"
               />
             </View>
+            {showDropdown && (
+              <View style={[styles.dropdown, { backgroundColor: theme.card }]}>
+                {results.length > 0 ? (
+                  <FlatList
+                    keyboardShouldPersistTaps="handled"
+                    data={results}
+                    keyExtractor={(item) => item._id}
+                    renderItem={({ item }) => (
+                      <TouchableOpacity
+                        style={styles.dropdownItem}
+                        onPress={() => {
+                          addIngredient(item.name);
+                        }}
+                      >
+                        <Text style={{ color: theme.textPrimary }}>
+                          {item.name}
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                  />
+                ) : (
+                  <View style={styles.dropdownItem}>
+                    <Text style={{ color: theme.textSecondary }}>
+                      No ingredient found
+                    </Text>
+                  </View>
+                )}
+              </View>
+            )}
 
             {ingredients.length > 0 && (
               <View style={styles.tagsContainer}>
@@ -200,8 +235,8 @@ export function AddMealForm({
                         severity > 5
                           ? "#EF4444"
                           : severity > 3
-                          ? "#F59E0B"
-                          : "#22C55E",
+                            ? "#F59E0B"
+                            : "#22C55E",
                     },
                   ]}
                 />
@@ -301,7 +336,6 @@ export function AddMealForm({
             )}
           </View>
 
-          {/* ✅ WORKING COMPLETE BUTTON */}
           <TouchableOpacity
             onPress={handleComplete}
             disabled={!mealName.trim() || ingredients.length === 0}
@@ -312,8 +346,8 @@ export function AddMealForm({
                 !mealName.trim() || ingredients.length === 0
                   ? [theme.border, theme.border]
                   : isDark
-                  ? ["#22C55E", "#16A34A"]
-                  : ["#86EFAC", "#4ADE80"]
+                    ? ["#22C55E", "#16A34A"]
+                    : ["#86EFAC", "#4ADE80"]
               }
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
@@ -448,7 +482,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "700",
   },
-    input: {
+  input: {
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
@@ -539,5 +573,17 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: "700",
+  },
+  dropdown: {
+    width: "100%",
+    maxHeight: 200,
+    borderRadius: 8,
+    zIndex: 10,
+    elevation: 5,
+  },
+
+  dropdownItem: {
+    padding: 12,
+    borderBottomWidth: 1,
   },
 });

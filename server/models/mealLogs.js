@@ -24,7 +24,7 @@ const mealLogSchema = new mongoose.Schema({
     /*photoUrl: {
         type: String
     },*/
-    deleted: Boolean,
+    deleted: {type: Boolean, default: false},
     created: { type: Date, required: true},
     edited: Date,
 },

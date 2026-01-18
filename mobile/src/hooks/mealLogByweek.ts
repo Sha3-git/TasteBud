@@ -68,7 +68,6 @@ export function getMealLogByWeek(date: string, userId: string) {
       try {
         const mealRes = await mealLogService.getMealLogByWeek({ date, userId });
         const mealLogs = mealRes.data;
-        console.log(mealLogs)
         //mealLogService.forEach((meal) =>{})
         const meals: Meal[] = mealLogs.map((log: any) => ({
           id: log._id,

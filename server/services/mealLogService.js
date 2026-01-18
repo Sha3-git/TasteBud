@@ -7,8 +7,8 @@ const createMealLog = async (userId, data) => {
     ...data,
     created: new Date(),
   }
-  console.log(input)
-  return await MealLog.create(input);
+  const result = await MealLog.create(input);
+  return result
 };
 
 const updateMealLog = async (id, updateData) => {
@@ -44,14 +44,11 @@ async function getMealLogsInRange(userId, start, end, page = 1, limit = 10) {
     .limit(limit)
     .sort({ created: -1 });
 
-    console.log(result)
     return result
 }
 
 async function getMealLogByDay(userId, date, page = 1, limit = 10) {
   const { start, end } = dayRange(date);
-  console.log(date)
-  console.log(start + " | " + end)
   return getMealLogsInRange(userId, start, end, page, limit);
 }
 

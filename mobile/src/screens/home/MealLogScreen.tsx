@@ -1,14 +1,4 @@
-/**
- * MEAL LOG SCREEN - FULLY FUNCTIONAL
- *
- * Features:
- * - Working month/year selector
- * - Functional complete button (adds meal to list)
- * - Edit and delete meal functionality
- * - Collapsible calendar view
- */
-
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -20,6 +10,8 @@ import {
   Animated,
   Modal,
 } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
+
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Ionicons } from "@expo/vector-icons";
@@ -33,7 +25,7 @@ import { MonthPicker } from "../../components/modals/MonthPicker";
 
 import { getMealLogByDay } from "../../hooks/mealLogByDay";
 import { getMealLogByWeek } from "../../hooks/mealLogByweek";
-
+import { createMealLog } from "../../hooks/createMealLog";
 interface MealLogScreenProps {
   onBack: () => void;
 }
@@ -59,8 +51,6 @@ interface DayLog {
 export function MealLogScreen({ onBack }: MealLogScreenProps) {
   const { theme, isDark } = useTheme();
 
-  // Month/Year state
-
   const currentDate = new Date();
   const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth());
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
@@ -69,7 +59,6 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
   const [isAddingMeal, setIsAddingMeal] = useState(false);
   const [editingMealId, setEditingMealId] = useState<string | null>(null);
 
-  // Form state
   const [mealName, setMealName] = useState("");
   const [ingredients, setIngredients] = useState<string[]>([]);
   const [ingredientInput, setIngredientInput] = useState("");
@@ -80,8 +69,18 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
   >([]);
 
   const today = new Date().toISOString().split("T")[0];
-  const userId = "69173dd5a3866b85b59d9760";
-const { dayLogs: fetchedLogs, loading, error, refetch } = getMealLogByDay(today, userId);
+  const {
+    dayLogs: fetchedLogs,
+    loading,
+    error,
+    refetch,
+  } = getMealLogByDay(today);
+
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [refetch]),
+  );
   /*const [dayLogs, setDayLogs] = useState<DayLog[]>([
     {
       date: new Date(2021, 6, 19),
@@ -127,19 +126,20 @@ const { dayLogs: fetchedLogs, loading, error, refetch } = getMealLogByDay(today,
     }
   }, [fetchedLogs]);
 
-  console.log("fetched logs: " + JSON.stringify(fetchedLogs));
   const toggleDay = (index: number) => {
     setDayLogs(
       dayLogs.map((day, i) =>
-        i === index ? { ...day, isExpanded: !day.isExpanded } : day
-      )
+        i === index ? { ...day, isExpanded: !day.isExpanded } : day,
+      ),
     );
   };
 
-  const addIngredient = () => {
-    if (ingredientInput.trim()) {
-      setIngredients([...ingredients, ingredientInput.trim()]);
+  const addIngredient = (ingredient: string) => {
+    const valueToAdd = ingredient?.trim() || ingredientInput.trim();
+    if (valueToAdd && !ingredients.includes(valueToAdd)) {
+      setIngredients([...ingredients, valueToAdd]);
       setIngredientInput("");
+      //setShowDropdown(false);
     }
   };
 
@@ -173,10 +173,9 @@ const { dayLogs: fetchedLogs, loading, error, refetch } = getMealLogByDay(today,
     setSymptoms(symptoms.filter((_, i) => i !== index));
   };
 
-  // ✅ WORKING COMPLETE BUTTON
   const handleComplete = () => {
     if (!mealName.trim() || ingredients.length === 0) {
-      return; // Validation
+      return;
     }
 
     const now = new Date();
@@ -192,24 +191,21 @@ const { dayLogs: fetchedLogs, loading, error, refetch } = getMealLogByDay(today,
       time: timeString,
       ingredients: ingredients,
       symptoms: symptoms,
-      unsafeIngredients: [], // TODO: Calculate from backend
+      unsafeIngredients: [],
       color: symptoms.length > 0 ? "#FF9E80" : "#9ACD32",
     };
 
-    // Find today's day log or create one
     const today = new Date();
     const todayIndex = dayLogs.findIndex(
-      (day) => day.date.toDateString() === today.toDateString()
+      (day) => day.date.toDateString() === today.toDateString(),
     );
 
     if (todayIndex >= 0) {
-      // Add to existing day
       const updatedDayLogs = [...dayLogs];
       updatedDayLogs[todayIndex].meals.push(newMeal);
       updatedDayLogs[todayIndex].isExpanded = true;
       setDayLogs(updatedDayLogs);
     } else {
-      // Create new day log
       const dayNames = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
       const newDayLog: DayLog = {
         date: today,
@@ -221,26 +217,22 @@ const { dayLogs: fetchedLogs, loading, error, refetch } = getMealLogByDay(today,
       setDayLogs([newDayLog, ...dayLogs]);
     }
 
-    // Reset form
     setMealName("");
     setIngredients([]);
     setSymptoms([]);
     setIsAddingMeal(false);
-
-    console.log("✅ Meal added:", newMeal);
+    createMealLog(today, mealName, ingredients);
+    console.log("Meal added:", newMeal);
   };
 
-  // ✅ DELETE MEAL
   const handleDeleteMeal = (dayIndex: number, mealId: string) => {
     const updatedDayLogs = [...dayLogs];
     updatedDayLogs[dayIndex].meals = updatedDayLogs[dayIndex].meals.filter(
-      (meal) => meal.id !== mealId
+      (meal) => meal.id !== mealId,
     );
     setDayLogs(updatedDayLogs);
-    console.log("🗑️ Meal deleted:", mealId);
   };
 
-  // ✅ EDIT MEAL
   const handleEditMeal = (dayIndex: number, meal: Meal) => {
     setMealName(meal.name);
     setIngredients(meal.ingredients);
@@ -248,17 +240,14 @@ const { dayLogs: fetchedLogs, loading, error, refetch } = getMealLogByDay(today,
     setEditingMealId(meal.id);
     setIsAddingMeal(true);
 
-    // Delete the old meal
     handleDeleteMeal(dayIndex, meal.id);
 
     console.log("✏️ Editing meal:", meal.id);
   };
 
-  // ✅ MONTH/YEAR NAVIGATION
   const goToPreviousMonth = () => {
     if (selectedMonth === 0) {
       setSelectedMonth(11);
-      //setSelectedYear(selectedYear - 1);
     } else {
       setSelectedMonth(selectedMonth - 1);
     }
@@ -267,7 +256,6 @@ const { dayLogs: fetchedLogs, loading, error, refetch } = getMealLogByDay(today,
   const goToNextMonth = () => {
     if (selectedMonth === 11) {
       setSelectedMonth(0);
-      //setSelectedYear(selectedYear + 1);
     } else {
       setSelectedMonth(selectedMonth + 1);
     }
@@ -303,52 +291,78 @@ const { dayLogs: fetchedLogs, loading, error, refetch } = getMealLogByDay(today,
       />
     );
   }
-// Show loading spinner while fetching data
-if (loading) {
-  return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text style={{ color: theme.textSecondary, fontSize: 16 }}>Loading meals...</Text>
-      </View>
-    </SafeAreaView>
-  );
-}
+  if (loading) {
+    return (
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: theme.background }]}
+      >
+        <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <Text style={{ color: theme.textSecondary, fontSize: 16 }}>
+            Loading meals...
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
-// Show error message if something went wrong
-if (error) {
-  return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 24 }}>
-        <Text style={{ color: theme.danger, fontSize: 18, fontWeight: "600", marginBottom: 8 }}>
-          Oops!
-        </Text>
-        <Text style={{ color: theme.textSecondary, fontSize: 14, textAlign: "center", marginBottom: 16 }}>
-          {error}
-        </Text>
-        <TouchableOpacity
-          onPress={refetch}
+  if (error) {
+    return (
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: theme.background }]}
+      >
+        <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
+        <View
           style={{
-            backgroundColor: theme.primary,
-            paddingHorizontal: 24,
-            paddingVertical: 12,
-            borderRadius: 8,
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 24,
           }}
         >
-          <Text style={{ color: "#FFF", fontWeight: "600" }}>Try Again</Text>
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
-  );
-}
+          <Text
+            style={{
+              color: theme.danger,
+              fontSize: 18,
+              fontWeight: "600",
+              marginBottom: 8,
+            }}
+          >
+            Oops!
+          </Text>
+          <Text
+            style={{
+              color: theme.textSecondary,
+              fontSize: 14,
+              textAlign: "center",
+              marginBottom: 16,
+            }}
+          >
+            {error}
+          </Text>
+          <TouchableOpacity
+            onPress={refetch}
+            style={{
+              backgroundColor: theme.primary,
+              paddingHorizontal: 24,
+              paddingVertical: 12,
+              borderRadius: 8,
+            }}
+          >
+            <Text style={{ color: "#FFF", fontWeight: "600" }}>Try Again</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: theme.background }]}
     >
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
 
-      {/* Header - CLEANED UP */}
       <View style={styles.header}>
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
           <Ionicons name="chevron-back" size={28} color={theme.textPrimary} />

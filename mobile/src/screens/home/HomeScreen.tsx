@@ -1,19 +1,4 @@
-/**
- * HOME SCREEN - FINAL POLISHED VERSION
- *
- * Priority Features:
- * 1. Meal & Symptom Logs (hero card)
- * 2. Symptom Analysis
- * 3. Cross Reactive Foods
- * 4. Food Library (unsafe foods)
- *
- * Backend Integration Ready:
- * - All values default to 0 if no data
- * - Easy prop passing for backend team
- * - Clear TODO comments for API endpoints
- */
-
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -21,12 +6,10 @@ import {
   StatusBar,
   TouchableOpacity,
   ScrollView,
-  Animated,
   Dimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
 import { useTheme } from "../../theme/ThemeContext";
 
 import { MealSymptomHeroCard } from "../../components/cards/MealSymptomHeroCard";
@@ -46,29 +29,12 @@ const { width } = Dimensions.get("window");
 
 export function HomeScreen({ userName, onNavigate }: HomeScreenProps) {
   const { theme, isDark } = useTheme();
-  const [selectedTab, setSelectedTab] = useState("home");
   const [selectedDate, setSelectedDate] = useState(new Date());
 
-  /**
-   * TODO BACKEND: Replace these with API data
-   *
-   * API Endpoint: GET /api/users/{userId}/stats?date={YYYY-MM-DD}
-   * Response should include:
-   * {
-   *   mealCount: number,
-   *   reacCount: number,
-   *   unsafeFoodsCount: number,
-   *   crossReactiveCount: number,
-   *   recentSymptoms: string[],
-   *   proteinGrams: number,
-   *   carbsGrams: number,
-   *   caloriesKcal: number
-   * }
-   */
+
 
   const today = new Date().toISOString().split("T")[0];
-  const userId = "69173dd5a3866b85b59d9760";
-  const { stats, loading, error, refetch } = getMealLogByDay(today, userId);
+  const { stats, loading, error, refetch } = getMealLogByDay(today);
 
 
   const getGreeting = () => {
@@ -78,7 +44,6 @@ export function HomeScreen({ userName, onNavigate }: HomeScreenProps) {
     return "Good evening";
   };
 
-  // Show loading spinner while fetching data
 if (loading) {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
@@ -90,7 +55,6 @@ if (loading) {
   );
 }
 
-// Show error message if something went wrong
 if (error) {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
