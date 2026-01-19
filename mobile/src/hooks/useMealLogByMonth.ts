@@ -22,7 +22,7 @@ export interface Meal {
   color: string;
 }
 
-export interface DayLog {
+export interface MonthLog {
   date: Date;
   dayName: string;
   dayNumber: number;
@@ -32,13 +32,13 @@ export interface DayLog {
 
 interface UseMealLogByDayReturn {
   stats: Stats;
-  dayLogs: DayLog[];
+  monthLogs: MonthLog[];
   loading: boolean;
   error: string | null;
   refetch: () => void;
 }
 
-export function getMealLogByDay(date: string): UseMealLogByDayReturn {
+export function useMealLogByMonth(year: number, month: number): UseMealLogByDayReturn {
   const [stats, setStats] = useState<Stats>({
     mealCount: 0,
     reacCount: 0,
@@ -48,19 +48,20 @@ export function getMealLogByDay(date: string): UseMealLogByDayReturn {
     carbsGrams: 0,
     caloriesKcal: 0,
   });
-  const [dayLogs, setDayLogs] = useState<DayLog[]>([]);
+  const [monthLogs, setMonthLogs] = useState<MonthLog[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const userId = "69173dd5a3866b85b59d9760";
 
   const [refreshCounter, setRefreshCounter] = useState(0);
-  console.log("From mealLogByDay| today's date: " + date);
+  
   const refetch = useCallback(() => {
     setRefreshCounter((prev) => prev + 1);
   }, []);
 
   useEffect(() => {
     let isCancelled = false;
+    const date = "2026-01-18";
 
     const fetchDataSafe = async () => {
       if (!date || !userId) {
@@ -74,11 +75,9 @@ export function getMealLogByDay(date: string): UseMealLogByDayReturn {
       }
 
       try {
-        const [mealRes, reacRes] = await Promise.all([
-          mealLogService.getMealLogByDay({ date, userId }),
-          reactionService.getReactionByDay({ date, userId }),
-        ]);
 
+        const mealRes = await  mealLogService.getMealLogByMonth({ year, month, userId });
+        const reacRes = await reactionService.getReactionByDay({ date, userId });
         if (isCancelled) return;
 
         const mealLogs = mealRes.data;
@@ -132,8 +131,7 @@ export function getMealLogByDay(date: string): UseMealLogByDayReturn {
           groupedByDay[dayKey].push(meal);
         });
 
-        const dailyLogs: DayLog[] = Object.keys(groupedByDay).map((dayKey) => {
-          const firstMeal = groupedByDay[dayKey][0];
+        const monthlyLogs: MonthLog[] = Object.keys(groupedByDay).map((dayKey) => {
           const [year, month, day] = dayKey.split("-").map(Number);
           const dayDate = new Date(year, month - 1, day); 
           return {
@@ -147,7 +145,7 @@ export function getMealLogByDay(date: string): UseMealLogByDayReturn {
           };
         });
 
-        setDayLogs(dailyLogs);
+        setMonthLogs(monthlyLogs);
 
         setError(null);
       } catch (err) {
@@ -178,11 +176,11 @@ export function getMealLogByDay(date: string): UseMealLogByDayReturn {
     return () => {
       isCancelled = true;
     };
-  }, [date, userId, refreshCounter]);
+  }, [year, month, userId, refreshCounter]);
 
   return {
     stats,
-    dayLogs,
+    monthLogs,
     loading,
     error,
     refetch,

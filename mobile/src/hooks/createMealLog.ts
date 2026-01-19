@@ -21,7 +21,7 @@ export function createMealLog(
   const MealLog = {
     userId,
     mealName: mealName,
-    ingredients: [],
+    ingredients: ingredients,
     hadReaction: false,
     date: date,
   };

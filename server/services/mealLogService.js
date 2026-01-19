@@ -47,8 +47,8 @@ async function getMealLogsInRange(userId, start, end, page = 1, limit = 10) {
     return result
 }
 
-async function getMealLogByDay(userId, date, page = 1, limit = 10) {
-  const { start, end } = dayRange(date);
+async function getMealLogByDay(userId, date, page = 1, limit = 10, tzOffset) {
+  const { start, end } = dayRange(date, tzOffset);
   return getMealLogsInRange(userId, start, end, page, limit);
 }
 
@@ -59,6 +59,7 @@ async function getMealLogByWeek(userId, date, page = 1, limit = 10) {
 
 async function getMealLogByMonth(userId, year, month, page = 1, limit = 10) {
   const { start, end } = monthRange(year, month);
+  console.log("year month" + year + month)
   return getMealLogsInRange(userId, start, end, page, limit);
 }
 

@@ -13,7 +13,6 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { useTheme } from "../../theme/ThemeContext";
 import { useSearchIngredients } from "../../hooks/useSearchIngredients";
 import { FlatList } from "react-native";
 
@@ -36,8 +35,9 @@ export function AddMealForm({
   addSymptom,
   removeSymptom,
   handleComplete,
+  showDropdown,
+  setShowDropdown,
 }: any) {
-  const [showDropdown, setShowDropdown] = useState(false);
   const results = useSearchIngredients(ingredientInput);
   return (
     <SafeAreaView
@@ -144,9 +144,9 @@ export function AddMealForm({
                 returnKeyType="done"
               />
             </View>
-            {showDropdown && (
+            {showDropdown && ingredientInput.length > 0 &&(
               <View style={[styles.dropdown, { backgroundColor: theme.card }]}>
-                {results.length > 0 ? (
+                {results.length > 0  ? (
                   <FlatList
                     keyboardShouldPersistTaps="handled"
                     data={results}
@@ -155,7 +155,8 @@ export function AddMealForm({
                       <TouchableOpacity
                         style={styles.dropdownItem}
                         onPress={() => {
-                          addIngredient(item.name);
+                          setShowDropdown(false);
+                          addIngredient(item.name, item._id);
                         }}
                       >
                         <Text style={{ color: theme.textPrimary }}>

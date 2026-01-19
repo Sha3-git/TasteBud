@@ -10,6 +10,14 @@ const getReactionByDay = async (req, res) => {
   }
 }
 
+const createReaction = async (req, res) =>{
+  try{
+    const { userId, mealLogId } = req.query;
+    
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
 module.exports = {
     getReactionByDay
 }

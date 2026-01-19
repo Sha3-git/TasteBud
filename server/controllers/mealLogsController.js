@@ -60,12 +60,22 @@ const getMealLogByWeek = async (req, res) => {
   }
 }
 
-
+const getMealLogByMonth = async (req, res) =>{
+  try{
+    const { userId, year, month, page, limit } = req.query;
+    const meals = await mealService.getMealLogByMonth(userId, year, month, parseInt(page) || 1, parseInt(limit) || 10);
+    res.json(meals);
+  }
+  catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
 module.exports = {
   createMealLog,
   updateMealLog,
   deleteMealLog,
   getMealLogs,
   getMealLogByDay,
-  getMealLogByWeek
+  getMealLogByWeek,
+  getMealLogByMonth,
 }

@@ -24,7 +24,7 @@ import { MonthYearSelector } from "../../components/modules/MonthYearSelector";
 import { MonthPicker } from "../../components/modals/MonthPicker";
 
 import { getMealLogByDay } from "../../hooks/mealLogByDay";
-import { getMealLogByWeek } from "../../hooks/mealLogByweek";
+import { useMealLogByMonth } from "../../hooks/useMealLogByMonth";
 import { createMealLog } from "../../hooks/createMealLog";
 interface MealLogScreenProps {
   onBack: () => void;
@@ -61,6 +61,7 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
 
   const [mealName, setMealName] = useState("");
   const [ingredients, setIngredients] = useState<string[]>([]);
+  const [ingredientId, setIngredientId] = useState<string[]>([]);
   const [ingredientInput, setIngredientInput] = useState("");
   const [symptomInput, setSymptomInput] = useState("");
   const [severity, setSeverity] = useState(3);
@@ -69,56 +70,26 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
   >([]);
 
   const today = new Date().toISOString().split("T")[0];
+  const dateObj = new Date(today + "T00:00:00");
+
+  const month = dateObj.getMonth() + 1;
+  const year = dateObj.getFullYear();
+
   const {
-    dayLogs: fetchedLogs,
+    monthLogs: fetchedLogs,
     loading,
     error,
     refetch,
-  } = getMealLogByDay(today);
+  } = useMealLogByMonth(year, month);
 
   useFocusEffect(
     useCallback(() => {
       refetch();
     }, [refetch]),
   );
-  /*const [dayLogs, setDayLogs] = useState<DayLog[]>([
-    {
-      date: new Date(2021, 6, 19),
-      dayName: 'SAT',
-      dayNumber: 19,
-      isExpanded: true,
-      meals: [
-        {
-          id: '1',
-          name: 'Pancakes and eggs',
-          time: '4:05 PM',
-          ingredients: ['Cheerios', 'Eggs', 'Syrup', 'Wheat'],
-          symptoms: [
-            { name: 'itch', severity: 4, time: '3:50 PM' }
-          ],
-          unsafeIngredients: ['Eggs', 'Wheat'],
-          color: '#FF9E80',
-        },
-        {
-          id: '2',
-          name: 'Mac and cheese',
-          time: '4:05 PM',
-          ingredients: ['Cheerios', 'Eggs', 'Syrup', 'Wheat'],
-          symptoms: [],
-          unsafeIngredients: [],
-          color: '#9ACD32',
-        },
-      ],
-    },
-    {
-      date: new Date(2021, 6, 20),
-      dayName: 'SUN',
-      dayNumber: 20,
-      isExpanded: false,
-      meals: [],
-    },
-  ]);*/
+
   const [dayLogs, setDayLogs] = useState<DayLog[]>([]); //says day logs but is the meal log data for a month grouped by day
+  const [showDropdown, setShowDropdown] = useState(false);
 
   useEffect(() => {
     if (fetchedLogs) {
@@ -134,12 +105,13 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
     );
   };
 
-  const addIngredient = (ingredient: string) => {
+  const addIngredient = (ingredient: string, id: string) => {
     const valueToAdd = ingredient?.trim() || ingredientInput.trim();
     if (valueToAdd && !ingredients.includes(valueToAdd)) {
       setIngredients([...ingredients, valueToAdd]);
+      setIngredientId([...ingredientId, id]);
+      setShowDropdown(false);
       setIngredientInput("");
-      //setShowDropdown(false);
     }
   };
 
@@ -221,7 +193,7 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
     setIngredients([]);
     setSymptoms([]);
     setIsAddingMeal(false);
-    createMealLog(today, mealName, ingredients);
+    createMealLog(today, mealName, ingredientId);
     console.log("Meal added:", newMeal);
   };
 
@@ -288,6 +260,8 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
         addSymptom={addSymptom}
         removeSymptom={removeSymptom}
         handleComplete={handleComplete}
+        showDropdown={showDropdown}
+        setShowDropdown={setShowDropdown}
       />
     );
   }

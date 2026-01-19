@@ -3,6 +3,8 @@ import api from "./apiClient";
 interface MealParam {
   userId: string;
   date?: string;
+  year?: number;
+  month?: number;
   page?: number;
   limit?: number;
 }
@@ -29,6 +31,13 @@ export const mealLogService = {
 
     return api.get("/meallogs/weekly", {
       params: { userId, date, page, limit },
+    });
+  },
+  getMealLogByMonth: (params: MealParam) =>{
+     const { userId, year, month, page = 1, limit = 10 } = params;
+
+    return api.get("/meallogs/monthly", {
+      params: { userId, year, month, page, limit },
     });
   },
   createMealLog: (params: MealLog) => {

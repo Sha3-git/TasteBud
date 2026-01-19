@@ -12,8 +12,6 @@ export function useSearchIngredients(query: string) {
       }
 
       const result = await ingredientsService.search(query, limit);
-      console.log("result");
-      console.log(result.data);
       if (result.status == 200 && result.data) {
         setResults(result.data);
       }

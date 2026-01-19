@@ -3,9 +3,7 @@ const { dayRange, weekRange, monthRange, yearRange } = require("../utils/dateRan
 
 
 async function getReactionByDay(userId, date, page = 1, limit = 10) {
-  const { start, end } = dayRange(date);
-  console.log(date)
-  console.log(start + " | " + end)
+  const { start, end } = dayRange(date, tzOffset=360);
   return getReactionsInRange(userId, start, end, page, limit);
 }
 
@@ -26,7 +24,13 @@ async function getReactionsInRange(userId, start, end, page = 1, limit = 10) {
     return result
 }
 
+async function createReaction(userId, mealLogId, symptoms) {
+  const reaction = {
+    maelLogId: 
+  }
+}
 
 module.exports = {
   getReactionByDay,
+  createReaction
 };
