@@ -24,12 +24,20 @@ async function getReactionsInRange(userId, start, end, page = 1, limit = 10) {
     return result
 }
 
-async function createReaction(userId, mealLogId, symptoms) {
+async function createReaction(userId, data) {
   const reaction = {
-    maelLogId: 
+    userId,
+    mealLogId: data.mealLogId,
+    symptoms: data.symptoms,
+    created: new Date(),
   }
+  return await Reaction.create(reaction)
 }
-
+/**
+ * when a user creates a meal log an associated reaction is made for said meal log 
+ * the user can search symptoms and the ids are sent as an array of symptom ids
+ * then
+ */
 module.exports = {
   getReactionByDay,
   createReaction

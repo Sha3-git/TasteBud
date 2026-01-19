@@ -12,12 +12,14 @@ const getReactionByDay = async (req, res) => {
 
 const createReaction = async (req, res) =>{
   try{
-    const { userId, mealLogId } = req.query;
-    
+    const { userId } = req.query;
+    const reaction = await reactionService.createReaction(userId, req.body);
+    res.json(reaction);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 }
 module.exports = {
-    getReactionByDay
+    getReactionByDay,
+    createReaction
 }

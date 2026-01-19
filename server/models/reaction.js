@@ -9,10 +9,15 @@ const reactionSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Meallog"
     },
-    symptoms: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Symptom"
-    }],
+    symptoms: [
+        {
+            symptom: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "Symptom"
+            },
+            severity: Number
+        }
+    ],
     created: { type: Date, required: true },
     edited: Date
 })
