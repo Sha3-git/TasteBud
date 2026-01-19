@@ -6,6 +6,15 @@ interface ReacParam {
   page?: number;
   limit?: number;
 }
+interface Symptom {
+  symptom: string;
+  severity: number;
+}
+interface Reaction{
+  userId: string;
+  mealLogId: string;
+  symptoms: Array<Symptom>;
+}
 // send the userID via authentication bearer token
 
 export const reactionService = {
@@ -16,5 +25,14 @@ export const reactionService = {
       params: { userId, date, page, limit },
     });
   },
-  getReactionCountByDay: () => {}
+  getReactionCountByDay: () => {},
+  createReaction: (params: Reaction) =>{
+     return (
+      api.post("/reactions/create",
+      params,
+      {
+        params: { userId: params.userId },
+      })
+    );
+  }
 };
