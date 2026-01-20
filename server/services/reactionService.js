@@ -6,6 +6,10 @@ async function getReactionByDay(userId, date, page = 1, limit = 10) {
   const { start, end } = dayRange(date, tzOffset=360);
   return getReactionsInRange(userId, start, end, page, limit);
 }
+async function getReaction(mealLogId) {
+  const result = await Reaction.find({mealLogId: mealLogId})
+  return result;
+}
 
 async function getReactionsInRange(userId, start, end, page = 1, limit = 10) {
   const skip = (page - 1) * limit;
@@ -40,5 +44,6 @@ async function createReaction(userId, data) {
  */
 module.exports = {
   getReactionByDay,
-  createReaction
+  createReaction,
+  getReaction
 };
