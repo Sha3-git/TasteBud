@@ -22,7 +22,7 @@ interface Meal {
   name: string;
   time: string;
   ingredients: string[];
-  symptoms: { name: string; severity: number; time: string }[];
+  symptoms: { id: string, name: string; severity: number; time: string }[];
   unsafeIngredients: string[];
   color: string;
 }

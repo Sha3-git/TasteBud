@@ -14,6 +14,8 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSearchIngredients } from "../../hooks/useSearchIngredients";
+import { useSearchSymptom } from "../../hooks/useSymptom";
+import { SearchForm } from "./SearchForm";
 import { FlatList } from "react-native";
 
 export function AddMealForm({
@@ -39,6 +41,7 @@ export function AddMealForm({
   setShowDropdown,
 }: any) {
   const results = useSearchIngredients(ingredientInput);
+  const symptomRes = useSearchSymptom(symptomInput);
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: theme.background }]}
@@ -269,31 +272,18 @@ export function AddMealForm({
             </View>
 
             <View style={styles.symptomInputContainer}>
-              <TextInput
-                style={[
-                  styles.symptomInput,
-                  {
-                    backgroundColor: theme.card,
-                    color: theme.textPrimary,
-                    borderColor: theme.border,
-                  },
-                ]}
-                placeholder="itching, swelling"
-                placeholderTextColor={theme.textTertiary}
-                value={symptomInput}
-                onChangeText={setSymptomInput}
-              />
-              <TouchableOpacity
-                onPress={addSymptom}
-                style={[
-                  styles.addSymptomButton,
-                  { backgroundColor: theme.primary },
-                ]}
-              >
-                <Text style={styles.addSymptomButtonText}>add</Text>
-              </TouchableOpacity>
+     
             </View>
-
+            <SearchForm
+            theme={theme}
+            text={"Symptom"}
+            setInput={setSymptomInput}
+            input={symptomInput}
+            setShowDropdown={setShowDropdown}
+            addInput={addSymptom}
+            showDropdown={showDropdown}
+            results={symptomRes}
+            />
             {symptoms.length > 0 && (
               <View style={styles.symptomsAdded}>
                 <Text

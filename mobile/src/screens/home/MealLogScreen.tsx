@@ -6,16 +6,12 @@ import {
   StatusBar,
   TouchableOpacity,
   ScrollView,
-  TextInput,
-  Animated,
-  Modal,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Ionicons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
 import { useTheme } from "../../theme/ThemeContext";
 
 import { DayLogCard } from "../../components/cards/DayLogCard";
@@ -23,9 +19,10 @@ import { AddMealForm } from "../../components/forms/AddMealForm";
 import { MonthYearSelector } from "../../components/modules/MonthYearSelector";
 import { MonthPicker } from "../../components/modals/MonthPicker";
 
-import { getMealLogByDay } from "../../hooks/mealLogByDay";
 import { useMealLogByMonth } from "../../hooks/useMealLogByMonth";
-import { createMealLog } from "../../hooks/createMealLog";
+import { useCreateMealLog } from "../../hooks/useCreateMealLog";
+import { useCreateReaction } from "../../hooks/useCreateReaction";
+
 interface MealLogScreenProps {
   onBack: () => void;
 }
@@ -35,7 +32,7 @@ interface Meal {
   name: string;
   time: string;
   ingredients: string[];
-  symptoms: { name: string; severity: number; time: string }[];
+  symptoms: { id: string; name: string; severity: number; time: string }[];
   unsafeIngredients: string[];
   color: string;
 }
@@ -55,6 +52,8 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
   const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth());
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
   const [showMonthPicker, setShowMonthPicker] = useState(false);
+  const { createMealLog } = useCreateMealLog();
+  const { createReaction } = useCreateReaction();
 
   const [isAddingMeal, setIsAddingMeal] = useState(false);
   const [editingMealId, setEditingMealId] = useState<string | null>(null);
@@ -66,7 +65,7 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
   const [symptomInput, setSymptomInput] = useState("");
   const [severity, setSeverity] = useState(3);
   const [symptoms, setSymptoms] = useState<
-    { name: string; severity: number; time: string }[]
+    { id: string; name: string; severity: number; time: string }[]
   >([]);
 
   const today = new Date().toISOString().split("T")[0];
@@ -119,7 +118,7 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
     setIngredients(ingredients.filter((_, i) => i !== index));
   };
 
-  const addSymptom = () => {
+  const addSymptom = (symptom: string, id: string) => {
     if (symptomInput.trim()) {
       const now = new Date();
       const timeString = now.toLocaleTimeString("en-US", {
@@ -131,7 +130,8 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
       setSymptoms([
         ...symptoms,
         {
-          name: symptomInput.trim(),
+          id,
+          name: symptom,
           severity,
           time: timeString,
         },
@@ -145,7 +145,7 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
     setSymptoms(symptoms.filter((_, i) => i !== index));
   };
 
-  const handleComplete = () => {
+  const handleComplete = async () => {
     if (!mealName.trim() || ingredients.length === 0) {
       return;
     }
@@ -188,13 +188,22 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
       };
       setDayLogs([newDayLog, ...dayLogs]);
     }
+    const symptomPayload = symptoms.map((s) => ({
+      symptom: s.id,
+      severity: s.severity,
+    }));
+    const mealRes = await createMealLog(today, mealName, ingredientId);
+    if (symptomPayload.length > 0) {
+    console.log(symptomPayload.length > 0);
+
+      const createRes = await createReaction(mealRes._id, symptomPayload);
+      console.log("Reaction added:", createRes);
+    }
 
     setMealName("");
     setIngredients([]);
     setSymptoms([]);
     setIsAddingMeal(false);
-    createMealLog(today, mealName, ingredientId);
-    console.log("Meal added:", newMeal);
   };
 
   const handleDeleteMeal = (dayIndex: number, mealId: string) => {

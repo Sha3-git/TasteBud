@@ -17,7 +17,7 @@ export interface Meal {
   name: string;
   time: string;
   ingredients: string[];
-  symptoms: { name: string; severity: number; time: string }[];
+  symptoms: { id: string, name: string; severity: number; time: string }[];
   unsafeIngredients: string[];
   color: string;
 }
@@ -109,7 +109,7 @@ export function useMealLogByMonth(year: number, month: number): UseMealLogByDayR
           unsafeIngredients: log.ingredients
             .filter((i: any) => i.allergens?.length > 0)
             .map((i: any) => i.name),
-          color: log.reaction.length > 0 ? "#FFA07A" : "#22C55E",
+          color: log.reaction?.length > 0 ? "#FFA07A" : "#22C55E",
         }));
 
         // Group by local date as YYYY-MM-DD
