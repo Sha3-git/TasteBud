@@ -34,5 +34,10 @@ export const reactionService = {
         params: { userId: params.userId },
       })
     );
+  },
+  getReaction: (mealLogId: string) =>{
+    return(
+      api.get("reactions/",{ params: {mealLogId: mealLogId}})
+    )
   }
 };

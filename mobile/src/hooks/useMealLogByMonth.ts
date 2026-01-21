@@ -77,16 +77,14 @@ export function useMealLogByMonth(year: number, month: number): UseMealLogByDayR
       try {
 
         const mealRes = await  mealLogService.getMealLogByMonth({ year, month, userId });
-        const reacRes = await reactionService.getReactionByDay({ date, userId });
         if (isCancelled) return;
 
         const mealLogs = mealRes.data;
-        const reactions = reacRes.data;
 
         setStats((prev) => ({
           ...prev,
           mealCount: mealLogs.length,
-          reacCount: reactions.length,
+          reacCount: 0,
         }));
 
         const meals: Meal[] = mealLogs.map((log: any) => ({

@@ -12,8 +12,8 @@ const getReactionByDay = async (req, res) => {
 
 const getReaction = async (req, res) => {
   try{
-    const { mealLogid } = req.query;
-    const reactions = await reactionService.getReaction(mealLogid);
+    const { mealLogId } = req.query;
+    const reactions = await reactionService.getReaction(mealLogId);
     res.json(reactions);
   } catch (err) {
     res.status(500).json({ error: err.message });
