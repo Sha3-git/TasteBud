@@ -29,8 +29,19 @@ const createReaction = async (req, res) =>{
     res.status(500).json({ error: err.message });
   }
 }
+async function getSuspectedFoods(req, res) {
+  try {
+    const { userId } = req.query
+    const result = await reactionService.getSuspectedFoods(userId);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
 module.exports = {
     getReactionByDay,
     createReaction,
-    getReaction
+    getReaction,
+    getSuspectedFoods
 }

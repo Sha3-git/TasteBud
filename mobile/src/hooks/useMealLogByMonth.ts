@@ -17,7 +17,7 @@ export interface Meal {
   name: string;
   time: string;
   ingredients: string[];
-  symptoms: { id: string, name: string; severity: number; time: string }[];
+  symptoms: { id: string; name: string; severity: number; time: string }[];
   unsafeIngredients: string[];
   color: string;
 }
@@ -38,7 +38,10 @@ interface UseMealLogByDayReturn {
   refetch: () => void;
 }
 
-export function useMealLogByMonth(year: number, month: number): UseMealLogByDayReturn {
+export function useMealLogByMonth(
+  year: number,
+  month: number,
+): UseMealLogByDayReturn {
   const [stats, setStats] = useState<Stats>({
     mealCount: 0,
     reacCount: 0,
@@ -54,7 +57,7 @@ export function useMealLogByMonth(year: number, month: number): UseMealLogByDayR
   const userId = "69173dd5a3866b85b59d9760";
 
   const [refreshCounter, setRefreshCounter] = useState(0);
-  
+
   const refetch = useCallback(() => {
     setRefreshCounter((prev) => prev + 1);
   }, []);
@@ -75,8 +78,11 @@ export function useMealLogByMonth(year: number, month: number): UseMealLogByDayR
       }
 
       try {
-
-        const mealRes = await  mealLogService.getMealLogByMonth({ year, month, userId });
+        const mealRes = await mealLogService.getMealLogByMonth({
+          year,
+          month,
+          userId,
+        });
         if (isCancelled) return;
 
         const mealLogs = mealRes.data;
@@ -87,28 +93,35 @@ export function useMealLogByMonth(year: number, month: number): UseMealLogByDayR
           reacCount: 0,
         }));
 
-        const meals: Meal[] = mealLogs.map((log: any) => ({
-          id: log._id,
-          name: log.mealName,
-          time: new Date(log.created).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-          ingredients: log.ingredients.map((i: any) => i.name),
-          symptoms:
-            log.reaction?.map((r: any) => ({
-              name: r.symptom,
-              severity: r.severity ?? 0,
-              time: new Date(r.time).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              }),
-            })) || [],
-          unsafeIngredients: log.ingredients
-            .filter((i: any) => i.allergens?.length > 0)
-            .map((i: any) => i.name),
-          color: log.reaction?.length > 0 ? "#FFA07A" : "#22C55E",
-        }));
+        const meals: Meal[] = [];
+
+        for (const log of mealLogs) {
+          const reacRes = await reactionService.getReaction(log._id);
+          const reaction = reacRes.data;
+
+          meals.push({
+            id: log._id,
+            name: log.mealName,
+            time: new Date(log.created).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            ingredients: log.ingredients.map((i: any) => i.name),
+            symptoms:
+              reaction?.symptoms?.map((r: any) => ({
+                name: r.symptom.name,
+                severity: r.severity ?? 0,
+                time: new Date(reaction.created).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }),
+              })) || [],
+            unsafeIngredients: log.ingredients
+              .filter((i: any) => i.allergens?.length > 0)
+              .map((i: any) => i.name),
+            color: reaction?.symptoms?.length ? "#FFA07A" : "#22C55E",
+          });
+        }
 
         // Group by local date as YYYY-MM-DD
         const groupedByDay: Record<string, Meal[]> = {};
@@ -129,19 +142,21 @@ export function useMealLogByMonth(year: number, month: number): UseMealLogByDayR
           groupedByDay[dayKey].push(meal);
         });
 
-        const monthlyLogs: MonthLog[] = Object.keys(groupedByDay).map((dayKey) => {
-          const [year, month, day] = dayKey.split("-").map(Number);
-          const dayDate = new Date(year, month - 1, day); 
-          return {
-            date: dayDate,
-            dayName: dayDate
-              .toLocaleString("en-US", { weekday: "short" })
-              .toUpperCase(),
-            dayNumber: dayDate.getDate(),
-            meals: groupedByDay[dayKey],
-            isExpanded: true,
-          };
-        });
+        const monthlyLogs: MonthLog[] = Object.keys(groupedByDay).map(
+          (dayKey) => {
+            const [year, month, day] = dayKey.split("-").map(Number);
+            const dayDate = new Date(year, month - 1, day);
+            return {
+              date: dayDate,
+              dayName: dayDate
+                .toLocaleString("en-US", { weekday: "short" })
+                .toUpperCase(),
+              dayNumber: dayDate.getDate(),
+              meals: groupedByDay[dayKey],
+              isExpanded: true,
+            };
+          },
+        );
 
         setMonthLogs(monthlyLogs);
 

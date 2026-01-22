@@ -18,14 +18,16 @@ export function useCreateMealLog() {
     date: Date,
     mealName: string,
     ingredients: Array<string>,
+    hadReaction: Boolean
   ) => {
     const MealLog = {
       userId,
       mealName: mealName,
       ingredients: ingredients,
-      hadReaction: false,
+      hadReaction: hadReaction,
       date: date,
     };
+    console.log("from create Meal log meal payload| " + JSON.stringify(MealLog))
     const response = await mealLogService.createMealLog(MealLog);
     return response.data;
   };

@@ -26,7 +26,7 @@ const deleteMealLog = async (id) => {
 //implement daily weekly monthly yearly and pagination
 const getMealLogs = async (userId) => {
   return await MealLog.find({ userId: userId, deleted: false })
-    .populate("ingredients").limit(10);
+    .populate("ingredients", "name");
 };
 
 
@@ -59,7 +59,6 @@ async function getMealLogByWeek(userId, date, page = 1, limit = 10) {
 
 async function getMealLogByMonth(userId, year, month, page = 1, limit = 10) {
   const { start, end } = monthRange(year, month);
-  console.log("year month" + year + month)
   return getMealLogsInRange(userId, start, end, page, limit);
 }
 
