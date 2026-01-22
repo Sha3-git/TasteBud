@@ -42,8 +42,28 @@ async function createReaction(userId, data) {
  * the user can search symptoms and the ids are sent as an array of symptom ids
  * then
  */
+
+async function updateReaction(id, data) {
+  const updateData = { edited: new Date() };
+  
+  if (data.symptoms !== undefined) {
+    updateData.symptoms = data.symptoms;
+  }
+  
+  return await Reaction.findByIdAndUpdate(id, updateData, { new: true })
+    .populate("mealLogId");
+}
+
+async function deleteReaction(id) {
+  return await Reaction.findByIdAndDelete(id);
+}
+
+
+
 module.exports = {
   getReactionByDay,
   createReaction,
-  getReaction
+  getReaction,
+  updateReaction,
+  deleteReaction
 };

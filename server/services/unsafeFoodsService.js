@@ -33,7 +33,8 @@ const createUnsafeFood = async (
     });
 };
 
-const updateUnsafeFood = async ({ id, ingredient, status, preExisting }) => {
+const updateUnsafeFood = async (id, body) => {
+    const { ingredient, status, preExisting } = body;
     const set = {};
 
     if (status !== undefined) {
@@ -55,7 +56,8 @@ const updateUnsafeFood = async ({ id, ingredient, status, preExisting }) => {
     return result;
 };
 
-const deleteUnsafeFood = async ({id, ingredient}) => {
+const deleteUnsafeFood = async (id, body) => {
+    const { ingredient } = body;
     return await UnsafeFood.findByIdAndUpdate(
         id,
         {
