@@ -76,7 +76,7 @@ export function useMealLogByMonth(year: number, month: number): UseMealLogByDayR
 
       try {
 
-        const mealRes = await  mealLogService.getMealLogByMonth({ year, month, userId });
+        const mealRes = await  mealLogService.getMealLogByMonth({ year, month: month + 1, userId });
         const reacRes = await reactionService.getReactionByDay({ date, userId });
         if (isCancelled) return;
 
