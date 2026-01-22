@@ -26,9 +26,14 @@ const createUnsafeFood = async (req, res) => {
 
 const updateUnsafeFood = async (req, res) => {
     try {
-        const updateUnsafeFood = await unsafeFoodsService.updateUnsafeFood(req.params.id, req.body);;
-        if (!updateUnsafeFood) return res.status(404).json({ error: "Food not found" });
-        res.status(200).json(updateUnsafeFood)
+        const updatedUnsafeFood = await unsafeFoodsService.updateUnsafeFood({
+            id: req.params.id,
+            ingredient: req.body.ingredient,
+            status: req.body.status,
+            preExisting: req.body.preExisting
+        });
+        if (!updatedUnsafeFood) return res.status(404).json({ error: "Food not found" });
+        res.status(200).json(updatedUnsafeFood)
     } catch (err) {
         res.status(400).json({ error: err.message });
     }
@@ -36,11 +41,14 @@ const updateUnsafeFood = async (req, res) => {
 
 const deleteUnsafeFood = async (req, res) => {
     try {
-        const deleteUnsafeFood = await unsafeFoodsService.deleteUnsafeFood(req.params.id, req.body)
-        if (!deleteUnsafeFood) return res.status(404).json({ error: "Food not found" });
-        res.status(200).json(deleteUnsafeFood)
+        const deletedUnsafeFood = await unsafeFoodsService.deleteUnsafeFood({
+            id: req.params.id,
+            ingredient: req.body.ingredient
+        });
+        if (!deletedUnsafeFood) return res.status(404).json({ error: "Food not found" });
+        res.status(200).json(deletedUnsafeFood)
     } catch (err) {
-        res.status(400).json({ error: err.messsage })
+        res.status(400).json({ error: err.message })
     }
 }
 
@@ -48,5 +56,5 @@ module.exports = {
     getUnsafeFoods,
     createUnsafeFood,
     updateUnsafeFood,
-
+    deleteUnsafeFood
 }
