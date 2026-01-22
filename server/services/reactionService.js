@@ -43,7 +43,6 @@ async function createReaction(userId, data) {
  * then
  */
 
-// Update reaction
 async function updateReaction(id, data) {
   const updateData = { edited: new Date() };
   
@@ -55,7 +54,6 @@ async function updateReaction(id, data) {
     .populate("mealLogId");
 }
 
-// Delete reaction
 async function deleteReaction(id) {
   return await Reaction.findByIdAndDelete(id);
 }
