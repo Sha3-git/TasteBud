@@ -65,6 +65,7 @@ const getSuspectedFoods = async (userId) => {
 
       if (!stats[name]) {
         stats[name] = {
+          id: ingredient._id,
           totalMeals: 0,
           reactionMeals: 0,
           nonReactionMeals: 0,
@@ -95,6 +96,7 @@ const getSuspectedFoods = async (userId) => {
 
   return Object.entries(stats)
     .map(([ingredient, s]) => ({
+      id: s.id,
       ingredient,
       totalMeals: s.totalMeals,
       reactionMeals: s.reactionMeals,
