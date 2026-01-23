@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../../theme/ThemeContext";
+import { useFocusEffect } from "@react-navigation/native";
 
 import { MealSymptomHeroCard } from "../../components/cards/MealSymptomHeroCard";
 import { WeekCalendar } from "../../components/modules/WeekCalendar";
@@ -36,7 +37,11 @@ export function HomeScreen({ userName, onNavigate }: HomeScreenProps) {
   const today = new Date().toISOString().split("T")[0];
   const { stats, loading, error, refetch } = getMealLogByDay(today);
 
-
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [refetch])
+  );
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return "Good morning";

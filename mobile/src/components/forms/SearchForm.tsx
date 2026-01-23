@@ -42,6 +42,8 @@ export function SearchForm({theme, text, setInput, input, setShowDropdown, addIn
                       {results.length > 0  ? (
                         <FlatList
                           keyboardShouldPersistTaps="handled"
+                          scrollEnabled={false}
+                          nestedScrollEnabled={true}
                           data={results}
                           keyExtractor={(item) => item._id}
                           renderItem={({ item }) => (
