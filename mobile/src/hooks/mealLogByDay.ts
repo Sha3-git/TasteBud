@@ -12,27 +12,8 @@ export interface Stats {
   caloriesKcal: number;
 }
 
-export interface Meal {
-  id: string;
-  name: string;
-  time: string;
-  ingredients: string[];
-  symptoms: { name: string; severity: number; time: string }[];
-  unsafeIngredients: string[];
-  color: string;
-}
-
-export interface DayLog {
-  date: Date;
-  dayName: string;
-  dayNumber: number;
-  meals: Meal[];
-  isExpanded: boolean;
-}
-
 interface UseMealLogByDayReturn {
   stats: Stats;
-  dayLogs: DayLog[];
   loading: boolean;
   error: string | null;
   refetch: () => void;
@@ -48,7 +29,6 @@ export function getMealLogByDay(date: string): UseMealLogByDayReturn {
     carbsGrams: 0,
     caloriesKcal: 0,
   });
-  const [dayLogs, setDayLogs] = useState<DayLog[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const userId = "69173dd5a3866b85b59d9760";
@@ -72,82 +52,17 @@ export function getMealLogByDay(date: string): UseMealLogByDayReturn {
         setLoading(true);
         setError(null);
       }
+      const tzOffset = new Date().getTimezoneOffset();
 
       try {
-        const [mealRes, reacRes] = await Promise.all([
-          mealLogService.getMealLogByDay({ date, userId }),
-          reactionService.getReactionByDay({ date, userId }),
-        ]);
-
+        const mealRes = await mealLogService.getDailyMealLogCount({userId, date, tzOffset})
+        const reacRes = await reactionService.getdailyReactionCount({userId, date, tzOffset})
         if (isCancelled) return;
-
-        const mealLogs = mealRes.data;
-        const reactions = reacRes.data;
-
-        setStats((prev) => ({
-          ...prev,
-          mealCount: mealLogs.length,
-          reacCount: reactions.length,
-        }));
-
-        const meals: Meal[] = mealLogs.map((log: any) => ({
-          id: log._id,
-          name: log.mealName,
-          time: new Date(log.created).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-          ingredients: log.ingredients.map((i: any) => i.name),
-          symptoms:
-            log.reaction?.map((r: any) => ({
-              name: r.symptom,
-              severity: r.severity ?? 0,
-              time: new Date(r.time).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              }),
-            })) || [],
-          unsafeIngredients: log.ingredients
-            .filter((i: any) => i.allergens?.length > 0)
-            .map((i: any) => i.name),
-          color: log.reaction?.length > 0 ? "#FFA07A" : "#22C55E",
-        }));
-
-        // Group by local date as YYYY-MM-DD
-        const groupedByDay: Record<string, Meal[]> = {};
-
-        meals.forEach((meal) => {
-          const log = mealLogs.find((l: any) => l._id === meal.id);
-          const localDate = new Date(log.created); // UTC -> local automatically
-          const dayKey = `${localDate.getFullYear()}-${(
-            localDate.getMonth() + 1
-          )
-            .toString()
-            .padStart(
-              2,
-              "0",
-            )}-${localDate.getDate().toString().padStart(2, "0")}`;
-
-          if (!groupedByDay[dayKey]) groupedByDay[dayKey] = [];
-          groupedByDay[dayKey].push(meal);
-        });
-
-        const dailyLogs: DayLog[] = Object.keys(groupedByDay).map((dayKey) => {
-          const firstMeal = groupedByDay[dayKey][0];
-          const [year, month, day] = dayKey.split("-").map(Number);
-          const dayDate = new Date(year, month - 1, day); 
-          return {
-            date: dayDate,
-            dayName: dayDate
-              .toLocaleString("en-US", { weekday: "short" })
-              .toUpperCase(),
-            dayNumber: dayDate.getDate(),
-            meals: groupedByDay[dayKey],
-            isExpanded: true,
-          };
-        });
-
-        setDayLogs(dailyLogs);
+         setStats(prevStats => ({
+        ...prevStats,
+        mealCount: mealRes.data.mealCount,
+        reacCount: reacRes.data.reacCount
+      }));
 
         setError(null);
       } catch (err) {
@@ -182,7 +97,6 @@ export function getMealLogByDay(date: string): UseMealLogByDayReturn {
 
   return {
     stats,
-    dayLogs,
     loading,
     error,
     refetch,

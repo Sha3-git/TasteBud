@@ -1,6 +1,6 @@
 const Reaction = require("../models/reaction")
 const MealLogService = require("../services/mealLogService")
-const { dayRange, weekRange, monthRange, yearRange } = require("../utils/dateRange");
+const { dayRange} = require("../utils/dateRange");
 
 
 async function getReactionByDay(userId, date, page = 1, limit = 10) {
@@ -18,12 +18,11 @@ async function getReactionsInRange(userId, start, end, page = 1, limit = 10) {
   const result = await Reaction.find({
     userId,
     //deleted: false,
-    created: { $gte: start, $lte: end },
+    createdAt: { $gte: start, $lte: end },
   })
     .populate("mealLogId")
     .skip(skip)
     .limit(limit)
-    .sort({ created: -1 });
 
   console.log(result)
   return result
@@ -34,10 +33,22 @@ async function createReaction(userId, data) {
     userId,
     mealLogId: data.mealLogId,
     symptoms: data.symptoms,
-    created: new Date(),
   }
   return await Reaction.create(reaction)
 }
+
+async function dailyStats(userId, date, tzOffset) {
+  const { start, end } = dayRange(date, tzOffset);
+  const reacCount = await Reaction.countDocuments({
+    userId,
+    createdAt: { $gte: start, $lte: end },
+  });
+
+  return {
+    reacCount,
+  };
+}
+
 //track ingredients that are in meals with reactions and if they are also in meals that arent in a reaction
 /**
  * track ingredients that are in meals with reactions and if they are also in meals that arent in a reaction
@@ -80,8 +91,6 @@ const getSuspectedFoods = async (userId) => {
     });
   });
 
-  console.log(stats)
-
   reactions.forEach((reaction) => {
     const ingredients = reaction.mealLogId.ingredients || [];
 
@@ -115,5 +124,6 @@ module.exports = {
   getReactionByDay,
   createReaction,
   getReaction,
+  dailyStats,
   getSuspectedFoods
 };

@@ -18,8 +18,7 @@ const reactionSchema = new mongoose.Schema({
             severity: Number
         }
     ],
-    created: { type: Date, required: true },
-    edited: Date
-})
+    
+}, { timestamps: true })
 
 module.exports = mongoose.model('Reaction', reactionSchema)

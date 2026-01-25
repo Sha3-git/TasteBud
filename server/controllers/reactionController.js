@@ -1,7 +1,7 @@
 const reactionService = require("../services/reactionService")
 
 const getReactionByDay = async (req, res) => {
-  try{
+  try {
     const { userId, date, page, limit } = req.query;
     const reactions = await reactionService.getReactionByDay(userId, date, parseInt(page) || 1, parseInt(limit) || 10);
     res.json(reactions);
@@ -9,9 +9,17 @@ const getReactionByDay = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 }
-
+const dailyStats = async (req, res) => {
+  try {
+    const { userId, date, tzOffset } = req.query;
+    const stats = await reactionService.dailyStats(userId, date, tzOffset);
+    res.json(stats);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+}
 const getReaction = async (req, res) => {
-  try{
+  try {
     const { mealLogId } = req.query;
     const reactions = await reactionService.getReaction(mealLogId);
     res.json(reactions);
@@ -20,8 +28,8 @@ const getReaction = async (req, res) => {
   }
 }
 
-const createReaction = async (req, res) =>{
-  try{
+const createReaction = async (req, res) => {
+  try {
     const { userId } = req.query;
     const reaction = await reactionService.createReaction(userId, req.body);
     res.json(reaction);
@@ -40,8 +48,9 @@ async function getSuspectedFoods(req, res) {
 }
 
 module.exports = {
-    getReactionByDay,
-    createReaction,
-    getReaction,
-    getSuspectedFoods
+  getReactionByDay,
+  createReaction,
+  getReaction,
+  dailyStats,
+  getSuspectedFoods
 }

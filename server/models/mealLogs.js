@@ -25,7 +25,6 @@ const mealLogSchema = new mongoose.Schema({
         type: String
     },*/
     deleted: {type: Boolean, default: false},
-    created: { type: Date, required: true},
     edited: Date,
 },
  { timestamps: true }

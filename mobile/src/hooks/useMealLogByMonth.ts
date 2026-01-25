@@ -2,16 +2,6 @@ import { useState, useEffect, useCallback } from "react";
 import { mealLogService } from "../services/mealLogService";
 import { reactionService } from "../services/reactionService";
 
-export interface Stats {
-  mealCount: number;
-  reacCount: number;
-  unsafeFoodsCount: number;
-  crossReactiveCount: number;
-  proteinGrams: number;
-  carbsGrams: number;
-  caloriesKcal: number;
-}
-
 export interface Meal {
   id: string;
   name: string;
@@ -31,26 +21,17 @@ export interface MonthLog {
 }
 
 interface UseMealLogByDayReturn {
-  stats: Stats;
   monthLogs: MonthLog[];
   loading: boolean;
   error: string | null;
   refetch: () => void;
 }
 
+
 export function useMealLogByMonth(
   year: number,
   month: number,
 ): UseMealLogByDayReturn {
-  const [stats, setStats] = useState<Stats>({
-    mealCount: 0,
-    reacCount: 0,
-    unsafeFoodsCount: 0,
-    crossReactiveCount: 0,
-    proteinGrams: 0,
-    carbsGrams: 0,
-    caloriesKcal: 0,
-  });
   const [monthLogs, setMonthLogs] = useState<MonthLog[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -64,10 +45,9 @@ export function useMealLogByMonth(
 
   useEffect(() => {
     let isCancelled = false;
-    const date = "2026-01-18";
 
     const fetchDataSafe = async () => {
-      if (!date || !userId) {
+      if (!userId) {
         if (!isCancelled) setLoading(false);
         return;
       }
@@ -76,89 +56,69 @@ export function useMealLogByMonth(
         setLoading(true);
         setError(null);
       }
+       const tzOffset = new Date().getTimezoneOffset();
 
       try {
         const mealRes = await mealLogService.getMealLogByMonth({
           year,
           month,
           userId,
+          tzOffset
         });
         if (isCancelled) return;
 
         const mealLogs = mealRes.data;
+        console.log(mealLogs[0].meals[0].ingredients)
 
-        setStats((prev) => ({
-          ...prev,
-          mealCount: mealLogs.length,
-          reacCount: 0,
-        }));
+        const formattedMonthLogs: MonthLog[] = await Promise.all(
+          mealLogs.map(async (dayGroup: any) => {
+            const formattedMeals = await Promise.all(
+              dayGroup.meals.map(async (meal: any) => {
+                const reacRes = await reactionService.getReaction(meal.id);
+                const reaction = reacRes.data;
 
-        const meals: Meal[] = [];
+                return {
+                  id: meal.id,
+                  name: meal.mealName,
+                  time: new Date(meal.createdAt).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }),
+                  ingredients: meal.ingredients.map((i: any) => i.name),
+                  symptoms:
+                    reaction?.symptoms?.map((r: any) => ({
+                      name: r.symptom.name,
+                      severity: r.severity ?? 0,
+                      time: new Date(reaction.createdAt).toLocaleTimeString(
+                        [],
+                        {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        },
+                      ),
+                    })) || [],
+                  unsafeIngredients: meal.ingredients
+                    .filter((i: any) => i.allergens?.length > 0)
+                    .map((i: any) => i.name),
+                  color: reaction?.symptoms?.length ? "#FFA07A" : "#22C55E",
+                };
+              }),
+            );
 
-        for (const log of mealLogs) {
-          const reacRes = await reactionService.getReaction(log._id);
-          const reaction = reacRes.data;
-
-          meals.push({
-            id: log._id,
-            name: log.mealName,
-            time: new Date(log.created).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-            ingredients: log.ingredients.map((i: any) => i.name),
-            symptoms:
-              reaction?.symptoms?.map((r: any) => ({
-                name: r.symptom.name,
-                severity: r.severity ?? 0,
-                time: new Date(reaction.created).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                }),
-              })) || [],
-            unsafeIngredients: log.ingredients
-              .filter((i: any) => i.allergens?.length > 0)
-              .map((i: any) => i.name),
-            color: reaction?.symptoms?.length ? "#FFA07A" : "#22C55E",
-          });
-        }
-
-        // Group by local date as YYYY-MM-DD
-        const groupedByDay: Record<string, Meal[]> = {};
-
-        meals.forEach((meal) => {
-          const log = mealLogs.find((l: any) => l._id === meal.id);
-          const localDate = new Date(log.created); // UTC -> local automatically
-          const dayKey = `${localDate.getFullYear()}-${(
-            localDate.getMonth() + 1
-          )
-            .toString()
-            .padStart(
-              2,
-              "0",
-            )}-${localDate.getDate().toString().padStart(2, "0")}`;
-
-          if (!groupedByDay[dayKey]) groupedByDay[dayKey] = [];
-          groupedByDay[dayKey].push(meal);
-        });
-
-        const monthlyLogs: MonthLog[] = Object.keys(groupedByDay).map(
-          (dayKey) => {
-            const [year, month, day] = dayKey.split("-").map(Number);
-            const dayDate = new Date(year, month - 1, day);
             return {
-              date: dayDate,
-              dayName: dayDate
-                .toLocaleString("en-US", { weekday: "short" })
-                .toUpperCase(),
-              dayNumber: dayDate.getDate(),
-              meals: groupedByDay[dayKey],
-              isExpanded: true,
+              date: new Date(dayGroup.date + "T00:00:00"),
+              dayName: dayGroup.dayName,
+              dayNumber: dayGroup.dayNumber,
+              meals: formattedMeals,
+              isExpanded: dayGroup.isExpanded,
             };
-          },
+          }),
         );
 
-        setMonthLogs(monthlyLogs);
+        setMonthLogs(formattedMonthLogs);
+
+
+        
 
         setError(null);
       } catch (err) {
@@ -192,7 +152,6 @@ export function useMealLogByMonth(
   }, [year, month, userId, refreshCounter]);
 
   return {
-    stats,
     monthLogs,
     loading,
     error,

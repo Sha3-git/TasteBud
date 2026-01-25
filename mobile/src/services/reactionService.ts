@@ -5,6 +5,7 @@ interface ReacParam {
   date?: string;   
   page?: number;
   limit?: number;
+  tzOffset?: number;
 }
 interface Symptom {
   symptom: string;
@@ -25,7 +26,12 @@ export const reactionService = {
       params: { userId, date, page, limit },
     });
   },
-  getReactionCountByDay: () => {},
+   getdailyReactionCount: (params: ReacParam) =>{
+    const {userId, date, tzOffset} = params;
+    return api.get("/reactions/stats", {
+      params: { userId, date, tzOffset},
+    })
+  },
   createReaction: (params: Reaction) =>{
      return (
       api.post("/reactions/create",
