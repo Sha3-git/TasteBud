@@ -19,7 +19,7 @@ interface UseMealLogByDayReturn {
   refetch: () => void;
 }
 
-export function getMealLogByDay(date: string): UseMealLogByDayReturn {
+export function useMealLogDailyStats(date: string): UseMealLogByDayReturn {
   const [stats, setStats] = useState<Stats>({
     mealCount: 0,
     reacCount: 0,

@@ -1,6 +1,6 @@
 const Reaction = require("../models/reaction")
 const MealLogService = require("../services/mealLogService")
-const { dayRange} = require("../utils/dateRange");
+const { dayRange } = require("../utils/dateRange");
 
 
 async function getReactionByDay(userId, date, page = 1, limit = 10) {
@@ -78,8 +78,12 @@ const getSuspectedFoods = async (userId) => {
         stats[name] = {
           id: ingredient._id,
           totalMeals: 0,
+          reactionScore: 0,
           reactionMeals: 0,
           nonReactionMeals: 0,
+          totalSeverity: 0,
+          severityCount: 0,
+          avgSeverity: 0,
         };
       }
 
@@ -94,11 +98,21 @@ const getSuspectedFoods = async (userId) => {
   reactions.forEach((reaction) => {
     const ingredients = reaction.mealLogId.ingredients || [];
 
+    const reactionTotalSeverity = reaction.symptoms.reduce((sum, symptom) => {
+      return sum + (symptom.severity || 0);
+    }, 0);
+    const symptomCount = reaction.symptoms.length;
+
+
     ingredients.forEach((ingredient) => {
       const name = ingredient.name;
-
       if (stats[name]) {
         stats[name].reactionMeals += 1;
+        stats[name].totalSeverity += reactionTotalSeverity;
+        stats[name].severityCount += symptomCount;
+        if (stats[name].severityCount > 0) {
+          stats[name].avgSeverity = stats[name].totalSeverity / stats[name].severityCount;
+        }
       }
     });
   });
@@ -111,6 +125,9 @@ const getSuspectedFoods = async (userId) => {
       reactionMeals: s.reactionMeals,
       reactionRate: s.reactionMeals / s.totalMeals,
       nonReactionMeals: s.nonReactionMeals,
+      avgSeverity: s.avgSeverity,      
+      totalSeverity: s.totalSeverity, 
+      severityCount: s.severityCount, 
     }))
     .filter(
       (i) => i.reactionMeals > 0 && i.nonReactionMeals === 0

@@ -29,6 +29,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../theme/ThemeContext';
 import { TriggerCard } from '../../components/cards/TriggerCard';
+import { TopTriggerCard } from '../../components/cards/TopTriggerCard';
+import { useAnalysis } from '../../hooks/useAnalysis';
 
 interface SymptomAnalysisScreenProps {
   onBack: () => void;
@@ -38,22 +40,9 @@ const { width } = Dimensions.get('window');
 
 export function SymptomAnalysisScreen({ onBack }: SymptomAnalysisScreenProps) {
   const { theme, isDark } = useTheme();
+  const {topTrigger, topTriggers, loading} = useAnalysis();
+  console.log("top trigger " + loading)
   
-  /**
-   * TODO BACKEND: Fetch symptom analysis data
-   * GET /api/users/{userId}/symptom-analysis?month={month}&year={year}
-   * 
-   * Expected Response:
-   * {
-   *   topTrigger: { food: string, appearances: number, avgSeverity: number },
-   *   monthlyImprovement: number (percentage),
-   *   weeklyTrend: [{ week: number, avgSeverity: number }],
-   *   timeOfDay: { breakfast: number, lunch: number, dinner: number },
-   *   topTriggers: [{ food: string, count: number, emoji: string }],
-   *   totalSymptoms: number,
-   *   symptomFreeDay: number
-   * }
-   */
   const [analysisData] = useState({
     topTrigger: {
       food: 'Wheat',
@@ -84,8 +73,24 @@ export function SymptomAnalysisScreen({ onBack }: SymptomAnalysisScreenProps) {
     symptomFreeDays: 7,
   });
   
-  const maxTriggerCount = Math.max(...analysisData.topTriggers.map(t => t.count));
   
+    if (loading) {
+      return (
+        <SafeAreaView
+          style={[styles.container, { backgroundColor: theme.background }]}
+        >
+          <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
+          <View
+            style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+          >
+            <Text style={{ color: theme.textSecondary, fontSize: 16 }}>
+              Loading...
+            </Text>
+          </View>
+        </SafeAreaView>
+      );
+    }
+  const maxTriggerCount = Math.max(...topTriggers.map(t => t.count));
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
@@ -106,44 +111,12 @@ export function SymptomAnalysisScreen({ onBack }: SymptomAnalysisScreenProps) {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Hero Insight - Top Trigger */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
-            Your biggest trigger
-          </Text>
-          
-          <LinearGradient
-            colors={isDark ? ['#EF4444', '#DC2626'] : ['#FEE2E2', '#FECACA']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.heroCard}
-          >
-            <View style={styles.heroContent}>
-              <Text style={styles.heroEmoji}>
-                {analysisData.topTrigger.emoji}
-              </Text>
-              <Text style={[styles.heroFoodName, { color: isDark ? '#FFF' : '#7F1D1D' }]}>
-                {analysisData.topTrigger.food}
-              </Text>
-              <Text style={[styles.heroStats, { color: isDark ? 'rgba(255,255,255,0.9)' : '#991B1B' }]}>
-                Appeared in {analysisData.topTrigger.appearances} symptomatic meals
-              </Text>
-              <View style={[styles.severityBadge, { backgroundColor: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(127,29,29,0.1)' }]}>
-                <Text style={[styles.severityText, { color: isDark ? '#FFF' : '#7F1D1D' }]}>
-                  Avg severity: {analysisData.topTrigger.avgSeverity}/10
-                </Text>
-              </View>
-              
-              {/* Recommendation */}
-              <View style={[styles.recommendation, { backgroundColor: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(127,29,29,0.15)' }]}>
-                <Ionicons name="bulb" size={20} color={isDark ? '#FCD34D' : '#D97706'} />
-                <Text style={[styles.recommendationText, { color: isDark ? '#FFF' : '#7F1D1D' }]}>
-                  Try avoiding {analysisData.topTrigger.food.toLowerCase()} for 1 week
-                </Text>
-              </View>
-            </View>
-          </LinearGradient>
-        </View>
+        <TopTriggerCard
+        topTrigger={topTrigger}
+        theme={theme}
+        isDark={isDark}
+        />
+     
         
         {/* Monthly Progress */}
         <View style={styles.section}>
@@ -279,7 +252,7 @@ export function SymptomAnalysisScreen({ onBack }: SymptomAnalysisScreenProps) {
           </Text>
           
           <View style={styles.triggersGrid}>
-            {analysisData.topTriggers.map((trigger, index) => (
+            {topTriggers.map((trigger, index) => (
               <TriggerCard
                 key={index}
                 rank={index + 1}
@@ -398,52 +371,7 @@ const styles = StyleSheet.create({
   },
   
   // HERO CARD
-  heroCard: {
-    borderRadius: 24,
-    padding: 24,
-    minHeight: 240,
-  },
-  heroContent: {
-    alignItems: 'center',
-    gap: 12,
-  },
-  heroEmoji: {
-    fontSize: 64,
-    marginBottom: 8,
-  },
-  heroFoodName: {
-    fontSize: 28,
-    fontWeight: '700',
-  },
-  heroStats: {
-    fontSize: 15,
-    fontWeight: '500',
-    textAlign: 'center',
-  },
-  severityBadge: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 12,
-    marginTop: 8,
-  },
-  severityText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  recommendation: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 12,
-    marginTop: 12,
-  },
-  recommendationText: {
-    flex: 1,
-    fontSize: 14,
-    fontWeight: '600',
-  },
+ 
   
   // PROGRESS CARD
   progressCard: {
@@ -601,6 +529,5 @@ const styles = StyleSheet.create({
   // TRIGGERS GRID
   triggersGrid: {
     gap: 12,
-  },
-  
+  }, 
 });

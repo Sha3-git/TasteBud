@@ -16,8 +16,9 @@ import { MealSymptomHeroCard } from "../../components/cards/MealSymptomHeroCard"
 import { WeekCalendar } from "../../components/modules/WeekCalendar";
 import { FeatureCard } from "../../components/cards/FeatureCard";
 import { FoodLibraryCard } from "../../components/cards/FoodLibraryCard";
+import { useFocusEffect } from "@react-navigation/native";
 
-import { getMealLogByDay } from "../../hooks/mealLogByDay";
+import { useMealLogDailyStats } from "../../hooks/useMealLogDailyStats";
 
 interface HomeScreenProps {
   userName: string;
@@ -36,7 +37,12 @@ export function HomeScreen({ userName, onNavigate }: HomeScreenProps) {
   const day = String(today.getDate()).padStart(2, "0");
   const date = `${year}-${month}-${day}`;
 
-  const { stats, loading, error, refetch } = getMealLogByDay(date);
+  const { stats, loading, error, refetch } = useMealLogDailyStats(date);
+   useFocusEffect(
+      useCallback(() => {
+        refetch();
+      }, [refetch]),
+    );
 
   const getGreeting = () => {
     const hour = new Date().getHours();
