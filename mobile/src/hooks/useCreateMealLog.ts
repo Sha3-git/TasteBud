@@ -14,18 +14,20 @@ interface Meal {
 
 const userId = "69173dd5a3866b85b59d9760";
 export function useCreateMealLog() {
-  const createMealLog = async (
+  const createMealLog = async ( //implememt callback later 
     date: Date,
     mealName: string,
     ingredients: Array<string>,
+    hadReaction: Boolean
   ) => {
     const MealLog = {
       userId,
       mealName: mealName,
       ingredients: ingredients,
-      hadReaction: false,
+      hadReaction: hadReaction,
       date: date,
     };
+    console.log("from create Meal log meal payload| " + JSON.stringify(MealLog))
     const response = await mealLogService.createMealLog(MealLog);
     return response.data;
   };

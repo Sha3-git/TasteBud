@@ -17,9 +17,9 @@ import { MealSymptomHeroCard } from "../../components/cards/MealSymptomHeroCard"
 import { WeekCalendar } from "../../components/modules/WeekCalendar";
 import { FeatureCard } from "../../components/cards/FeatureCard";
 import { FoodLibraryCard } from "../../components/cards/FoodLibraryCard";
+import { useFocusEffect } from "@react-navigation/native";
 
-
-import { getMealLogByDay } from "../../hooks/mealLogByDay";
+import { useMealLogDailyStats } from "../../hooks/useMealLogDailyStats";
 
 interface HomeScreenProps {
   userName: string;
@@ -32,16 +32,19 @@ export function HomeScreen({ userName, onNavigate }: HomeScreenProps) {
   const { theme, isDark } = useTheme();
   const [selectedDate, setSelectedDate] = useState(new Date());
 
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+  const date = `${year}-${month}-${day}`;
 
+  const { stats, loading, error, refetch } = useMealLogDailyStats(date);
+   useFocusEffect(
+      useCallback(() => {
+        refetch();
+      }, [refetch]),
+    );
 
-  const today = new Date().toISOString().split("T")[0];
-  const { stats, loading, error, refetch } = getMealLogByDay(today);
-
-  useFocusEffect(
-    useCallback(() => {
-      refetch();
-    }, [refetch])
-  );
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return "Good morning";
@@ -49,48 +52,77 @@ export function HomeScreen({ userName, onNavigate }: HomeScreenProps) {
     return "Good evening";
   };
 
-if (loading) {
-  return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text style={{ color: theme.textSecondary, fontSize: 16 }}>Loading...</Text>
-      </View>
-    </SafeAreaView>
-  );
-}
+  if (loading) {
+    return (
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: theme.background }]}
+      >
+        <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <Text style={{ color: theme.textSecondary, fontSize: 16 }}>
+            Loading...
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
-if (error) {
-  return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 24 }}>
-        <Text style={{ color: theme.danger, fontSize: 18, fontWeight: "600", marginBottom: 8 }}>
-          Oops!
-        </Text>
-        <Text style={{ color: theme.textSecondary, fontSize: 14, textAlign: "center", marginBottom: 16 }}>
-          {error}
-        </Text>
-        <TouchableOpacity
-          onPress={refetch}
+  if (error) {
+    return (
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: theme.background }]}
+      >
+        <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
+        <View
           style={{
-            backgroundColor: theme.primary,
-            paddingHorizontal: 24,
-            paddingVertical: 12,
-            borderRadius: 8,
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 24,
           }}
         >
-          <Text style={{ color: "#FFF", fontWeight: "600" }}>Try Again</Text>
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
-  );
-}
+          <Text
+            style={{
+              color: theme.danger,
+              fontSize: 18,
+              fontWeight: "600",
+              marginBottom: 8,
+            }}
+          >
+            Oops!
+          </Text>
+          <Text
+            style={{
+              color: theme.textSecondary,
+              fontSize: 14,
+              textAlign: "center",
+              marginBottom: 16,
+            }}
+          >
+            {error}
+          </Text>
+          <TouchableOpacity
+            onPress={refetch}
+            style={{
+              backgroundColor: theme.primary,
+              paddingHorizontal: 24,
+              paddingVertical: 12,
+              borderRadius: 8,
+            }}
+          >
+            <Text style={{ color: "#FFF", fontWeight: "600" }}>Try Again</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
-return (
-  <SafeAreaView
-    style={[styles.container, { backgroundColor: theme.background }]}
-  >
+  return (
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.background }]}
+    >
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
 
       <ScrollView
@@ -172,9 +204,7 @@ return (
               icon="pulse-outline"
               title="Symptom Analysis"
               value={
-                stats.reacCount > 0
-                  ? `${stats.reacCount} today`
-                  : "No symptoms"
+                stats.reacCount > 0 ? `${stats.reacCount} today` : "No symptoms"
               }
               color="#C4B5FD"
               darkColor="#7C3AED"

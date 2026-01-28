@@ -18,7 +18,7 @@ import { useTheme } from "../../theme/ThemeContext";
 import { DayLogCard } from "../../components/cards/DayLogCard";
 import { AddMealForm } from "../../components/forms/AddMealForm";
 
-import { getMealLogData } from "../../hooks/mealLogByDay";
+import { getMealLogData } from "../../hooks/useMealLogDailyStats";
 
 interface MonthPickerProps {
   showMonthPicker: any;

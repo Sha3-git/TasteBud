@@ -68,6 +68,10 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
     { id: string; name: string; severity: number; time: string }[]
   >([]);
 
+  const today = new Date();
+  const month = today.getMonth() + 1; // 0-based, so +1
+  const year = today.getFullYear();
+
   const {
   monthLogs: fetchedLogs,
   loading,
@@ -186,9 +190,15 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
       symptom: s.id,
       severity: s.severity,
     }));
-    const mealRes = await createMealLog(today, mealName, ingredientId);
+    const hadReaction = symptomPayload.length > 0 ? true : false;
+    const mealRes = await createMealLog(
+      today,
+      mealName,
+      ingredientId,
+      hadReaction,
+    );
     if (symptomPayload.length > 0) {
-    console.log(symptomPayload.length > 0);
+      console.log(symptomPayload.length > 0);
 
       const createRes = await createReaction(mealRes._id, symptomPayload);
       console.log("Reaction added:", createRes);
@@ -196,6 +206,7 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
 
     setMealName("");
     setIngredients([]);
+    setIngredientId([]);
     setSymptoms([]);
     setIsAddingMeal(false);
   };

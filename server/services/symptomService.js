@@ -10,7 +10,7 @@ const searchSymptoms = async (query, limit = 20) => {
       name: { $regex: q, $options: "i" }
     })
     .limit(limit);
-    console.log(results)
+
     return results;
   } catch (err) {
     console.error(err);

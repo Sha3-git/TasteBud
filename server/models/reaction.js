@@ -18,10 +18,7 @@ const reactionSchema = new mongoose.Schema({
             severity: Number
         }
     ],
-    created: { type: Date, required: true },
-    edited: Date
-})
-//find symptom based on search output id example find all reactions with itching
-//find all meal logs associated with itching
-//count frequency of each ingredient
+    
+}, { timestamps: true })
+
 module.exports = mongoose.model('Reaction', reactionSchema)
