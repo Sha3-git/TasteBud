@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../../theme/ThemeContext";
+import { useFocusEffect } from "@react-navigation/native";
 
 import { MealSymptomHeroCard } from "../../components/cards/MealSymptomHeroCard";
 import { WeekCalendar } from "../../components/modules/WeekCalendar";
