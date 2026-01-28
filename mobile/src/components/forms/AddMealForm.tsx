@@ -152,6 +152,8 @@ export function AddMealForm({
                 {results.length > 0  ? (
                   <FlatList
                     keyboardShouldPersistTaps="handled"
+                    scrollEnabled={false}
+                    nestedScrollEnabled={true}
                     data={results}
                     keyExtractor={(item) => item._id}
                     renderItem={({ item }) => (
@@ -266,9 +268,9 @@ export function AddMealForm({
               </View>
               <Text
                 style={[styles.severityLabel, { color: theme.textPrimary }]}
-              >
-                {severity} extreme
-              </Text>
+                >
+                {severity === 1 ? "Low" : severity <= 3 ? "Mild" : severity <= 5 ? "Moderate" : "High"}
+                </Text>
             </View>
 
             <View style={styles.symptomInputContainer}>
@@ -311,7 +313,7 @@ export function AddMealForm({
                           { color: "rgba(255,255,255,0.7)" },
                         ]}
                       >
-                        Severity: {symptom.severity}/5 at {symptom.time}
+                        Severity: {symptom.severity}/7 at {symptom.time}
                       </Text>
                     </View>
                     <TouchableOpacity onPress={() => removeSymptom(index)}>

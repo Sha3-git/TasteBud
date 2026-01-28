@@ -73,17 +73,17 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
   const year = today.getFullYear();
 
   const {
-    monthLogs: fetchedLogs,
-    loading,
-    error,
-    refetch,
-  } = useMealLogByMonth(year, month);
+  monthLogs: fetchedLogs,
+  loading,
+  error,
+  refetch,
+} = useMealLogByMonth(selectedYear, selectedMonth);
 
   useFocusEffect(
-    useCallback(() => {
-      refetch();
-    }, [refetch]),
-  );
+  useCallback(() => {
+    refetch();
+  }, [refetch, selectedMonth, selectedYear])
+);
 
   const [dayLogs, setDayLogs] = useState<DayLog[]>([]); //says day logs but is the meal log data for a month grouped by day
   const [showDropdown, setShowDropdown] = useState(false);

@@ -51,6 +51,28 @@ async function dailyStats(userId, date, tzOffset) {
 
 //track ingredients that are in meals with reactions and if they are also in meals that arent in a reaction
 /**
+ * when a user creates a meal log an associated reaction is made for said meal log 
+ * the user can search symptoms and the ids are sent as an array of symptom ids
+ * then
+ */
+
+async function updateReaction(id, data) {
+  const updateData = { edited: new Date() };
+  
+  if (data.symptoms !== undefined) {
+    updateData.symptoms = data.symptoms;
+  }
+  
+  return await Reaction.findByIdAndUpdate(id, updateData, { new: true })
+    .populate("mealLogId");
+}
+
+async function deleteReaction(id) {
+  return await Reaction.findByIdAndDelete(id);
+}
+
+
+
  * track ingredients that are in meals with reactions and if they are also in meals that arent in a reaction
  * ingredients that appear solely in reaction meal logs are suspected
  * those that appear in both reactions and normal meal logs are held off on
@@ -140,6 +162,9 @@ const getSuspectedFoods = async (userId) => {
 module.exports = {
   getReactionByDay,
   createReaction,
+  getReaction,
+  updateReaction,
+  deleteReaction
   getReaction,
   dailyStats,
   getSuspectedFoods

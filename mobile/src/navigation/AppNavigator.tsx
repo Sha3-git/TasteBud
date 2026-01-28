@@ -16,6 +16,9 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../theme/ThemeContext";
 
+// Components
+import { LiquidGlassTabBar } from "../components/modules/LiquidGlassTabBar";
+
 // Onboarding screens
 import { SplashScreen } from "../screens/onboarding/SplashScreen";
 import { AuthScreen } from "../screens/onboarding/AuthScreen";
@@ -108,38 +111,30 @@ function MainTabNavigator({ route }: { route: { params: { userName: string } } }
   const { theme, isDark } = useTheme();
   const userName = route.params?.userName || "User";
 
+  // Tab configuration for LiquidGlassTabBar
+  const tabs = [
+    { id: "Home", icon: "home-outline" as const, iconFilled: "home" as const, label: "Home" },
+    { id: "MealLog", icon: "restaurant-outline" as const, iconFilled: "restaurant" as const, label: "Meals" },
+    { id: "Scan", icon: "camera-outline" as const, iconFilled: "camera" as const, label: "Scan" },
+    { id: "Library", icon: "book-outline" as const, iconFilled: "book" as const, label: "Library" },
+    { id: "Profile", icon: "person-outline" as const, iconFilled: "person" as const, label: "Profile" },
+  ];
+
   return (
     <Tab.Navigator
-      screenOptions={({ route }) => ({
+      tabBar={(props) => (
+        <LiquidGlassTabBar
+          tabs={tabs}
+          selectedTab={props.state.routes[props.state.index].name}
+          onTabPress={(tabId) => props.navigation.navigate(tabId)}
+        />
+      )}
+      screenOptions={{
         headerShown: false,
-        tabBarIcon: ({ focused, color, size }) => {
-          let iconName: keyof typeof Ionicons.glyphMap = "home";
-
-          if (route.name === "Home") {
-            iconName = focused ? "home" : "home-outline";
-          } else if (route.name === "MealLog") {
-            iconName = focused ? "restaurant" : "restaurant-outline";
-          } else if (route.name === "Scan") {
-            iconName = focused ? "camera" : "camera-outline";
-          } else if (route.name === "Library") {
-            iconName = focused ? "book" : "book-outline";
-          } else if (route.name === "Profile") {
-            iconName = focused ? "person" : "person-outline";
-          }
-
-          return <Ionicons name={iconName} size={size} color={color} />;
-        },
-        tabBarActiveTintColor: isDark ? "#FFFFFF" : "#000000",
-        tabBarInactiveTintColor: isDark ? "#888888" : "#888888",
-        tabBarStyle: { display: "none" },
-        tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: "500",
-        },
-      })}
+      }}
     >
       <Tab.Screen name="Home">
-  {() => <HomeScreenWrapper userName={userName} />}
+        {() => <HomeScreenWrapper userName={userName} />}
       </Tab.Screen>
       <Tab.Screen name="MealLog">
         {({ navigation }) => <MealLogScreen onBack={() => navigation.navigate("Home")} />}
@@ -155,8 +150,8 @@ function MainTabNavigator({ route }: { route: { params: { userName: string } } }
             onEditAllergies={() => {}}
             onSignOut={() => {}}
           />
-  )}
-    </Tab.Screen>
+        )}
+      </Tab.Screen>
     </Tab.Navigator>
   );
 }
