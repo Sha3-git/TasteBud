@@ -49,7 +49,7 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
   const { theme, isDark } = useTheme();
 
   const currentDate = new Date();
-  const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth());
+  const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
   const [showMonthPicker, setShowMonthPicker] = useState(false);
   const { createMealLog } = useCreateMealLog();

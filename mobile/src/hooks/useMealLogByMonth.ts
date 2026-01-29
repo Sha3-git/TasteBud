@@ -68,7 +68,11 @@ export function useMealLogByMonth(
         if (isCancelled) return;
 
         const mealLogs = mealRes.data;
-        console.log(mealLogs[0].meals[0].ingredients)
+        if (mealLogs.length === 0) {
+  setMonthLogs([]);
+  setLoading(false);
+  return;
+}
 
         const formattedMonthLogs: MonthLog[] = await Promise.all(
           mealLogs.map(async (dayGroup: any) => {
