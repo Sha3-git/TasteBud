@@ -30,6 +30,7 @@ const unsafeFoodsRoute = require("./routes/unsafeFoodsRoute")
 const brandedFoodRoute = require("./routes/brandedFoodRoute")
 const crossReactionRoute = require("./routes/crossReactionsRoute")
 const symptomRoute = require("./routes/symptomRoute")
+const authRoute = require("./routes/authRoute")
 
 app.use(`${apiPrefix}/ingredients`, /*auth,*/ ingredientsRoute);
 app.use(`${apiPrefix}/meallogs`, /*auth,*/ mealLogsRoute);
@@ -38,4 +39,4 @@ app.use(`${apiPrefix}/unsafefood`, /*auth,*/ unsafeFoodsRoute);
 app.use(`${apiPrefix}/brandedfood`, /*auth,*/ brandedFoodRoute);
 app.use(`${apiPrefix}/crossReaction`, /*auth,*/ crossReactionRoute);
 app.use(`${apiPrefix}/symptoms`, /*auth,*/ symptomRoute);
-app.use(`${apiPrefix}/admin`, require("./routes/adminRoute"));
+app.use(`${apiPrefix}/auth`, authRoute);
