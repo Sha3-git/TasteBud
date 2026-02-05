@@ -23,10 +23,10 @@ import numpy as np
 # CONFIGURATION
 # ============================================================
 
-MONGO_ATLAS_URI = "mongodb+srv://DataBaseUsr:Ftw0Ji2BRw1kRQlA@cluster0.f1lvvua.mongodb.net/TasteBud?tlsAllowInvalidCertificates=true"
+MONGO_ATLAS_URI = os.environ.get("MONGO_URI")
 ATLAS_DB_NAME = "TasteBud"
 
-MONGO_FOODS_URI = "mongodb://DataBaseUsr:Ftw0Ji2BRw1kRQlA@165.22.225.28:27017/TasteBud"
+MONGO_FOODS_URI = os.environ.get("MONGO_FOODS_URI")
 FOODS_DB_NAME = "TasteBud"
 
 MODEL_NAME = "all-MiniLM-L6-v2"

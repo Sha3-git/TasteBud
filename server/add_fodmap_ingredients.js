@@ -9,7 +9,7 @@
 
 const { MongoClient } = require('mongodb');
 
-const MONGO_URI = "mongodb+srv://DataBaseUsr:Ftw0Ji2BRw1kRQlA@cluster0.f1lvvua.mongodb.net/TasteBud";
+const MONGO_URI = process.env.MONGO_URI;;
 
 // ============================================================
 // FODMAP INGREDIENTS TO ADD
