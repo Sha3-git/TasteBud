@@ -17,7 +17,6 @@ import { MealSymptomHeroCard } from "../../components/cards/MealSymptomHeroCard"
 import { WeekCalendar } from "../../components/modules/WeekCalendar";
 import { FeatureCard } from "../../components/cards/FeatureCard";
 import { FoodLibraryCard } from "../../components/cards/FoodLibraryCard";
-import { useFocusEffect } from "@react-navigation/native";
 
 import { useMealLogDailyStats } from "../../hooks/useMealLogDailyStats";
 

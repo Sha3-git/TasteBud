@@ -68,7 +68,7 @@ export function useMealLogByMonth(
         if (isCancelled) return;
 
         const mealLogs = mealRes.data;
-        console.log(mealLogs[0].meals[0].ingredients)
+        if (mealLogs.length > 0) console.log("Meal logs fetched:", mealLogs.length, "days")
 
         const formattedMonthLogs: MonthLog[] = await Promise.all(
           mealLogs.map(async (dayGroup: any) => {
@@ -86,17 +86,17 @@ export function useMealLogByMonth(
                   }),
                   ingredients: meal.ingredients.map((i: any) => i.name),
                   symptoms:
-                    reaction?.symptoms?.map((r: any) => ({
-                      name: r.symptom.name,
-                      severity: r.severity ?? 0,
-                      time: new Date(reaction.createdAt).toLocaleTimeString(
-                        [],
-                        {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        },
-                      ),
-                    })) || [],
+                  reaction?.symptoms?.map((r: any) => ({
+                    name: r.symptom?.name || 'Unknown symptom',  // ADD ?. and fallback
+                    severity: r.severity ?? 0,
+                    time: new Date(reaction.createdAt).toLocaleTimeString(
+                      [],
+                      {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      },
+                    ),
+                  })) || [],
                   unsafeIngredients: meal.ingredients
                     .filter((i: any) => i.allergens?.length > 0)
                     .map((i: any) => i.name),

@@ -9,6 +9,7 @@ const getReactionByDay = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 }
+
 const dailyStats = async (req, res) => {
   try {
     const { userId, date, tzOffset } = req.query;
@@ -18,6 +19,7 @@ const dailyStats = async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 }
+
 const getReaction = async (req, res) => {
   try {
     const { mealLogId } = req.query;
@@ -37,6 +39,7 @@ const createReaction = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 }
+
 async function getSuspectedFoods(req, res) {
   try {
     const { userId } = req.query
@@ -47,10 +50,31 @@ async function getSuspectedFoods(req, res) {
   }
 }
 
+async function getMonthlyAnalysis(req, res) {
+  try {
+    const { userId, year, month } = req.query;
+    
+    if (!userId || !year || !month) {
+      return res.status(400).json({ error: "userId, year, and month are required" });
+    }
+    
+    const result = await reactionService.getMonthlyAnalysis(
+      userId, 
+      parseInt(year), 
+      parseInt(month)
+    );
+    res.json(result);
+  } catch (err) {
+    console.error("Monthly analysis error:", err);
+    res.status(500).json({ error: err.message });
+  }
+}
+
 module.exports = {
   getReactionByDay,
   createReaction,
   getReaction,
   dailyStats,
-  getSuspectedFoods
+  getSuspectedFoods,
+  getMonthlyAnalysis
 }

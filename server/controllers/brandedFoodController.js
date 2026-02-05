@@ -17,3 +17,21 @@ const searchFoods = async (req, res) => {
 module.exports = {
   searchFoods
 };
+
+const getBrandedFoodIngredients = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id) return res.status(400).json({ error: "Missing branded food ID" });
+    const result = await brandedFoodService.getBrandedFoodWithIngredients(id);
+    if (!result) return res.status(404).json({ error: "Branded food not found" });
+    res.json(result);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+module.exports = {
+  searchFoods,
+  getBrandedFoodIngredients
+};

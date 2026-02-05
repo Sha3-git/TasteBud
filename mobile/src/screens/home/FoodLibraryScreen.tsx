@@ -6,9 +6,12 @@
  * - Clean cards matching home screen aesthetic
  * - No rainbow colors - just safe (green) vs unsafe (red)
  * - Professional and easy on the eyes
+ * 
+ * BACKEND INTEGRATION: COMPLETE
+ * - Fetches unsafe foods from /api/unsafefood/get
  */
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -20,11 +23,13 @@ import {
   Modal,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../theme/ThemeContext';
+import { useUnsafeFoods } from '../../hooks/useUnsafeFoods';
 
 interface FoodLibraryScreenProps {
   onBack: () => void;
@@ -36,6 +41,8 @@ interface Food {
   category: string;
   emoji: string;
   isSafe: boolean;
+  status?: 'confirmed' | 'suspected';
+  preExisting?: boolean;
   avgSeverity?: number;
   reactionCount?: number;
   symptoms?: string[];
@@ -45,59 +52,73 @@ interface Food {
 
 type FilterTab = 'all' | 'safe' | 'unsafe';
 
+// Helper function to get emoji based on food group
+function getEmojiForFoodGroup(foodGroup: string): string {
+  const emojiMap: Record<string, string> = {
+    'Dairy': '🥛',
+    'Eggs': '🥚',
+    'Seafood': '🐟',
+    'Fish': '🐟',
+    'Shellfish': '🦐',
+    'Legumes': '🥜',
+    'Grains': '🌾',
+    'Cereals': '🌾',
+    'Fruits': '🍎',
+    'Vegetables': '🥬',
+    'Meat': '🥩',
+    'Poultry': '🍗',
+    'Nuts': '🥜',
+    'Tree nuts': '🌰',
+    'Spices': '🌶️',
+    'Herbs': '🌿',
+  };
+  return emojiMap[foodGroup] || '🍽️';
+}
+
 export function FoodLibraryScreen({ onBack }: FoodLibraryScreenProps) {
   const { theme, isDark } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<FilterTab>('all');
   const [showAddModal, setShowAddModal] = useState(false);
   
-  /**
-   * TODO BACKEND: Fetch food library
-   * GET /api/users/{userId}/food-library
-   */
-  const [foods, setFoods] = useState<Food[]>([
-    {
-      id: '1',
-      name: 'Milk',
-      category: 'Dairy',
-      emoji: '🥛',
+  // Fetch unsafe foods from API
+  const { data: unsafeFoodsData, isLoading, error, refetch } = useUnsafeFoods();
+  
+  // Local state for manually added safe foods (until we have a safe foods API)
+  const [localSafeFoods, setLocalSafeFoods] = useState<Food[]>([]);
+  
+  // Transform API data to Food interface
+  const unsafeFoods: Food[] = useMemo(() => {
+    if (!unsafeFoodsData?.ingredients) return [];
+    
+    // Remove duplicates based on ingredient._id
+    const uniqueIngredients = unsafeFoodsData.ingredients.filter(
+      (item, index, self) => 
+        index === self.findIndex(t => t.ingredient._id === item.ingredient._id)
+    );
+    
+    return uniqueIngredients.map(item => ({
+      id: item._id,
+      name: item.ingredient.name,
+      category: item.ingredient.foodGroup || 'Other',
+      emoji: getEmojiForFoodGroup(item.ingredient.foodGroup),
       isSafe: false,
-      avgSeverity: 8,
-      reactionCount: 12,
-      symptoms: ['Itch', 'Bloating', 'Nausea'],
-      lastReaction: '2024-11-10',
-    },
-    {
-      id: '2',
-      name: 'Eggs',
-      category: 'Poultry',
-      emoji: '🥚',
-      isSafe: false,
-      avgSeverity: 5,
-      reactionCount: 6,
-      symptoms: ['Itch', 'Bloating'],
-      lastReaction: '2024-11-05',
-    },
-    {
-      id: '3',
-      name: 'Chicken',
-      category: 'Poultry',
-      emoji: '🍗',
-      isSafe: true,
-      notes: 'No reactions in 20+ meals',
-    },
-    {
-      id: '4',
-      name: 'Broccoli',
-      category: 'Vegetables',
-      emoji: '🥦',
-      isSafe: true,
-      notes: 'Safe to eat',
-    },
-  ]);
+      status: item.status,
+      preExisting: item.preExisting,
+      notes: item.preExisting ? 'Declared at signup' : 
+             item.status === 'suspected' ? 'Detected by app' : 'Confirmed trigger',
+    }));
+  }, [unsafeFoodsData]);
+  
+  // Combine API unsafe foods with local safe foods
+  const allFoods = useMemo(() => {
+    return [...unsafeFoods, ...localSafeFoods];
+  }, [unsafeFoods, localSafeFoods]);
   
   const deleteFood = (id: string) => {
-    setFoods(foods.filter(food => food.id !== id));
+    // For now, only delete local safe foods
+    // TODO: Add API call to delete unsafe foods
+    setLocalSafeFoods(localSafeFoods.filter(food => food.id !== id));
   };
   
   const addFood = (newFood: Omit<Food, 'id'>) => {
@@ -105,12 +126,17 @@ export function FoodLibraryScreen({ onBack }: FoodLibraryScreenProps) {
       ...newFood,
       id: Date.now().toString(),
     };
-    setFoods([food, ...foods]);
+    
+    if (newFood.isSafe) {
+      setLocalSafeFoods([food, ...localSafeFoods]);
+    }
+    // TODO: For unsafe foods, call API to add
+    
     setShowAddModal(false);
   };
   
   // Filter foods
-  const filteredFoods = foods.filter(food => {
+  const filteredFoods = allFoods.filter(food => {
     if (searchQuery && !food.name.toLowerCase().includes(searchQuery.toLowerCase())) {
       return false;
     }
@@ -119,8 +145,69 @@ export function FoodLibraryScreen({ onBack }: FoodLibraryScreenProps) {
     return true;
   });
   
-  const safeFoodsCount = foods.filter(f => f.isSafe).length;
-  const unsafeFoodsCount = foods.filter(f => !f.isSafe).length;
+  const safeFoodsCount = allFoods.filter(f => f.isSafe).length;
+  const unsafeFoodsCount = allFoods.filter(f => !f.isSafe).length;
+  
+  // Loading state
+  if (isLoading) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+        <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
+        <View style={styles.header}>
+          <TouchableOpacity onPress={onBack} style={styles.backButton}>
+            <Ionicons name="chevron-back" size={28} color={theme.textPrimary} />
+          </TouchableOpacity>
+          <View style={styles.headerCenter}>
+            <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>
+              Food Library
+            </Text>
+          </View>
+          <View style={{ width: 40 }} />
+        </View>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={theme.primary} />
+          <Text style={[styles.loadingText, { color: theme.textSecondary }]}>
+            Loading your food library...
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+  
+  // Error state
+  if (error) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+        <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
+        <View style={styles.header}>
+          <TouchableOpacity onPress={onBack} style={styles.backButton}>
+            <Ionicons name="chevron-back" size={28} color={theme.textPrimary} />
+          </TouchableOpacity>
+          <View style={styles.headerCenter}>
+            <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>
+              Food Library
+            </Text>
+          </View>
+          <View style={{ width: 40 }} />
+        </View>
+        <View style={styles.errorContainer}>
+          <Ionicons name="alert-circle-outline" size={48} color={theme.danger} />
+          <Text style={[styles.errorText, { color: theme.textPrimary }]}>
+            Failed to load food library
+          </Text>
+          <Text style={[styles.errorSubtext, { color: theme.textSecondary }]}>
+            {error}
+          </Text>
+          <TouchableOpacity 
+            style={[styles.retryButton, { backgroundColor: theme.primary }]}
+            onPress={refetch}
+          >
+            <Text style={styles.retryButtonText}>Try Again</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
   
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
@@ -136,7 +223,7 @@ export function FoodLibraryScreen({ onBack }: FoodLibraryScreenProps) {
             Food Library
           </Text>
           <Text style={[styles.headerSubtitle, { color: theme.textSecondary }]}>
-            {foods.length} foods tracked
+            {allFoods.length} foods tracked
           </Text>
         </View>
         <View style={{ width: 40 }} />
@@ -307,7 +394,7 @@ function FoodCard({
                 styles.statusText,
                 { color: food.isSafe ? theme.success : theme.danger }
               ]}>
-                {food.isSafe ? 'SAFE' : 'UNSAFE'}
+                {food.isSafe ? 'SAFE' : food.status === 'suspected' ? 'SUSPECTED' : 'UNSAFE'}
               </Text>
             </View>
           </View>
@@ -315,6 +402,16 @@ function FoodCard({
           {/* Unsafe Details */}
           {!food.isSafe && (
             <>
+              {/* Pre-existing badge */}
+              {food.preExisting && (
+                <View style={styles.metaSection}>
+                  <Ionicons name="medical-outline" size={16} color={theme.textTertiary} />
+                  <Text style={[styles.metaText, { color: theme.textSecondary }]}>
+                    Declared at signup
+                  </Text>
+                </View>
+              )}
+              
               {/* Severity Bar */}
               {food.avgSeverity && (
                 <View style={styles.severitySection}>
@@ -363,6 +460,16 @@ function FoodCard({
                   <Ionicons name="alert-circle-outline" size={16} color={theme.textTertiary} />
                   <Text style={[styles.metaText, { color: theme.textSecondary }]}>
                     {food.reactionCount} reactions recorded
+                  </Text>
+                </View>
+              )}
+              
+              {/* Status note */}
+              {!food.preExisting && food.status === 'suspected' && (
+                <View style={styles.metaSection}>
+                  <Ionicons name="analytics-outline" size={16} color={theme.warning || '#F59E0B'} />
+                  <Text style={[styles.metaText, { color: theme.textSecondary }]}>
+                    Detected by pattern analysis
                   </Text>
                 </View>
               )}
@@ -424,7 +531,7 @@ function EmptyState({ theme, searchQuery }: { theme: any; searchQuery: string })
       <Text style={[styles.emptySubtitle, { color: theme.textSecondary }]}>
         {searchQuery
           ? 'Try a different search term'
-          : 'Tap the + button to start building your library'
+          : 'Declare allergies during onboarding or tap + to add foods'
         }
       </Text>
     </View>
@@ -740,6 +847,44 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   
+  // LOADING & ERROR
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 16,
+  },
+  loadingText: {
+    fontSize: 16,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 40,
+    gap: 12,
+  },
+  errorText: {
+    fontSize: 18,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  errorSubtext: {
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  retryButton: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 10,
+    marginTop: 8,
+  },
+  retryButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  
   // HEADER
   header: {
     flexDirection: 'row',
@@ -919,6 +1064,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    marginBottom: 8,
   },
   metaText: {
     fontSize: 13,

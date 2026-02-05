@@ -1,12 +1,21 @@
 const mongoose = require("mongoose");
 require("dotenv").config();
 
-
 const brandedFoodsConnection = mongoose.createConnection(
-  process.env.MONGO_FOODS_URI);
+  process.env.MONGO_FOODS_URI,
+  {
+    serverSelectionTimeoutMS: 30000,
+    connectTimeoutMS: 30000,
+    authSource: "TasteBud"
+  }
+);
 
 brandedFoodsConnection.on("connected", () =>
   console.log("Foods DB connected")
+);
+
+brandedFoodsConnection.on("error", (err) =>
+  console.error("Foods DB connection error:", err.message)
 );
 
 const brandedFoodSchema = new mongoose.Schema({
@@ -17,13 +26,11 @@ const brandedFoodSchema = new mongoose.Schema({
 });
 
 brandedFoodSchema.index({
-  //ingredients: "text",
   description: "text",
   brandedFoodCategory: "text",
   brandOwner: "text",
 }, {
   weights: {
-    //ingredients: 6,
     brandedFoodCategory: 4,
     description: 2,
     brandOwner: 1

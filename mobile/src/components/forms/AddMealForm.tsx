@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -8,12 +8,11 @@ import {
   ScrollView,
   SafeAreaView,
   TextInput,
-  Animated,
-  Modal,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { useSearchIngredients } from "../../hooks/useSearchIngredients";
+import { useSearchFoods, useExpandBrandedFood } from "../../hooks/useSearchFoods";
 import { useSearchSymptom } from "../../hooks/useSymptom";
 import { SearchForm } from "./SearchForm";
 import { FlatList } from "react-native";
@@ -40,8 +39,45 @@ export function AddMealForm({
   showDropdown,
   setShowDropdown,
 }: any) {
-  const results = useSearchIngredients(ingredientInput);
+  // Use combined search for both ingredients and branded foods
+  const { ingredients: ingredientResults, brandedFoods, loading: searchLoading } = useSearchFoods(ingredientInput);
+  const { expandBrandedFood, loading: expandLoading } = useExpandBrandedFood();
   const symptomRes = useSearchSymptom(symptomInput);
+  
+  // Track which ingredients came from branded foods (for visual distinction)
+  const [brandedSources, setBrandedSources] = useState<Record<string, string>>({});
+
+  // Handle selecting a raw ingredient
+  const handleSelectIngredient = (item: { _id: string; name: string }) => {
+    setShowDropdown(false);
+    addIngredient(item.name, item._id);
+    setIngredientInput("");
+  };
+
+  // Handle selecting a branded food - expand it to its mapped ingredients
+  const handleSelectBrandedFood = async (item: { _id: string; name: string; brandOwner?: string }) => {
+    setShowDropdown(false);
+    setIngredientInput("");
+    
+    const mappedIngredients = await expandBrandedFood(item._id);
+    
+    if (mappedIngredients.length === 0) {
+      // No ingredients could be mapped - show a message or handle gracefully
+      alert(`No ingredients could be mapped from "${item.name}". Try adding ingredients manually.`);
+      return;
+    }
+    
+    // Add each mapped ingredient
+    for (const ing of mappedIngredients) {
+      // Check if already added (by ID)
+      addIngredient(ing.name, ing.id);
+      // Track that this ingredient came from a branded product
+      setBrandedSources(prev => ({ ...prev, [ing.id]: item.name }));
+    }
+  };
+
+  const hasResults = ingredientResults.length > 0 || brandedFoods.length > 0;
+
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: theme.background }]}
@@ -62,6 +98,7 @@ export function AddMealForm({
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
         <View style={styles.formSection}>
           <View style={styles.formGroup}>
@@ -125,7 +162,7 @@ export function AddMealForm({
             </View>
 
             <Text style={[styles.miniLabel, { color: theme.textSecondary }]}>
-              Search for ingredients
+              Search ingredients or branded products
             </Text>
             <View style={styles.searchContainer}>
               <TextInput
@@ -137,7 +174,7 @@ export function AddMealForm({
                     borderColor: theme.border,
                   },
                 ]}
-                placeholder="Search for ingredients (e.g wheat)"
+                placeholder="Search (e.g., wheat, Cheerios, peanut butter)"
                 placeholderTextColor={theme.textTertiary}
                 value={ingredientInput}
                 onChangeText={(text) => {
@@ -146,36 +183,92 @@ export function AddMealForm({
                 }}
                 returnKeyType="done"
               />
+              {(searchLoading || expandLoading) && (
+                <ActivityIndicator 
+                  style={styles.searchSpinner} 
+                  size="small" 
+                  color={theme.primary} 
+                />
+              )}
             </View>
-            {showDropdown && ingredientInput.length > 0 &&(
-              <View style={[styles.dropdown, { backgroundColor: theme.card }]}>
-                {results.length > 0  ? (
-                  <FlatList
-                    keyboardShouldPersistTaps="handled"
-                    scrollEnabled={false}
-                    nestedScrollEnabled={true}
-                    data={results}
-                    keyExtractor={(item) => item._id}
-                    renderItem={({ item }) => (
-                      <TouchableOpacity
-                        style={styles.dropdownItem}
-                        onPress={() => {
-                          setShowDropdown(false);
-                          addIngredient(item.name, item._id);
-                        }}
-                      >
-                        <Text style={{ color: theme.textPrimary }}>
-                          {item.name}
-                        </Text>
-                      </TouchableOpacity>
-                    )}
-                  />
-                ) : (
+            
+            {/* Combined Search Results Dropdown */}
+            {showDropdown && ingredientInput.length >= 2 && (
+              <View style={[styles.dropdown, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                {searchLoading ? (
+                  <View style={styles.dropdownLoading}>
+                    <ActivityIndicator size="small" color={theme.primary} />
+                    <Text style={{ color: theme.textSecondary, marginLeft: 8 }}>Searching...</Text>
+                  </View>
+                ) : !hasResults ? (
                   <View style={styles.dropdownItem}>
                     <Text style={{ color: theme.textSecondary }}>
-                      No ingredient found
+                      No results found
                     </Text>
                   </View>
+                ) : (
+                  <ScrollView 
+                    style={{ maxHeight: 300 }} 
+                    keyboardShouldPersistTaps="handled"
+                    nestedScrollEnabled={true}
+                  >
+                    {/* Raw Ingredients Section */}
+                    {ingredientResults.length > 0 && (
+                      <>
+                        <View style={[styles.sectionHeader, { backgroundColor: isDark ? '#1a1a1a' : '#f0f0f0' }]}>
+                          <Ionicons name="leaf-outline" size={14} color={theme.textSecondary} />
+                          <Text style={[styles.sectionHeaderText, { color: theme.textSecondary }]}>
+                            Ingredients
+                          </Text>
+                        </View>
+                        {ingredientResults.map((item) => (
+                          <TouchableOpacity
+                            key={`ing-${item._id}`}
+                            style={[styles.dropdownItem, { borderBottomColor: theme.border }]}
+                            onPress={() => handleSelectIngredient(item)}
+                          >
+                            <Text style={{ color: theme.textPrimary }}>
+                              {item.name}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </>
+                    )}
+                    
+                    {/* Branded Foods Section */}
+                    {brandedFoods.length > 0 && (
+                      <>
+                        <View style={[styles.sectionHeader, { backgroundColor: isDark ? '#1a1a2e' : '#f0f0ff' }]}>
+                          <Ionicons name="pricetag-outline" size={14} color="#7c3aed" />
+                          <Text style={[styles.sectionHeaderText, { color: '#7c3aed' }]}>
+                            Branded Products
+                          </Text>
+                        </View>
+                        {brandedFoods.map((item) => (
+                          <TouchableOpacity
+                            key={`brand-${item._id}`}
+                            style={[styles.dropdownItem, styles.brandedItem, { borderBottomColor: theme.border }]}
+                            onPress={() => handleSelectBrandedFood(item)}
+                          >
+                            <View style={styles.brandedItemContent}>
+                              <View style={styles.brandedTag}>
+                                <Text style={styles.brandedTagText}>BRANDED</Text>
+                              </View>
+                              <Text style={[styles.brandedName, { color: theme.textPrimary }]}>
+                                {item.name}
+                              </Text>
+                              {item.brandOwner && (
+                                <Text style={[styles.brandOwner, { color: theme.textSecondary }]}>
+                                  {item.brandOwner}
+                                </Text>
+                              )}
+                            </View>
+                            <Ionicons name="chevron-forward" size={16} color={theme.textTertiary} />
+                          </TouchableOpacity>
+                        ))}
+                      </>
+                    )}
+                  </ScrollView>
                 )}
               </View>
             )}
@@ -185,7 +278,7 @@ export function AddMealForm({
                 <Text
                   style={[styles.miniLabel, { color: theme.textSecondary }]}
                 >
-                  Ingredients & products added
+                  Ingredients added ({ingredients.length})
                 </Text>
                 <View style={styles.tags}>
                   {ingredients.map((ingredient: string, index: number) => (
@@ -226,7 +319,7 @@ export function AddMealForm({
             </Text>
 
             <Text style={[styles.miniLabel, { color: theme.textSecondary }]}>
-              Severity
+              Severity (1-10)
             </Text>
             <View style={styles.severityContainer}>
               <View
@@ -236,18 +329,18 @@ export function AddMealForm({
                   style={[
                     styles.sliderFill,
                     {
-                      width: `${(severity / 7) * 100}%`,
+                      width: `${(severity / 10) * 100}%`,
                       backgroundColor:
-                        severity > 5
+                        severity > 7
                           ? "#EF4444"
-                          : severity > 3
+                          : severity > 4
                             ? "#F59E0B"
                             : "#22C55E",
                     },
                   ]}
                 />
                 <View style={styles.sliderTicks}>
-                  {[1, 2, 3, 4, 5, 6, 7].map((tick) => (
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((tick) => (
                     <TouchableOpacity
                       key={tick}
                       onPress={() => setSeverity(tick)}
@@ -259,6 +352,9 @@ export function AddMealForm({
                           {
                             backgroundColor:
                               tick <= severity ? "#FFF" : theme.border,
+                            width: 12,
+                            height: 12,
+                            borderRadius: 6,
                           },
                         ]}
                       />
@@ -266,32 +362,35 @@ export function AddMealForm({
                   ))}
                 </View>
               </View>
-              <Text
-                style={[styles.severityLabel, { color: theme.textPrimary }]}
-                >
-                {severity === 1 ? "Low" : severity <= 3 ? "Mild" : severity <= 5 ? "Moderate" : "High"}
+              <View style={styles.severityLabelRow}>
+                <Text style={[styles.severityValue, { color: theme.textPrimary }]}>
+                  {severity}/10
                 </Text>
+                <Text style={[styles.severityLabel, { color: theme.textSecondary }]}>
+                  {severity <= 3 ? "Mild" : severity <= 6 ? "Moderate" : severity <= 8 ? "Severe" : "Very Severe"}
+                </Text>
+              </View>
             </View>
 
             <View style={styles.symptomInputContainer}>
      
             </View>
             <SearchForm
-            theme={theme}
-            text={"Symptom"}
-            setInput={setSymptomInput}
-            input={symptomInput}
-            setShowDropdown={setShowDropdown}
-            addInput={addSymptom}
-            showDropdown={showDropdown}
-            results={symptomRes}
+              theme={theme}
+              text={"Symptom"}
+              setInput={setSymptomInput}
+              input={symptomInput}
+              setShowDropdown={setShowDropdown}
+              addInput={addSymptom}
+              showDropdown={showDropdown}
+              results={symptomRes}
             />
             {symptoms.length > 0 && (
               <View style={styles.symptomsAdded}>
                 <Text
                   style={[styles.miniLabel, { color: theme.textSecondary }]}
                 >
-                  Symptom added
+                  Symptoms added
                 </Text>
                 {symptoms.map((symptom: any, index: number) => (
                   <View
@@ -313,7 +412,7 @@ export function AddMealForm({
                           { color: "rgba(255,255,255,0.7)" },
                         ]}
                       >
-                        Severity: {symptom.severity}/7 at {symptom.time}
+                        Severity: {symptom.severity}/10 at {symptom.time}
                       </Text>
                     </View>
                     <TouchableOpacity onPress={() => removeSymptom(index)}>
@@ -392,13 +491,19 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   searchContainer: {
-    marginBottom: 16,
+    marginBottom: 8,
+    position: "relative",
   },
   searchInput: {
     borderRadius: 12,
     padding: 16,
     fontSize: 15,
     borderWidth: 1,
+  },
+  searchSpinner: {
+    position: "absolute",
+    right: 16,
+    top: 16,
   },
   tagsContainer: {
     marginTop: 16,
@@ -436,9 +541,18 @@ const styles = StyleSheet.create({
     height: 16,
     borderRadius: 8,
   },
+  severityLabelRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  severityValue: {
+    fontSize: 18,
+    fontWeight: "700",
+  },
   severityLabel: {
-    fontSize: 15,
-    fontWeight: "600",
+    fontSize: 14,
+    fontWeight: "500",
   },
   symptomInputContainer: {
     flexDirection: "row",
@@ -521,7 +635,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginTop: 8,
   },
-
   miniLabel: {
     fontSize: 13,
     fontWeight: "600",
@@ -529,13 +642,11 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     letterSpacing: 0.5,
   },
-
   tags: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 8,
   },
-
   tag: {
     flexDirection: "row",
     alignItems: "center",
@@ -569,14 +680,64 @@ const styles = StyleSheet.create({
   },
   dropdown: {
     width: "100%",
-    maxHeight: 200,
-    borderRadius: 8,
+    borderRadius: 12,
     zIndex: 10,
     elevation: 5,
+    borderWidth: 1,
+    overflow: "hidden",
+    marginBottom: 8,
   },
-
+  dropdownLoading: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 16,
+  },
   dropdownItem: {
-    padding: 12,
+    padding: 14,
     borderBottomWidth: 1,
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    gap: 6,
+  },
+  sectionHeaderText: {
+    fontSize: 11,
+    fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  brandedItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  brandedItemContent: {
+    flex: 1,
+  },
+  brandedTag: {
+    backgroundColor: "#7c3aed",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    alignSelf: "flex-start",
+    marginBottom: 4,
+  },
+  brandedTagText: {
+    color: "#FFF",
+    fontSize: 9,
+    fontWeight: "700",
+    letterSpacing: 0.5,
+  },
+  brandedName: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  brandOwner: {
+    fontSize: 12,
+    marginTop: 2,
   },
 });
