@@ -53,11 +53,13 @@ classDiagram
         +ObjectId _id
         +String name* (indexed, text)
         +String[] aliases (indexed)
-        +String scientificName* (indexed, text)
+        +String scientificName (indexed, text)
         +String foodGroup*
         +String foodSubgroup
         +String[] allergens (indexed)
         +String[] intoleranceType
+        +String fodmapCategory
+        +String fodmapLevel
     }
 
     class BrandedFood {
