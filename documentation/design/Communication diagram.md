@@ -7,21 +7,23 @@ graph LR
     
     U -- 2.1: reportReaction --> TB
     TB -- 2.2: analyzeReactionPatterns --> RD[Reaction Pattern Detector]
-    PatternDetector -- 2.3: checkCrossReactiveness --> AD[Allergen Detector]
-    AD -- 2.4: potentialAllerintol --> PD
-    ReactionPatternDetection -- 2.5: patternInsights --> TB
+    RD -- 2.3: checkCrossReactivity --> AD[Allergen Detector]
+    AD -- 2.4: potentialAllergen --> RD
+    RD -- 2.5: patternInsights --> TB
     
-    TB -- 3.1: showSuspectedAllergies --> U
-    U -- 3.2: confirmAllerintol --> TB
+    TB -- 3.1: showSuspectedTriggers --> U
+    U -- 3.2: confirmTrigger --> TB
     TB -- 3.3: addToUnsafeFoods --> UF[Unsafe Foods Tracker]
     UF -- 3.4: confirmationSaved --> TB
     
     U -- 4.1: logMeal --> TB
     TB -- 4.2: checkIngredients --> AD
     AD -- 4.3: getUnsafeFoods --> UF
-    UF -- 4.4: userAllerintol --> AD
-    AD -- 4.5: alleintolWarnings --> TB
+    UF -- 4.4: userTriggers --> AD
+    AD -- 4.5: triggerWarnings --> TB
     TB -- 4.6: displayWarnings --> U
+
+   %%Note: Cross-reactivity (step 2.3) only applies to protein-based allergens, not FODMAPs
 
 ```
   
