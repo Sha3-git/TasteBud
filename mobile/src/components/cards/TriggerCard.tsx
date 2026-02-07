@@ -1,17 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  StatusBar,
-  TouchableOpacity,
-  ScrollView,
-  Dimensions,
 } from 'react-native';
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useTheme } from '../../theme/ThemeContext';
 
 export function TriggerCard({
   rank,
@@ -30,37 +23,46 @@ export function TriggerCard({
   theme: any;
   isDark: boolean;
 }) {
-  const opacity = 0.5 + (count / maxCount) * 0.5;
+  // Color based on rank
+  const getRankColor = () => {
+    if (rank === 1) return ['#EF4444', '#DC2626']; // Red
+    if (rank === 2) return ['#F59E0B', '#D97706']; // Orange
+    if (rank === 3) return ['#FBBF24', '#F59E0B']; // Yellow
+    return ['#6B7280', '#4B5563']; // Gray
+  };
+
+  const rankColors = getRankColor();
+  const barWidth = Math.max((count / maxCount) * 100, 15); // Min 15% width
   
   return (
     <View style={[styles.triggerCard, { backgroundColor: theme.card }]}>
-      <View style={styles.triggerRank}>
-        <Text style={[styles.triggerRankText, { color: theme.textSecondary }]}>
-          #{rank}
+      {/* Rank Badge */}
+      <LinearGradient
+        colors={rankColors}
+        style={styles.rankBadge}
+      >
+        <Text style={styles.rankText}>#{rank}</Text>
+      </LinearGradient>
+      
+      {/* Food Name */}
+      <View style={styles.foodInfo}>
+        <Text style={[styles.foodName, { color: theme.textPrimary }]} numberOfLines={1}>
+          {food}
         </Text>
       </View>
       
-      <Text style={styles.triggerEmoji}>{emoji}</Text>
-      
-      <Text style={[styles.triggerFood, { color: theme.textPrimary }]}>
-        {food}
-      </Text>
-      
-      <View style={styles.triggerCountContainer}>
-        <View style={[styles.triggerCountBar, { backgroundColor: theme.border }]}>
-          <View 
-            style={[
-              styles.triggerCountFill,
-              { 
-                width: `${(count / maxCount) * 100}%`,
-                backgroundColor: rank === 1 ? '#EF4444' : rank <= 3 ? '#F59E0B' : '#6B7280',
-                opacity,
-              }
-            ]} 
+      {/* Count with bar */}
+      <View style={styles.countContainer}>
+        <View style={[styles.countBar, { backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }]}>
+          <LinearGradient
+            colors={rankColors}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={[styles.countBarFill, { width: `${barWidth}%` }]}
           />
         </View>
-        <Text style={[styles.triggerCount, { color: theme.textPrimary }]}>
-          {count} reactions
+        <Text style={[styles.countText, { color: theme.textPrimary }]}>
+          {count} {count === 1 ? 'reaction' : 'reactions'}
         </Text>
       </View>
     </View>
@@ -68,49 +70,48 @@ export function TriggerCard({
 }
 
 const styles = StyleSheet.create({
-    triggerCard: {
+  triggerCard: {
     borderRadius: 16,
     padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    gap: 12,
   },
-  triggerRank: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(0,0,0,0.05)',
+  rankBadge: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  triggerRankText: {
+  rankText: {
+    color: '#FFF',
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '800',
   },
-  triggerEmoji: {
-    fontSize: 32,
-  },
-  triggerFood: {
-    fontSize: 16,
-    fontWeight: '600',
+  foodInfo: {
     flex: 1,
   },
-  triggerCountContainer: {
-    width: 120,
-    gap: 4,
+  foodName: {
+    fontSize: 16,
+    fontWeight: '600',
   },
-  triggerCountBar: {
-    height: 6,
-    borderRadius: 3,
+  countContainer: {
+    width: 110,
+    gap: 6,
+  },
+  countBar: {
+    height: 8,
+    borderRadius: 4,
     overflow: 'hidden',
   },
-  triggerCountFill: {
+  countBarFill: {
     height: '100%',
-    borderRadius: 3,
+    borderRadius: 4,
   },
-  triggerCount: {
+  countText: {
     fontSize: 12,
     fontWeight: '600',
     textAlign: 'right',
   },
-})
+});

@@ -122,7 +122,7 @@ export function MealDetailCard({
                   { color: "rgba(255,255,255,0.7)" },
                 ]}
               >
-                Severity: {symptom.severity}/9 at {symptom.time}
+                Severity: {symptom.severity}/10 at {symptom.time}
               </Text>
             </View>
           ))

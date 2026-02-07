@@ -49,7 +49,7 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
   const { theme, isDark } = useTheme();
 
   const currentDate = new Date();
-  const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth());
+  const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
   const [showMonthPicker, setShowMonthPicker] = useState(false);
   const { createMealLog } = useCreateMealLog();
@@ -63,7 +63,8 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
   const [ingredientId, setIngredientId] = useState<string[]>([]);
   const [ingredientInput, setIngredientInput] = useState("");
   const [symptomInput, setSymptomInput] = useState("");
-  const [severity, setSeverity] = useState(3);
+  // Changed from 3 to 5 (middle of 1-10 scale)
+  const [severity, setSeverity] = useState(5);
   const [symptoms, setSymptoms] = useState<
     { id: string; name: string; severity: number; time: string }[]
   >([]);
@@ -73,17 +74,17 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
   const year = today.getFullYear();
 
   const {
-  monthLogs: fetchedLogs,
-  loading,
-  error,
-  refetch,
-} = useMealLogByMonth(selectedYear, selectedMonth);
+    monthLogs: fetchedLogs,
+    loading,
+    error,
+    refetch,
+  } = useMealLogByMonth(selectedYear, selectedMonth);
 
   useFocusEffect(
-  useCallback(() => {
-    refetch();
-  }, [refetch, selectedMonth, selectedYear])
-);
+    useCallback(() => {
+      refetch();
+    }, [refetch, selectedMonth, selectedYear])
+  );
 
   const [dayLogs, setDayLogs] = useState<DayLog[]>([]); //says day logs but is the meal log data for a month grouped by day
   const [showDropdown, setShowDropdown] = useState(false);
@@ -103,17 +104,23 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
   };
 
   const addIngredient = (ingredient: string, id: string) => {
-    const valueToAdd = ingredient?.trim() || ingredientInput.trim();
-    if (valueToAdd && !ingredients.includes(valueToAdd)) {
-      setIngredients([...ingredients, valueToAdd]);
-      setIngredientId([...ingredientId, id]);
-      setShowDropdown(false);
-      setIngredientInput("");
-    }
-  };
+  const valueToAdd = ingredient?.trim() || ingredientInput.trim();
+  if (valueToAdd) {
+    setIngredients(prev => {
+      if (prev.includes(valueToAdd)) return prev;
+      return [...prev, valueToAdd];
+    });
+    setIngredientId(prev => {
+      return [...prev, id];
+    });
+    setShowDropdown(false);
+    setIngredientInput("");
+  }
+};
 
   const removeIngredient = (index: number) => {
     setIngredients(ingredients.filter((_, i) => i !== index));
+    setIngredientId(ingredientId.filter((_, i) => i !== index));
   };
 
   const addSymptom = (symptom: string, id: string) => {
@@ -135,7 +142,8 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
         },
       ]);
       setSymptomInput("");
-      setSeverity(3);
+      // Reset to default after adding
+      setSeverity(5);
     }
   };
 
@@ -257,6 +265,7 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
           setEditingMealId(null);
           setMealName("");
           setIngredients([]);
+          setIngredientId([]);
           setSymptoms([]);
         }}
         mealName={mealName}
@@ -482,6 +491,4 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 8,
   },
-
-  // MODAL
 });

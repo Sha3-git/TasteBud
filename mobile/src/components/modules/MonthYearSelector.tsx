@@ -62,7 +62,7 @@ export function MonthYearSelector({
         onPress={() => setShowMonthPicker(true)}
       >
         <Text style={[styles.monthText, { color: theme.textPrimary }]}>
-          {months[selectedMonth]}
+          {months[selectedMonth - 1]}
         </Text>
         <Ionicons name="chevron-down" size={20} color={theme.textPrimary} />
         <Text style={[styles.yearText, { color: theme.textSecondary }]}>
