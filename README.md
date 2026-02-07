@@ -182,7 +182,7 @@ December:
 ## Vlogs
 [Vlog 1](https://youtu.be/XUzZLrhF774)
 [Vlog 2](https://youtu.be/vXvnteLl2Qs)
-[Vlog 3](https://youtu.be/JQF0qxv67eY)
+[Vlog 3](https://youtu.be/3btCjA3S2BQ)
 
 
 
