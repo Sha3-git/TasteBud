@@ -33,6 +33,10 @@ The objectives that are needed to achieve this goal include:
 | In-Progress Demo | November |
 | Frontend and Backend Compatibility | December-January |
 | Symptom Analysis and Cross Reactivity | December-February |
+| Application Testing | January - April |
+| Algorithm Development | January - March |
+| User Testing | February - April |
+| Code Testing | February - April |
 
 ---
 
@@ -40,3 +44,4 @@ The objectives that are needed to achieve this goal include:
 The risks that are currently known with the project are:
 * Third party data.
 * Incorrect user data leading to false positives/incorrect symptom assumptions.
+* Incorrect associations from the algorithm.
