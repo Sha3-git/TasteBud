@@ -98,12 +98,37 @@ Tech stack:
 * Mongodb database  
 * ReactNative
 
-Data: 
+### Data: 
 
 * The [allergen encyclopedia](https://www.thermofisher.com/phadia/wo/en/resources/allergen-encyclopedia/f25.html) collects information about discovered allergies and their allergenic molecules as well as cross reactivity. The data is not consistently structured but using this information we can standardize it for our own use with an easy to envision cross reactivity web.   
 * NIH has papers available that list high risk foods with high rates of cross reactivity ([source](https://pmc.ncbi.nlm.nih.gov/articles/PMC11250430))  
 * We also have a data for the names of allergies ([source](https://www.kaggle.com/datasets/boltcutters/food-allergens-and-allergies)) from kaggle  
 * Food allergy and intolerance dataset ([source](https://github.com/RuthvikUppala30/food-allergy-dataset/blob/main/food_allergy_dataset.csv))
+
+#### FODMAP & Additive Ingredients
+TasteBud tracks FODMAP (Fermentable Oligosaccharides, Disaccharides, Monosaccharides, and Polyols) ingredients for users with IBS and digestive sensitivities. Our FODMAP ingredient database includes:
+- **Polyols**: Sorbitol, mannitol, xylitol, maltitol, isomalt, lactitol, erythritol
+- **Oligosaccharides**: Inulin, chicory root fiber, FOS, GOS
+- **Excess Fructose**: High fructose corn syrup, agave
+- **Common Additives**: Gums, artificial sweeteners, preservatives
+
+**Scientific References:**
+
+1. Monash University FODMAP Diet App & Research Program - https://www.monashfodmap.com/
+2. Gibson, P.R. & Shepherd, S.J. (2010). "Evidence-based dietary management of functional gastrointestinal symptoms: The FODMAP approach." *Journal of Gastroenterology and Hepatology*, 25(2), 252-258. https://www.monash.edu/__data/assets/pdf_file/0008/994706/dietarymanagementofgisymptomsfodmaps.pdf
+3. Monash University. "What are the Polyols?" https://www.monashfodmap.com/blog/what-are-polyols/
+4. Monash University. "What are the Oligos (Fructans & GOS)?" https://www.monashfodmap.com/blog/what-are-oligos/
+5. Monash University. "Label Reading and FODMAPs" https://www.monashfodmap.com/blog/update-label-reading/
+
+#### ML Ingredient Matching
+
+TasteBud uses a pre-computed semantic matching system to map branded food ingredients to our core ingredient database:
+
+- **Model**: all-MiniLM-L6-v2 ([Hugging Face](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2))
+- **Processing**: Batch (not live) - mappings are pre-computed once and stored in MongoDB
+- **Similarity Threshold**: 0.50 (50% minimum confidence)
+- **Coverage**: 344,595 ingredient mappings including 23,546 FODMAP/additive mappings
+
 
 MVP 1
 
@@ -157,6 +182,7 @@ December:
 ## Vlogs
 [Vlog 1](https://youtu.be/XUzZLrhF774)
 [Vlog 2](https://youtu.be/vXvnteLl2Qs)
+[Vlog 3](https://youtu.be/3btCjA3S2BQ)
 
 
 
