@@ -6,8 +6,9 @@ export interface Meal {
   id: string;
   name: string;
   time: string;
-  ingredients: string[];
-  symptoms: { id: string; name: string; severity: number; time: string }[];
+  ingredients: string[];           // Display names
+  ingredientIds: string[];         // ObjectIds for saving
+  symptoms: { id: string; name: string; severity: number; time: string; onsetMinutes?: number }[];
   unsafeIngredients: string[];
   color: string;
 }
@@ -26,7 +27,6 @@ interface UseMealLogByDayReturn {
   error: string | null;
   refetch: () => void;
 }
-
 
 export function useMealLogByMonth(
   year: number,
@@ -56,7 +56,8 @@ export function useMealLogByMonth(
         setLoading(true);
         setError(null);
       }
-       const tzOffset = new Date().getTimezoneOffset();
+      
+      const tzOffset = new Date().getTimezoneOffset();
 
       try {
         const mealRes = await mealLogService.getMealLogByMonth({
@@ -68,7 +69,7 @@ export function useMealLogByMonth(
         if (isCancelled) return;
 
         const mealLogs = mealRes.data;
-        if (mealLogs.length > 0) console.log("Meal logs fetched:", mealLogs.length, "days")
+        if (mealLogs.length > 0) console.log("Meal logs fetched:", mealLogs.length, "days");
 
         const formattedMonthLogs: MonthLog[] = await Promise.all(
           mealLogs.map(async (dayGroup: any) => {
@@ -77,6 +78,35 @@ export function useMealLogByMonth(
                 const reacRes = await reactionService.getReaction(meal.id);
                 const reaction = reacRes.data;
 
+                // Backend now returns {ingredientId, name} objects
+                let ingredientNames: string[] = [];
+                let ingredientIds: string[] = [];
+                
+                if (meal.ingredients && meal.ingredients.length > 0) {
+                  meal.ingredients.forEach((ing: any) => {
+                    if (ing && typeof ing === 'object' && ing.name) {
+                      ingredientNames.push(ing.name);
+                      ingredientIds.push(ing.ingredientId || ing._id || '');
+                    } else if (typeof ing === 'string') {
+                      // Fallback for raw strings
+                      ingredientNames.push(ing);
+                      ingredientIds.push(ing);
+                    }
+                  });
+                }
+
+                // Extract symptoms with IDs
+                const symptoms = reaction?.symptoms?.map((r: any) => ({
+                  id: r.symptom?._id || r.symptom || '',
+                  name: r.symptom?.name || 'Unknown symptom',
+                  severity: r.severity ?? 0,
+                  time: new Date(reaction.createdAt).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }),
+                  onsetMinutes: r.onsetMinutes || 0,
+                })) || [];
+
                 return {
                   id: meal.id,
                   name: meal.mealName,
@@ -84,22 +114,10 @@ export function useMealLogByMonth(
                     hour: "2-digit",
                     minute: "2-digit",
                   }),
-                  ingredients: meal.ingredients.map((i: any) => i.name),
-                  symptoms:
-                  reaction?.symptoms?.map((r: any) => ({
-                    name: r.symptom?.name || 'Unknown symptom',  // ADD ?. and fallback
-                    severity: r.severity ?? 0,
-                    time: new Date(reaction.createdAt).toLocaleTimeString(
-                      [],
-                      {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      },
-                    ),
-                  })) || [],
-                  unsafeIngredients: meal.ingredients
-                    .filter((i: any) => i.allergens?.length > 0)
-                    .map((i: any) => i.name),
+                  ingredients: ingredientNames,
+                  ingredientIds: ingredientIds,
+                  symptoms: symptoms,
+                  unsafeIngredients: [],
                   color: reaction?.symptoms?.length ? "#FFA07A" : "#22C55E",
                 };
               }),
@@ -116,10 +134,6 @@ export function useMealLogByMonth(
         );
 
         setMonthLogs(formattedMonthLogs);
-
-
-        
-
         setError(null);
       } catch (err) {
         if (isCancelled) return;

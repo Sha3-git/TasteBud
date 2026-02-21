@@ -110,21 +110,36 @@ export function useCrossReactivity() {
         return;
       }
       
-      // Get unique ingredients
-      const uniqueIngredients = unsafeFoods.ingredients.filter(
+      // IMPORTANT: Only get ACTUAL allergies (preExisting or confirmed)
+      // NOT suspected triggers from the algorithm
+      const confirmedAllergies = unsafeFoods.ingredients.filter(
+        item => item.preExisting === true || item.status === "confirmed" || item.status === "suspected"
+      );
+      
+      // Remove duplicates
+      const uniqueAllergies = confirmedAllergies.filter(
         (item, index, self) => 
           index === self.findIndex(t => t.ingredient._id === item.ingredient._id)
       );
       
-      const userAllergies = uniqueIngredients.map(item => item.ingredient.name);
+      if (uniqueAllergies.length === 0) {
+        setData({
+          userAllergies: [],
+          riskOverview: { high: 0, medium: 0, low: 0 },
+          crossReactivities: []
+        });
+        return;
+      }
       
-      // Step 2: Fetch cross-reactions for each unsafe food
+      const userAllergies = uniqueAllergies.map(item => item.ingredient.name);
+      
+      // Step 2: Fetch cross-reactions for each CONFIRMED allergy only
       const crossReactivities: CrossReactivityData[] = [];
       let highCount = 0;
       let mediumCount = 0;
       let lowCount = 0;
       
-      for (const item of uniqueIngredients) {
+      for (const item of uniqueAllergies) {
         try {
           const crossReactionResponse = await crossReactionsService.getCrossReactions(
             item.ingredient._id
@@ -161,7 +176,7 @@ export function useCrossReactivity() {
                 color: getColorForFoodGroup(item.ingredient.foodGroup),
                 relatedFoods,
                 scientificReason: generateScientificReason(item.ingredient.name, relatedFoods),
-                advice: `Be cautious with these foods if you have a ${item.ingredient.name} sensitivity. Consider allergy testing before trying new foods from this list.`,
+                advice: `Be cautious with these foods if you have a ${item.ingredient.name} allergy. Consider allergy testing before trying new foods from this list.`,
                 isExpanded: false
               });
             }

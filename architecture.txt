@@ -1,0 +1,235 @@
+.
+├── README.md
+├── architecture.txt
+├── documentation
+│   ├── Insights
+│   │   └── Hi-Fidelity User Feedback, Insights and Analysis.md
+│   ├── Management
+│   │   ├── Project Roles and Responsibilites.md
+│   │   ├── RACI.md
+│   │   └── User Roles RBAC.md
+│   ├── Project Status Report
+│   │   └── Project Status Report Nov2.md
+│   ├── Requirements
+│   │   ├── Business Case.md
+│   │   ├── Business Model Analysis.md
+│   │   ├── Project Charter.md
+│   │   └── Project Requirements.md
+│   ├── Stakeholder
+│   │   ├── Stakeholder Analysis Template.md
+│   │   └── Stakeholder Management Plan.md
+│   └── design
+│       ├── Class Diagram.md
+│       ├── Communication diagram.md
+│       ├── ERD.md
+│       ├── FunctionalTest.md
+│       ├── Sequence Diagram.md
+│       ├── User Story Map Diagnosed User.pdf
+│       ├── User Story Map Undiagnosed User.pdf
+│       └── hifi prototype
+│           ├── Home-1.png
+│           ├── Home-2.png
+│           ├── Home-3.png
+│           ├── Home-4.png
+│           ├── Home-5.png
+│           ├── Home-6.png
+│           ├── Home-7.png
+│           ├── Home-8.png
+│           └── Home.png
+├── mobile
+│   ├── App.tsx
+│   ├── app.json
+│   ├── assets
+│   │   ├── adaptive-icon.png
+│   │   ├── favicon.png
+│   │   ├── icon.png
+│   │   └── splash-icon.png
+│   ├── index.ts
+│   ├── ios
+│   │   ├── Podfile
+│   │   ├── Podfile.properties.json
+│   │   ├── TasteBud
+│   │   │   ├── AppDelegate.swift
+│   │   │   ├── Images.xcassets
+│   │   │   │   ├── AppIcon.appiconset
+│   │   │   │   │   ├── App-Icon-1024x1024@1x.png
+│   │   │   │   │   └── Contents.json
+│   │   │   │   ├── Contents.json
+│   │   │   │   ├── SplashScreenBackground.colorset
+│   │   │   │   │   └── Contents.json
+│   │   │   │   └── SplashScreenLegacy.imageset
+│   │   │   │       ├── Contents.json
+│   │   │   │       ├── image.png
+│   │   │   │       ├── image@2x.png
+│   │   │   │       └── image@3x.png
+│   │   │   ├── Info.plist
+│   │   │   ├── SplashScreen.storyboard
+│   │   │   ├── Supporting
+│   │   │   │   └── Expo.plist
+│   │   │   ├── TasteBud-Bridging-Header.h
+│   │   │   └── TasteBud.entitlements
+│   │   └── TasteBud.xcodeproj
+│   │       ├── project.pbxproj
+│   │       ├── project.xcworkspace
+│   │       │   ├── contents.xcworkspacedata
+│   │       │   └── xcshareddata
+│   │       │       └── IDEWorkspaceChecks.plist
+│   │       └── xcshareddata
+│   │           └── xcschemes
+│   │               └── TasteBud.xcscheme
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── src
+│   │   ├── components
+│   │   │   ├── cards
+│   │   │   │   ├── DayLogCard.tsx
+│   │   │   │   ├── FeatureCard.tsx
+│   │   │   │   ├── FoodLibraryCard.tsx
+│   │   │   │   ├── MealDetailCard.tsx
+│   │   │   │   ├── MealSymptomHeroCard.tsx
+│   │   │   │   ├── NutritionCard.tsx
+│   │   │   │   ├── TopTriggerCard.tsx
+│   │   │   │   └── TriggerCard.tsx
+│   │   │   ├── forms
+│   │   │   │   ├── AddMealForm.tsx
+│   │   │   │   └── SearchForm.tsx
+│   │   │   ├── modals
+│   │   │   │   └── MonthPicker.tsx
+│   │   │   └── modules
+│   │   │       ├── LiquidGlassTabBar.tsx
+│   │   │       ├── MonthYearSelector.tsx
+│   │   │       └── WeekCalendar.tsx
+│   │   ├── hooks
+│   │   │   ├── useAnalysis.ts
+│   │   │   ├── useCreateMealLog.ts
+│   │   │   ├── useCreateReaction.ts
+│   │   │   ├── useCrossReactivity.ts
+│   │   │   ├── useMealLogByMonth.ts
+│   │   │   ├── useMealLogDailyStats.ts
+│   │   │   ├── useSearchFoods.ts
+│   │   │   ├── useSearchIngredients.ts
+│   │   │   ├── useSuspectedFoods.ts
+│   │   │   ├── useSymptom.ts
+│   │   │   └── useUnsafeFoods.ts
+│   │   ├── navigation
+│   │   │   └── AppNavigator.tsx
+│   │   ├── screens
+│   │   │   ├── home
+│   │   │   │   ├── CrossReactivityScreen.tsx
+│   │   │   │   ├── FoodLibraryScreen.tsx
+│   │   │   │   ├── HomeScreen.tsx
+│   │   │   │   ├── MealLogScreen.tsx
+│   │   │   │   ├── NotificationsScreen.tsx
+│   │   │   │   ├── ProfileScreen.tsx
+│   │   │   │   └── SymptomAnalysisScreen.tsx
+│   │   │   └── onboarding
+│   │   │       ├── AllergyDeclarationScreen.tsx
+│   │   │       ├── AuthScreen.tsx
+│   │   │       ├── EmailPasswordScreen.tsx
+│   │   │       ├── NameInputScreen.tsx
+│   │   │       ├── SplashScreen.tsx
+│   │   │       └── WelcomeScreens.tsx
+│   │   ├── services
+│   │   │   ├── apiClient.ts
+│   │   │   ├── brandedFoodService.ts
+│   │   │   ├── crossReactionsService.ts
+│   │   │   ├── ingredientsService.ts
+│   │   │   ├── mealLogService.ts
+│   │   │   ├── onboardingService.ts
+│   │   │   ├── reactionService.ts
+│   │   │   ├── symptomService.ts
+│   │   │   └── unsafeFoodsService.ts
+│   │   └── theme
+│   │       ├── ThemeContext.tsx
+│   │       ├── colors.ts
+│   │       ├── index.tsx
+│   │       ├── spacing.ts
+│   │       └── typography.ts
+│   └── tsconfig.json
+├── package.json
+├── server
+│   ├── controllers
+│   │   ├── authController.js
+│   │   ├── brandedFoodController.js
+│   │   ├── crossReactionsController.js
+│   │   ├── ingredientsController.js
+│   │   ├── mealLogsController.js
+│   │   ├── reactionController.js
+│   │   ├── symptomController.js
+│   │   └── unsafeFoodsController.js
+│   ├── data
+│   │   ├── cross_reac.json
+│   │   ├── crossreac.tsv
+│   │   ├── final_foods.json
+│   │   └── hp.obo
+│   ├── example.env
+│   ├── index.js
+│   ├── middlewares
+│   │   └── auth.js
+│   ├── models
+│   │   ├── brandedFoods.js
+│   │   ├── crossReaction.js
+│   │   ├── ingredients.js
+│   │   ├── mealLogs.js
+│   │   ├── reaction.js
+│   │   ├── symptom.js
+│   │   ├── unsafeFoods.js
+│   │   └── user.js
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── routes
+│   │   ├── authRoute.js
+│   │   ├── brandedFoodRoute.js
+│   │   ├── crossReactionsRoute.js
+│   │   ├── ingredientsRoute.js
+│   │   ├── mealLogsRoute.js
+│   │   ├── reactionRoute.js
+│   │   ├── symptomRoute.js
+│   │   └── unsafeFoodsRoute.js
+│   ├── scripts
+│   │   ├── add_fodmap_ingredients.js
+│   │   ├── check_branded.js
+│   │   ├── cleanup_unsafefoods.js
+│   │   ├── compare.js
+│   │   ├── import_crossreactions.js
+│   │   ├── ingred.js
+│   │   ├── population
+│   │   │   ├── brand.js
+│   │   │   ├── crossReac.js
+│   │   │   └── ingredPop.js
+│   │   ├── readme.md
+│   │   └── seeder.js
+│   ├── server.md
+│   ├── services
+│   │   ├── authService.js
+│   │   ├── brandedFoodService.js
+│   │   ├── crossReactionService.js
+│   │   ├── ingredientsService.js
+│   │   ├── mealLogService.js
+│   │   ├── reactionService.js
+│   │   ├── symptomService.js
+│   │   └── unsafeFoodsService.js
+│   └── utils
+│       └── dateRange.js
+└── web
+    ├── README.md
+    ├── package-lock.json
+    ├── package.json
+    ├── public
+    │   ├── favicon.ico
+    │   ├── index.html
+    │   ├── logo192.png
+    │   ├── logo512.png
+    │   ├── manifest.json
+    │   └── robots.txt
+    └── src
+        ├── App.css
+        ├── App.js
+        ├── App.test.js
+        ├── index.css
+        ├── index.js
+        ├── logo.svg
+        ├── reportWebVitals.js
+        └── setupTests.js
+
+49 directories, 184 files

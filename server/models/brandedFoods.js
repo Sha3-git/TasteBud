@@ -2,11 +2,10 @@ const mongoose = require("mongoose");
 require("dotenv").config();
 
 const brandedFoodsConnection = mongoose.createConnection(
-  process.env.MONGO_FOODS_URI,
+  process.env.MONGO_URI,
   {
     serverSelectionTimeoutMS: 30000,
-    connectTimeoutMS: 30000,
-    authSource: "TasteBud"
+    connectTimeoutMS: 30000
   }
 );
 

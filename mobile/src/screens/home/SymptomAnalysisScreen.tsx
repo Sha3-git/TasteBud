@@ -346,16 +346,18 @@ function TimeBar({
   
   return (
     <View style={styles.timeRow}>
+      {/* Fixed width container for the label to prevent overlap */}
       <View style={styles.timeRowLeft}>
         <View style={[styles.timeIconBg, { backgroundColor: `${color}20` }]}>
-          <Ionicons name={icon} size={16} color={color} />
+          <Ionicons name={icon} size={14} color={color} />
         </View>
-        <Text style={[styles.timeLabel, { color: theme.textPrimary }]}>
+        <Text style={[styles.timeLabel, { color: theme.textPrimary }]} numberOfLines={1}>
           {label}
         </Text>
       </View>
 
       <View style={styles.timeRowRight}>
+        {/* The Track (Flex: 1 ensures it fills ONLY the remaining space) */}
         <View style={[styles.timeBar, { backgroundColor: theme.border }]}>
           <View
             style={[
@@ -364,6 +366,7 @@ function TimeBar({
             ]}
           />
         </View>
+        {/* Fixed width for the percent text so the bar doesn't jump around */}
         <Text style={[styles.timePercent, { color: isDanger ? theme.danger : theme.textPrimary }]}>
           {percentage}%
         </Text>
@@ -560,12 +563,14 @@ const styles = StyleSheet.create({
   timeRow: {
     flexDirection: "row",
     alignItems: "center",
+    marginBottom: 16,
   },
   timeRowLeft: {
     flexDirection: "row",
     alignItems: "center",
-    gap: Spacing.sm,
-    width: 110,
+    gap: 8,
+    width: 120,
+    paddingRight: 4,
   },
   timeIconBg: {
     width: 28,
@@ -582,12 +587,13 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    gap: Spacing.sm,
+    gap: 12,
   },
   timeBar: {
     flex: 1,
     height: 8,
     borderRadius: 4,
+    backgroundColor: 'rgba(255,255,255,0.1)',
     overflow: "hidden",
   },
   timeBarFill: {
@@ -595,9 +601,9 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   timePercent: {
-    fontSize: Typography.body.fontSize,
+    fontSize: 14,
     fontWeight: "700",
-    width: 42,
+    width: 45,
     textAlign: "right",
   },
 

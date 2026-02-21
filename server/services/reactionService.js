@@ -1,40 +1,820 @@
-const Reaction = require("../models/reaction")
-const MealLogService = require("../services/mealLogService")
-const UnsafeFood = require("../models/unsafeFoods")
+/**
+ * TASTEBUD REACTION SERVICE - v4.2 (Exclusions + Auto-run)
+ * 
+ * WHAT'S NEW IN V4.2:
+ * - Added EXCLUDED_INGREDIENTS list to filter out common foods (water, salt, flour, etc.)
+ * - Auto-runs trigger detection when a reaction is logged
+ * - Previous fixes maintained (ingredient resolution from ingredient_mappings)
+ * 
+ * Detection tracks:
+ * 1. IgE-like (rapid onset, multi-system) - 0-4 hours
+ * 2. FODMAP (GI-only, dose-dependent) - 1-24 hours  
+ * 3. Intolerance (delayed, GI-predominant) - 2-48 hours
+ * 4. Physiological (non-food patterns) - any timing
+ */
+
+const Reaction = require("../models/reaction");
+const MealLog = require("../models/mealLogs");
+const UnsafeFood = require("../models/unsafeFoods");
+const mongoose = require("mongoose");
 const { dayRange } = require("../utils/dateRange");
 
+// =============================================================================
+// EXCLUDED INGREDIENTS - Too common to be meaningful triggers
+// =============================================================================
+
+const EXCLUDED_INGREDIENTS = new Set([
+  // Water & basic liquids
+  'water', 'tap water', 'spring water', 'mineral water', 'ice', 'ice water',
+  
+  // Salt & basic seasonings
+  'salt', 'sea salt', 'table salt', 'kosher salt', 'sodium chloride',
+  'pepper', 'black pepper', 'white pepper',
+  
+  // Sugar & sweeteners (too ubiquitous)
+  'sugar', 'white sugar', 'brown sugar', 'cane sugar', 'granulated sugar',
+  'powdered sugar', 'confectioners sugar', 'icing sugar',
+  
+  // Basic oils (used in almost everything)
+  'oil', 'vegetable oil', 'cooking oil', 'canola oil', 'sunflower oil',
+  'palm oil', 'oil palm', 'soybean oil', 'corn oil', 'rapeseed oil',
+  
+  // Basic flours & starches
+  'flour', 'wheat flour', 'all-purpose flour', 'white flour', 'bread flour',
+  'starch', 'corn starch', 'cornstarch', 'modified starch', 'modified food starch',
+  
+  // Basic grains when used as fillers
+  'rice', 'white rice', 'rice flour',
+  
+  // Ubiquitous additives
+  'yeast', 'baking powder', 'baking soda', 'sodium bicarbonate',
+  'vinegar', 'white vinegar', 'distilled vinegar',
+  
+  // Generic/vague entries
+  'other', 'other ingredients', 'natural flavors', 'natural flavor',
+  'artificial flavors', 'artificial flavor', 'flavoring', 'spices', 'seasoning',
+  
+  // Test data artifacts
+  'tobacco', 'unknown', 'unknown ingredient',
+]);
+
+/**
+ * Check if an ingredient should be excluded from analysis
+ */
+function shouldExcludeIngredient(ingredientName) {
+  if (!ingredientName) return true;
+  const normalized = ingredientName.toLowerCase().trim();
+  return EXCLUDED_INGREDIENTS.has(normalized);
+}
+
+// =============================================================================
+// INGREDIENT RESOLUTION (same approach as mealLogService)
+// =============================================================================
+
+async function resolveIngredientInfo(ingredientIds) {
+  if (!ingredientIds || ingredientIds.length === 0) return [];
+  
+  const db = mongoose.connection.db;
+  const mappingsCollection = db.collection("ingredient_mappings");
+  const ingredientsCollection = db.collection("ingredients");
+  
+  const resolved = await Promise.all(
+    ingredientIds.map(async (id) => {
+      let idString;
+      if (typeof id === 'string') {
+        idString = id;
+      } else if (id && id.toString) {
+        idString = id.toString();
+      } else {
+        return null;
+      }
+      
+      try {
+        const objectId = new mongoose.Types.ObjectId(idString);
+        
+        const mapping = await mappingsCollection.findOne({ matchedId: objectId });
+        
+        if (mapping) {
+          const fullIngredient = await ingredientsCollection.findOne({ 
+            name: { $regex: new RegExp(`^${escapeRegex(mapping.matchedName)}$`, 'i') }
+          });
+          
+          const allergenCodes = extractAllergenCodes(fullIngredient?.allergens);
+          
+          return {
+            _id: idString,
+            name: mapping.matchedName,
+            foodGroup: fullIngredient?.foodGroup || mapping.foodGroup || 'Unknown',
+            foodSubgroup: fullIngredient?.foodSubgroup || null,
+            intoleranceType: fullIngredient?.intoleranceType || [],
+            allergens: allergenCodes
+          };
+        }
+        
+        const ingredient = await ingredientsCollection.findOne({ _id: objectId });
+        
+        if (ingredient) {
+          const allergenCodes = extractAllergenCodes(ingredient.allergens);
+          
+          return {
+            _id: idString,
+            name: ingredient.name,
+            foodGroup: ingredient.foodGroup || 'Unknown',
+            foodSubgroup: ingredient.foodSubgroup || null,
+            intoleranceType: ingredient.intoleranceType || [],
+            allergens: allergenCodes
+          };
+        }
+        
+        return {
+          _id: idString,
+          name: 'Unknown Ingredient',
+          foodGroup: 'Unknown',
+          foodSubgroup: null,
+          intoleranceType: [],
+          allergens: []
+        };
+        
+      } catch (err) {
+        console.error("Error resolving ingredient:", idString, err.message);
+        return null;
+      }
+    })
+  );
+  
+  return resolved.filter(Boolean);
+}
+
+function escapeRegex(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function extractAllergenCodes(allergens) {
+  if (!allergens || allergens.length === 0) return [];
+  
+  return allergens.map(a => {
+    if (typeof a === 'string') return a;
+    if (typeof a === 'object' && a !== null) {
+      if (a.iuis_name && a.iuis_name.trim()) return a.iuis_name.trim();
+      if (a.allergen_id) return String(a.allergen_id);
+    }
+    return null;
+  }).filter(Boolean);
+}
+
+// =============================================================================
+// SYMPTOM CLASSIFICATION & WEIGHTS
+// =============================================================================
+
+const SYMPTOM_CATEGORIES = {
+  skin: ['Itching', 'Swelling', 'Hives', 'Rash'],
+  respiratory: ['Sneezing', 'Runny nose', 'Coughing', 'Shortness of breath', 'Wheezing'],
+  gastrointestinal: ['Abdominal pain', 'Stomach Pain', 'Nausea', 'Vomiting', 'Diarrhea', 'Bloating', 'Gas'],
+  oral: ['Dry mouth', 'Sore throat', 'Itchy throat', 'Lip swelling'],
+  systemic: ['Headache', 'Dizziness', 'Fatigue'],
+  physiological: ['Sweating', 'Flushing']
+};
+
+const SYMPTOM_WEIGHTS = {
+  'Hives': 3.0, 'Swelling': 3.0, 'Lip swelling': 3.0,
+  'Wheezing': 3.5, 'Shortness of breath': 4.0, 'Itchy throat': 2.5,
+  'Vomiting': 2.5, 'Itching': 2.0, 'Rash': 2.0, 'Diarrhea': 2.0,
+  'Stomach Pain': 1.5, 'Abdominal pain': 1.5, 'Nausea': 1.5,
+  'Bloating': 1.5, 'Gas': 1.2, 'Coughing': 1.5,
+  'Sneezing': 1.0, 'Runny nose': 1.0, 'Headache': 1.0,
+  'Dizziness': 1.0, 'Fatigue': 0.8, 'Dry mouth': 0.8, 'Sore throat': 0.8,
+  'Sweating': 0.5, 'Flushing': 0.5
+};
+
+const getSeverityMultiplier = (severity) => {
+  if (severity >= 9) return 2.0;
+  if (severity >= 7) return 1.5;
+  if (severity >= 4) return 1.0;
+  return 0.5;
+};
+
+const calculateReactionScore = (symptoms) => {
+  return symptoms.reduce((total, s) => {
+    const symptomName = s.symptom?.name || s.symptomName;
+    const baseWeight = SYMPTOM_WEIGHTS[symptomName] || 1.0;
+    const severityMultiplier = getSeverityMultiplier(s.severity);
+    return total + (baseWeight * severityMultiplier);
+  }, 0);
+};
+
+const categorizeSymptoms = (symptoms) => {
+  const categories = { skin: false, respiratory: false, gastrointestinal: false, oral: false, systemic: false, physiological: false };
+  const symptomNames = [];
+  
+  symptoms.forEach(s => {
+    const name = s.symptom?.name || s.symptomName;
+    symptomNames.push(name);
+    for (const [category, symptomList] of Object.entries(SYMPTOM_CATEGORIES)) {
+      if (symptomList.includes(name)) categories[category] = true;
+    }
+  });
+  
+  return { categories, symptomNames };
+};
+
+const countAffectedSystems = (categories) => {
+  return ['skin', 'respiratory', 'gastrointestinal', 'oral', 'systemic'].filter(s => categories[s]).length;
+};
+
+const isGIOnly = (categories) => {
+  return categories.gastrointestinal && !categories.skin && !categories.respiratory;
+};
+
+// =============================================================================
+// ALLERGEN DATABASE
+// =============================================================================
+
+const ALLERGEN_INFO = {
+  'Ara h 1': { source: 'Peanut', type: 'major', risk: 'high' },
+  'Ara h 2': { source: 'Peanut', type: 'major', risk: 'high' },
+  'Ara h 3': { source: 'Peanut', type: 'major', risk: 'high' },
+  'Ara h 6': { source: 'Peanut', type: 'major', risk: 'high' },
+  'Ara h 8': { source: 'Peanut', type: 'minor', risk: 'low' },
+  'Cor a 8': { source: 'Hazelnut', type: 'major', risk: 'high' },
+  'Cor a 9': { source: 'Hazelnut', type: 'major', risk: 'high' },
+  'Cor a 14': { source: 'Hazelnut', type: 'major', risk: 'high' },
+  'Jug r 1': { source: 'Walnut', type: 'major', risk: 'high' },
+  'Ana o 3': { source: 'Cashew', type: 'major', risk: 'high' },
+  'Bos d 4': { source: 'Milk', type: 'major', risk: 'moderate' },
+  'Bos d 5': { source: 'Milk', type: 'major', risk: 'moderate' },
+  'Bos d 8': { source: 'Milk', type: 'major', risk: 'moderate' },
+  'Gal d 1': { source: 'Egg', type: 'major', risk: 'high' },
+  'Gal d 2': { source: 'Egg', type: 'major', risk: 'moderate' },
+  'Tri a 14': { source: 'Wheat', type: 'major', risk: 'high' },
+  'Tri a 19': { source: 'Wheat', type: 'major', risk: 'high' },
+  'Gly m 5': { source: 'Soy', type: 'major', risk: 'high' },
+  'Gly m 6': { source: 'Soy', type: 'major', risk: 'high' },
+  'Pen m 1': { source: 'Shrimp', type: 'major', risk: 'high' },
+  'Ses i 1': { source: 'Sesame', type: 'major', risk: 'high' },
+};
+
+const analyzeAllergenCodes = (allergenCodes) => {
+  if (!allergenCodes || allergenCodes.length === 0) {
+    return { hasKnownAllergens: false, sources: [], riskLevel: 'unknown', majorAllergens: [] };
+  }
+  
+  const sources = new Set();
+  const majorAllergens = [];
+  let highestRisk = 'low';
+  
+  allergenCodes.forEach(code => {
+    const info = ALLERGEN_INFO[code];
+    if (info) {
+      sources.add(info.source);
+      if (info.type === 'major') majorAllergens.push(code);
+      if (info.risk === 'high') highestRisk = 'high';
+      else if (info.risk === 'moderate' && highestRisk !== 'high') highestRisk = 'moderate';
+    }
+  });
+  
+  return {
+    hasKnownAllergens: sources.size > 0,
+    sources: Array.from(sources),
+    riskLevel: highestRisk,
+    majorAllergens,
+    totalCodes: allergenCodes.length
+  };
+};
+
+// =============================================================================
+// TIME WINDOW SCORING
+// =============================================================================
+
+const getTimeWindowScore = (hours, track) => {
+  if (hours < 0) return 0;
+  
+  switch (track) {
+    case 'ige':
+      if (hours <= 0.5) return 1.0;
+      if (hours <= 1) return 0.9;
+      if (hours <= 2) return 0.7;
+      if (hours <= 4) return 0.3;
+      if (hours <= 6) return 0.1;
+      return 0;
+      
+    case 'fodmap':
+      if (hours < 0.5) return 0.1;
+      if (hours <= 1) return 0.4;
+      if (hours <= 2) return 0.6;
+      if (hours <= 4) return 0.8;
+      if (hours <= 8) return 1.0;
+      if (hours <= 12) return 0.9;
+      if (hours <= 24) return 0.6;
+      if (hours <= 48) return 0.3;
+      return 0;
+      
+    case 'intolerance':
+      if (hours < 1) return 0.1;
+      if (hours <= 2) return 0.3;
+      if (hours <= 4) return 0.5;
+      if (hours <= 6) return 0.7;
+      if (hours <= 12) return 0.9;
+      if (hours <= 24) return 1.0;
+      if (hours <= 48) return 0.7;
+      if (hours <= 72) return 0.3;
+      return 0;
+      
+    default:
+      return 0.5;
+  }
+};
+
+// =============================================================================
+// TRACK DETECTION FUNCTIONS
+// =============================================================================
+
+const detectIgEPatterns = (ingredientStats) => {
+  const results = [];
+  
+  for (const [ingredientId, stats] of Object.entries(ingredientStats)) {
+    if (shouldExcludeIngredient(stats.ingredientName)) continue;
+    
+    const igeEvents = stats.events.filter(e => getTimeWindowScore(e.hoursAfterMeal, 'ige') >= 0.3);
+    if (igeEvents.length === 0) continue;
+    
+    const allergenAnalysis = analyzeAllergenCodes(stats.allergenCodes);
+    
+    const multiSystemEvents = [];
+    const highSignalEvents = [];
+    
+    igeEvents.forEach(e => {
+      const { categories, symptomNames } = categorizeSymptoms(e.symptoms);
+      const systemCount = countAffectedSystems(categories);
+      const reactionScore = calculateReactionScore(e.symptoms);
+      
+      if (systemCount >= 2 && (categories.skin || categories.respiratory)) {
+        multiSystemEvents.push({ ...e, systemCount, reactionScore });
+      }
+      
+      const hasHighSignal = symptomNames.some(name => 
+        ['Hives', 'Swelling', 'Lip swelling', 'Wheezing', 'Shortness of breath', 'Itchy throat'].includes(name)
+      );
+      if (hasHighSignal && reactionScore >= 4) {
+        highSignalEvents.push({ ...e, reactionScore });
+      }
+    });
+    
+    const hasMultiSystem = multiSystemEvents.length >= 1;
+    const hasHighSignal = highSignalEvents.length >= 2 || (highSignalEvents.length >= 1 && igeEvents.length >= 2);
+    const hasMajorAllergen = allergenAnalysis.majorAllergens.length > 0;
+    const hasAnyAllergen = allergenAnalysis.hasKnownAllergens;
+    
+    let confidence = 'low';
+    let shouldFlag = false;
+    
+    if (hasMultiSystem && hasMajorAllergen) {
+      confidence = 'very_high'; shouldFlag = true;
+    } else if (hasMultiSystem && hasAnyAllergen) {
+      confidence = 'high'; shouldFlag = true;
+    } else if (hasMultiSystem) {
+      confidence = 'moderate'; shouldFlag = true;
+    } else if (hasHighSignal && hasMajorAllergen) {
+      confidence = 'high'; shouldFlag = true;
+    } else if (hasHighSignal && hasAnyAllergen) {
+      confidence = 'moderate'; shouldFlag = true;
+    } else if (hasHighSignal) {
+      confidence = 'low'; shouldFlag = true;
+    }
+    
+    if (shouldFlag) {
+      const allRelevantEvents = [...new Set([...multiSystemEvents, ...highSignalEvents])];
+      const avgReactionScore = allRelevantEvents.length > 0 
+        ? allRelevantEvents.reduce((sum, e) => sum + e.reactionScore, 0) / allRelevantEvents.length 
+        : 0;
+      const avgHours = igeEvents.reduce((sum, e) => sum + e.hoursAfterMeal, 0) / igeEvents.length;
+      
+      let baseSuspicion = hasMultiSystem ? 85 : 70;
+      if (hasMajorAllergen) baseSuspicion += 15;
+      else if (hasAnyAllergen) baseSuspicion += 8;
+      
+      results.push({
+        id: stats.ingredientId,
+        ingredientId: stats.ingredientId,
+        ingredient: stats.ingredientName,
+        ingredientName: stats.ingredientName,
+        track: 'ige_allergy',
+        trackLabel: '🚨 Possible Allergy',
+        confidence,
+        totalMeals: stats.totalMeals,
+        reactionMeals: igeEvents.length,
+        nonReactionMeals: stats.safeMeals,
+        reactionRate: Math.round((igeEvents.length / stats.totalMeals) * 100),
+        avgSeverity: Math.round(avgReactionScore * 10) / 10,
+        suspicionScore: Math.round(baseSuspicion + avgReactionScore),
+        avgHoursToReaction: Math.round(avgHours * 10) / 10,
+        multiSystemEvents: multiSystemEvents.length,
+        allergenInfo: allergenAnalysis,
+        hasMajorAllergen,
+        recommendation: hasMultiSystem 
+          ? '🚨 Multi-system reaction pattern. Recommend allergy testing.'
+          : '⚠️ Allergic symptoms detected. Consider allergy evaluation.'
+      });
+    }
+  }
+  
+  return results.sort((a, b) => b.suspicionScore - a.suspicionScore);
+};
+
+const detectFODMAPPatterns = (ingredientStats) => {
+  const results = [];
+  
+  for (const [ingredientId, stats] of Object.entries(ingredientStats)) {
+    if (shouldExcludeIngredient(stats.ingredientName)) continue;
+    
+    const isFODMAPTagged = stats.intoleranceTypes && stats.intoleranceTypes.includes('FODMAP');
+    
+    const fodmapEvents = stats.events.filter(e => {
+      const timeScore = getTimeWindowScore(e.hoursAfterMeal, 'fodmap');
+      const { categories } = categorizeSymptoms(e.symptoms);
+      return timeScore >= 0.3 && isGIOnly(categories);
+    });
+    
+    if (fodmapEvents.length < 2) continue;
+    
+    const concordant = fodmapEvents.length;
+    const totalExposures = stats.totalMeals;
+    const associationStrength = totalExposures > 0 ? concordant / totalExposures : 0;
+    
+    let confidence = 'low';
+    let shouldFlag = false;
+    
+    if (isFODMAPTagged) {
+      if (concordant >= 3 && associationStrength >= 0.7) {
+        confidence = 'high'; shouldFlag = true;
+      } else if (concordant >= 2 && associationStrength >= 0.5) {
+        confidence = 'moderate'; shouldFlag = true;
+      } else if (concordant >= 2) {
+        confidence = 'low'; shouldFlag = true;
+      }
+    } else {
+      if (concordant >= 3 && associationStrength >= 0.8) {
+        confidence = 'low'; shouldFlag = true;
+      }
+    }
+    
+    if (shouldFlag) {
+      const avgSeverity = fodmapEvents.reduce((sum, e) => sum + calculateReactionScore(e.symptoms), 0) / fodmapEvents.length;
+      const avgHours = fodmapEvents.reduce((sum, e) => sum + e.hoursAfterMeal, 0) / fodmapEvents.length;
+      
+      results.push({
+        id: stats.ingredientId,
+        ingredientId: stats.ingredientId,
+        ingredient: stats.ingredientName,
+        ingredientName: stats.ingredientName,
+        track: 'fodmap',
+        trackLabel: '🫃 FODMAP Sensitivity',
+        confidence,
+        totalMeals: stats.totalMeals,
+        reactionMeals: concordant,
+        nonReactionMeals: stats.safeMeals,
+        reactionRate: Math.round(associationStrength * 100),
+        avgSeverity: Math.round(avgSeverity * 10) / 10,
+        suspicionScore: Math.round((isFODMAPTagged ? 75 : 50) * associationStrength + (avgSeverity / 5) * 30),
+        avgHoursToReaction: Math.round(avgHours * 10) / 10,
+        isFODMAPTagged,
+        foodGroup: stats.foodGroup,
+        recommendation: isFODMAPTagged
+          ? `⚠️ Known FODMAP. GI symptoms ~${Math.round(avgHours)}h after eating.`
+          : `❓ GI pattern suggests possible FODMAP sensitivity.`
+      });
+    }
+  }
+  
+  return results.sort((a, b) => b.suspicionScore - a.suspicionScore);
+};
+
+const detectIntolerancePatterns = (ingredientStats) => {
+  const results = [];
+  
+  for (const [ingredientId, stats] of Object.entries(ingredientStats)) {
+    if (shouldExcludeIngredient(stats.ingredientName)) continue;
+    
+    const isFODMAPTagged = stats.intoleranceTypes && stats.intoleranceTypes.includes('FODMAP');
+    if (isFODMAPTagged) continue;
+    
+    const intoleranceEvents = stats.events.filter(e => {
+      const timeScore = getTimeWindowScore(e.hoursAfterMeal, 'intolerance');
+      const { categories } = categorizeSymptoms(e.symptoms);
+      return timeScore >= 0.3 && categories.gastrointestinal && !categories.respiratory;
+    });
+    
+    if (intoleranceEvents.length < 2) continue;
+    
+    const concordant = intoleranceEvents.length;
+    const associationStrength = stats.totalMeals > 0 ? concordant / stats.totalMeals : 0;
+    
+    const isProbable = concordant >= 3 && associationStrength >= 0.7;
+    const isPossible = concordant >= 2 && associationStrength >= 0.6;
+    
+    if (isProbable || isPossible) {
+      const avgSeverity = intoleranceEvents.reduce((sum, e) => sum + calculateReactionScore(e.symptoms), 0) / intoleranceEvents.length;
+      const avgHours = intoleranceEvents.reduce((sum, e) => sum + e.hoursAfterMeal, 0) / intoleranceEvents.length;
+      
+      results.push({
+        id: stats.ingredientId,
+        ingredientId: stats.ingredientId,
+        ingredient: stats.ingredientName,
+        ingredientName: stats.ingredientName,
+        track: 'intolerance',
+        trackLabel: '⏰ Delayed Intolerance',
+        confidence: isProbable ? 'high' : 'moderate',
+        totalMeals: stats.totalMeals,
+        reactionMeals: concordant,
+        nonReactionMeals: stats.safeMeals,
+        reactionRate: Math.round(associationStrength * 100),
+        avgSeverity: Math.round(avgSeverity * 10) / 10,
+        suspicionScore: Math.round(associationStrength * 70 + (avgSeverity / 5) * 30),
+        avgHoursToReaction: Math.round(avgHours * 10) / 10,
+        foodGroup: stats.foodGroup,
+        recommendation: `⚠️ Delayed reaction (~${Math.round(avgHours)}h). Consider elimination trial.`
+      });
+    }
+  }
+  
+  return results.sort((a, b) => b.suspicionScore - a.suspicionScore);
+};
+
+const detectPhysiologicalPatterns = (meals, reactions, symptomStats) => {
+  const results = [];
+  const totalMeals = meals.length;
+  
+  if (totalMeals < 7) return results;
+  
+  for (const [symptomName, stats] of Object.entries(symptomStats)) {
+    const occurrenceRate = stats.totalOccurrences / totalMeals;
+    const uniqueFoodsAssociated = stats.associatedIngredients.size;
+    
+    if ((occurrenceRate >= 0.6 && uniqueFoodsAssociated >= 10) || occurrenceRate >= 0.8) {
+      results.push({
+        symptomName,
+        track: 'physiological',
+        trackLabel: 'ℹ️ Not Food-Specific',
+        occurrenceRate: Math.round(occurrenceRate * 100),
+        uniqueFoodsAssociated,
+        isNotFoodRelated: true,
+        recommendation: `ℹ️ This symptom occurs regardless of specific foods.`
+      });
+    }
+  }
+  
+  return results;
+};
+
+// =============================================================================
+// MAIN DETECTION FUNCTION
+// =============================================================================
+
+const getSuspectedFoods = async (userId) => {
+  console.log("🔍 Starting trigger detection for user:", userId);
+  
+  const meals = await MealLog.find({ userId }).sort({ createdAt: 1 }).lean();
+  
+  console.log(`📊 Found ${meals.length} meals`);
+  
+  if (meals.length < 3) {
+    console.log("⚠️ Not enough meals for analysis");
+    return [];
+  }
+  
+  const allIngredientIds = new Set();
+  meals.forEach(meal => {
+    if (meal.ingredients) {
+      meal.ingredients.forEach(id => {
+        const idStr = typeof id === 'string' ? id : id.toString();
+        allIngredientIds.add(idStr);
+      });
+    }
+  });
+  
+  console.log(`🥗 Found ${allIngredientIds.size} unique ingredients`);
+  
+  const resolvedIngredients = await resolveIngredientInfo(Array.from(allIngredientIds));
+  const ingredientMap = {};
+  resolvedIngredients.forEach(ing => {
+    if (ing && !shouldExcludeIngredient(ing.name)) {
+      ingredientMap[ing._id] = ing;
+    }
+  });
+  
+  console.log(`✅ Resolved ${Object.keys(ingredientMap).length} ingredients (after exclusions)`);
+  
+  const reactions = await Reaction.find({ userId })
+    .populate('symptoms.symptom', 'name is_a')
+    .sort({ createdAt: 1 })
+    .lean();
+  
+  console.log(`🩺 Found ${reactions.length} reactions`);
+  
+  const mealLookup = {};
+  meals.forEach(meal => { mealLookup[meal._id.toString()] = meal; });
+  
+  const ingredientStats = {};
+  const symptomStats = {};
+  
+  meals.forEach(meal => {
+    if (!meal.ingredients) return;
+    
+    meal.ingredients.forEach(ingId => {
+      const id = typeof ingId === 'string' ? ingId : ingId.toString();
+      const ingInfo = ingredientMap[id];
+      
+      if (!ingInfo) return;
+      
+      if (!ingredientStats[id]) {
+        ingredientStats[id] = {
+          ingredientId: id,
+          ingredientName: ingInfo.name,
+          foodGroup: ingInfo.foodGroup,
+          foodSubgroup: ingInfo.foodSubgroup,
+          intoleranceTypes: ingInfo.intoleranceType || [],
+          allergenCodes: ingInfo.allergens || [],
+          totalMeals: 0,
+          safeMeals: 0,
+          mealIds: [],
+          events: []
+        };
+      }
+      ingredientStats[id].totalMeals++;
+      ingredientStats[id].mealIds.push(meal._id.toString());
+      
+      const hasReaction = reactions.some(r => 
+        r.mealLogId && r.mealLogId.toString() === meal._id.toString()
+      );
+      if (!hasReaction) {
+        ingredientStats[id].safeMeals++;
+      }
+    });
+  });
+  
+  reactions.forEach(reaction => {
+    if (!reaction.mealLogId) return;
+    
+    const meal = mealLookup[reaction.mealLogId.toString()];
+    if (!meal || !meal.ingredients) return;
+    
+    const mealTime = meal.createdAt;
+    const firstSymptom = reaction.symptoms[0];
+    const onsetMinutes = firstSymptom?.onsetMinutes;
+    
+    let hoursAfterMeal;
+    if (onsetMinutes !== undefined && onsetMinutes > 0) {
+      hoursAfterMeal = onsetMinutes / 60;
+    } else {
+      hoursAfterMeal = (new Date(reaction.createdAt) - new Date(mealTime)) / (1000 * 60 * 60);
+    }
+    
+    if (hoursAfterMeal < 0) return;
+    
+    const symptoms = reaction.symptoms.map(s => ({
+      symptomName: s.symptom?.name || 'Unknown',
+      symptomCategory: s.symptom?.is_a || 'unknown',
+      severity: s.severity,
+      symptom: s.symptom,
+      onsetMinutes: s.onsetMinutes
+    }));
+    
+    symptoms.forEach(s => {
+      if (!symptomStats[s.symptomName]) {
+        symptomStats[s.symptomName] = {
+          totalOccurrences: 0,
+          associatedIngredients: new Set(),
+          severitySum: 0
+        };
+      }
+      symptomStats[s.symptomName].totalOccurrences++;
+      symptomStats[s.symptomName].severitySum += s.severity;
+      
+      meal.ingredients.forEach(ingId => {
+        const id = typeof ingId === 'string' ? ingId : ingId.toString();
+        symptomStats[s.symptomName].associatedIngredients.add(id);
+      });
+    });
+    
+    meal.ingredients.forEach(ingId => {
+      const id = typeof ingId === 'string' ? ingId : ingId.toString();
+      if (ingredientStats[id]) {
+        ingredientStats[id].events.push({
+          reactionId: reaction._id,
+          mealId: meal._id,
+          hoursAfterMeal,
+          symptoms,
+          reactionTime: reaction.createdAt,
+          mealTime: meal.createdAt
+        });
+      }
+    });
+  });
+  
+  console.log(`📈 Built stats for ${Object.keys(ingredientStats).length} ingredients`);
+  
+  const track1Results = detectIgEPatterns(ingredientStats);
+  const track2Results = detectFODMAPPatterns(ingredientStats);
+  const track3Results = detectIntolerancePatterns(ingredientStats);
+  const track4Results = detectPhysiologicalPatterns(meals, reactions, symptomStats);
+  
+  console.log(`🎯 Results: IgE=${track1Results.length}, FODMAP=${track2Results.length}, Intolerance=${track3Results.length}, Physiological=${track4Results.length}`);
+  
+  const igeIds = new Set(track1Results.map(r => r.ingredientId));
+  const filteredTrack2 = track2Results.filter(r => !igeIds.has(r.ingredientId));
+  const fodmapIds = new Set(filteredTrack2.map(r => r.ingredientId));
+  const filteredTrack3 = track3Results.filter(r => !igeIds.has(r.ingredientId) && !fodmapIds.has(r.ingredientId));
+  
+  const suspectedFoods = [
+    ...track1Results,
+    ...filteredTrack2,
+    ...filteredTrack3
+  ].sort((a, b) => b.suspicionScore - a.suspicionScore).slice(0, 15);
+  
+  console.log(`✅ Final suspected foods: ${suspectedFoods.length}`);
+  
+  await syncSuspectedToUnsafeFoods(userId, suspectedFoods);
+  
+  return suspectedFoods;
+};
+
+async function syncSuspectedToUnsafeFoods(userId, suspectedFoods) {
+  try {
+    let unsafeFoodsDoc = await UnsafeFood.findOne({ userId });
+    
+    if (!unsafeFoodsDoc) {
+      unsafeFoodsDoc = await UnsafeFood.create({ userId, ingredients: [] });
+    }
+
+    const existingIds = unsafeFoodsDoc.ingredients.map(item => item.ingredient.toString());
+    let hasChanges = false;
+    
+    for (const suspect of suspectedFoods) {
+      const ingredientId = suspect.id.toString();
+      
+      if (!existingIds.includes(ingredientId)) {
+        unsafeFoodsDoc.ingredients.push({
+          ingredient: suspect.id,
+          status: "suspected",
+          preExisting: false,
+        });
+        hasChanges = true;
+        console.log(`➕ Added: ${suspect.ingredient} (${suspect.track})`);
+      }
+    }
+
+    if (hasChanges) {
+      await unsafeFoodsDoc.save();
+    }
+  } catch (err) {
+    console.error("❌ Error syncing:", err);
+  }
+}
+
+// =============================================================================
+// OTHER FUNCTIONS
+// =============================================================================
 
 async function getReactionByDay(userId, date, page = 1, limit = 10) {
-  const { start, end } = dayRange(date, tzOffset = 360);
+  const { start, end } = dayRange(date, 360);
   return getReactionsInRange(userId, start, end, page, limit);
 }
+
 async function getReaction(mealLogId) {
-  const result = await Reaction.findOne({ mealLogId: mealLogId }).populate("symptoms.symptom")
-  return result;
+  return await Reaction.findOne({ mealLogId }).populate("symptoms.symptom");
 }
 
 async function getReactionsInRange(userId, start, end, page = 1, limit = 10) {
   const skip = (page - 1) * limit;
-
-  const result = await Reaction.find({
+  return await Reaction.find({
     userId,
     createdAt: { $gte: start, $lte: end },
   })
     .populate("mealLogId")
     .skip(skip)
-    .limit(limit)
-
-  console.log(result)
-  return result
+    .limit(limit);
 }
 
+/**
+ * Create a reaction and auto-run trigger detection
+ */
 async function createReaction(userId, data) {
-  const reaction = {
+  const reaction = await Reaction.create({
     userId,
     mealLogId: data.mealLogId,
     symptoms: data.symptoms,
-  }
-  return await Reaction.create(reaction)
+  });
+  
+  // Auto-run trigger detection in the background (don't await)
+  setImmediate(async () => {
+    try {
+      console.log("🔄 Auto-running trigger detection after new reaction...");
+      await getSuspectedFoods(userId);
+    } catch (err) {
+      console.error("❌ Auto-detection failed:", err.message);
+    }
+  });
+  
+  return reaction;
 }
 
 async function dailyStats(userId, date, tzOffset) {
@@ -43,205 +823,39 @@ async function dailyStats(userId, date, tzOffset) {
     userId,
     createdAt: { $gte: start, $lte: end },
   });
-
-  return {
-    reacCount,
-  };
+  return { reacCount };
 }
 
-/**
- * Track ingredients that are in meals with reactions
- * Ingredients that appear ONLY in reaction meals are suspected triggers
- * Now auto-syncs suspected foods to UnsafeFoods collection
- */
-const getSuspectedFoods = async (userId) => {
-  const meals = await MealLogService.getMealLogs(userId);
-
-  const reactions = await Reaction.find({ userId })
-    .populate({
-      path: "mealLogId",
-      populate: {
-        path: "ingredients",
-        select: "name",
-      },
-    });
-
-  const stats = {};
-
-  meals.forEach((meal) => {
-    meal.ingredients.forEach((ingredient) => {
-      const name = ingredient.name;
-
-      if (!stats[name]) {
-        stats[name] = {
-          id: ingredient._id,
-          totalMeals: 0,
-          reactionScore: 0,
-          reactionMeals: 0,
-          nonReactionMeals: 0,
-          totalSeverity: 0,
-          severityCount: 0,
-          avgSeverity: 0,
-        };
-      }
-
-      stats[name].totalMeals += 1;
-
-      if (!meal.hadReaction) {
-        stats[name].nonReactionMeals += 1;
-      }
-    });
-  });
-
-  reactions.forEach((reaction) => {
-    const ingredients = reaction.mealLogId.ingredients || [];
-
-    const reactionTotalSeverity = reaction.symptoms.reduce((sum, symptom) => {
-      return sum + (symptom.severity || 0);
-    }, 0);
-    const symptomCount = reaction.symptoms.length;
-
-    ingredients.forEach((ingredient) => {
-      const name = ingredient.name;
-      if (stats[name]) {
-        stats[name].reactionMeals += 1;
-        stats[name].totalSeverity += reactionTotalSeverity;
-        stats[name].severityCount += symptomCount;
-        if (stats[name].severityCount > 0) {
-          stats[name].avgSeverity = stats[name].totalSeverity / stats[name].severityCount;
-        }
-      }
-    });
-  });
-
-  // Filter to only suspected foods (appear in reactions but never in non-reaction meals)
-  const suspectedFoods = Object.entries(stats)
-    .map(([ingredient, s]) => ({
-      id: s.id,
-      ingredient,
-      totalMeals: s.totalMeals,
-      reactionMeals: s.reactionMeals,
-      reactionRate: s.reactionMeals / s.totalMeals,
-      nonReactionMeals: s.nonReactionMeals,
-      avgSeverity: s.avgSeverity,      
-      totalSeverity: s.totalSeverity, 
-      severityCount: s.severityCount, 
-    }))
-    .filter(
-      (i) => i.reactionMeals > 0 && i.nonReactionMeals === 0
-    )
-    .sort((a, b) => b.reactionMeals - a.reactionMeals);
-
-  // Auto-sync suspected foods to UnsafeFoods collection
-  await syncSuspectedToUnsafeFoods(userId, suspectedFoods);
-
-  return suspectedFoods;
-};
-
-/**
- * Sync suspected foods to the UnsafeFoods collection
- * - Adds new suspected foods
- * - Does NOT remove foods (user might have confirmed them)
- * - Does NOT overwrite preExisting or confirmed foods
- */
-async function syncSuspectedToUnsafeFoods(userId, suspectedFoods) {
-  try {
-    // Find or create user's unsafe foods document
-    let unsafeFoodsDoc = await UnsafeFood.findOne({ userId });
-    
-    if (!unsafeFoodsDoc) {
-      unsafeFoodsDoc = await UnsafeFood.create({
-        userId,
-        ingredients: []
-      });
-    }
-
-    // Get existing ingredient IDs
-    const existingIngredientIds = unsafeFoodsDoc.ingredients.map(
-      (item) => item.ingredient.toString()
-    );
-
-    // Add new suspected foods that aren't already in the list
-    let hasChanges = false;
-    
-    for (const suspect of suspectedFoods) {
-      const ingredientId = suspect.id.toString();
-      
-      if (!existingIngredientIds.includes(ingredientId)) {
-        unsafeFoodsDoc.ingredients.push({
-          ingredient: suspect.id,
-          status: "suspected",
-          preExisting: false,
-        });
-        hasChanges = true;
-        console.log(`Added suspected food: ${suspect.ingredient}`);
-      }
-    }
-
-    // Save if there were changes
-    if (hasChanges) {
-      await unsafeFoodsDoc.save();
-      console.log("Synced suspected foods to UnsafeFoods collection");
-    }
-  } catch (err) {
-    console.error("Error syncing suspected foods:", err);
-    // Don't throw - this is a side effect, main function should still return results
-  }
-}
-
-/**
- * Get monthly analysis data for the Symptom Analysis screen
- * Returns: monthlyImprovement, totalSymptoms, symptomFreeDays, weeklyTrend, timeOfDay
- */
 const getMonthlyAnalysis = async (userId, year, month) => {
-  // Calculate date ranges for current and previous month
   const currentMonthStart = new Date(year, month - 1, 1);
   const currentMonthEnd = new Date(year, month, 0, 23, 59, 59, 999);
-  
   const prevMonthStart = new Date(year, month - 2, 1);
   const prevMonthEnd = new Date(year, month - 1, 0, 23, 59, 59, 999);
 
-  // Get reactions for current month
   const currentMonthReactions = await Reaction.find({
     userId,
     createdAt: { $gte: currentMonthStart, $lte: currentMonthEnd },
   }).populate("symptoms.symptom");
 
-  // Get reactions for previous month
   const prevMonthReactions = await Reaction.find({
     userId,
     createdAt: { $gte: prevMonthStart, $lte: prevMonthEnd },
   });
 
-  // Calculate total symptoms this month
   let totalSymptoms = 0;
-  currentMonthReactions.forEach((reaction) => {
-    totalSymptoms += reaction.symptoms.length;
-  });
+  currentMonthReactions.forEach(r => totalSymptoms += r.symptoms.length);
 
-  // Calculate total symptoms last month
   let prevMonthSymptoms = 0;
-  prevMonthReactions.forEach((reaction) => {
-    prevMonthSymptoms += reaction.symptoms.length;
-  });
+  prevMonthReactions.forEach(r => prevMonthSymptoms += r.symptoms.length);
 
-  // Calculate monthly improvement
-  let monthlyImprovement = 0;
-  if (prevMonthSymptoms > 0) {
-    monthlyImprovement = Math.round(
-      ((prevMonthSymptoms - totalSymptoms) / prevMonthSymptoms) * 100
-    );
-  }
+  const monthlyImprovement = prevMonthSymptoms > 0 
+    ? Math.round(((prevMonthSymptoms - totalSymptoms) / prevMonthSymptoms) * 100)
+    : 0;
 
-  // Calculate symptom-free days
   const daysInMonth = new Date(year, month, 0).getDate();
   const daysWithReactions = new Set();
-  currentMonthReactions.forEach((reaction) => {
-    const day = reaction.createdAt.getDate();
-    daysWithReactions.add(day);
-  });
+  currentMonthReactions.forEach(r => daysWithReactions.add(r.createdAt.getDate()));
   
-  // Only count days up to today if current month
   const today = new Date();
   let daysToCount = daysInMonth;
   if (year === today.getFullYear() && month === today.getMonth() + 1) {
@@ -249,58 +863,39 @@ const getMonthlyAnalysis = async (userId, year, month) => {
   }
   const symptomFreeDays = daysToCount - daysWithReactions.size;
 
-  // Calculate weekly trend (4 weeks)
   const weeklyTrend = [];
   for (let week = 1; week <= 4; week++) {
     const weekStart = new Date(year, month - 1, (week - 1) * 7 + 1);
     const weekEnd = new Date(year, month - 1, week * 7, 23, 59, 59, 999);
-    
-    // Don't go past end of month
     if (weekStart > currentMonthEnd) break;
     
-    const weekReactions = currentMonthReactions.filter((r) => {
-      return r.createdAt >= weekStart && r.createdAt <= weekEnd;
-    });
+    const weekReactions = currentMonthReactions.filter(r => 
+      r.createdAt >= weekStart && r.createdAt <= weekEnd
+    );
 
-    let totalSeverity = 0;
-    let severityCount = 0;
-    weekReactions.forEach((reaction) => {
-      reaction.symptoms.forEach((symptom) => {
-        totalSeverity += symptom.severity || 0;
+    let totalSeverity = 0, severityCount = 0;
+    weekReactions.forEach(r => {
+      r.symptoms.forEach(s => {
+        totalSeverity += s.severity || 0;
         severityCount++;
       });
     });
 
-    const avgSeverity = severityCount > 0 
-      ? Math.round((totalSeverity / severityCount) * 10) / 10 
-      : 0;
-
     weeklyTrend.push({
       week: `Week ${week}`,
-      avgSeverity,
+      avgSeverity: severityCount > 0 ? Math.round((totalSeverity / severityCount) * 10) / 10 : 0,
       reactionCount: weekReactions.length,
     });
   }
 
-  // Calculate time of day patterns
-  const timeOfDay = {
-    breakfast: 0, // 5am - 11am
-    lunch: 0,     // 11am - 4pm
-    dinner: 0,    // 4pm - 10pm
-  };
-
-  currentMonthReactions.forEach((reaction) => {
-    const hour = reaction.createdAt.getHours();
-    if (hour >= 5 && hour < 11) {
-      timeOfDay.breakfast++;
-    } else if (hour >= 11 && hour < 16) {
-      timeOfDay.lunch++;
-    } else if (hour >= 16 && hour < 22) {
-      timeOfDay.dinner++;
-    }
+  const timeOfDay = { breakfast: 0, lunch: 0, dinner: 0 };
+  currentMonthReactions.forEach(r => {
+    const hour = r.createdAt.getHours();
+    if (hour >= 5 && hour < 11) timeOfDay.breakfast++;
+    else if (hour >= 11 && hour < 16) timeOfDay.lunch++;
+    else if (hour >= 16 && hour < 22) timeOfDay.dinner++;
   });
 
-  // Convert to percentages
   const totalTimeReactions = timeOfDay.breakfast + timeOfDay.lunch + timeOfDay.dinner;
   if (totalTimeReactions > 0) {
     timeOfDay.breakfast = Math.round((timeOfDay.breakfast / totalTimeReactions) * 100);
@@ -314,7 +909,6 @@ const getMonthlyAnalysis = async (userId, year, month) => {
     symptomFreeDays,
     weeklyTrend,
     timeOfDay,
-    // Extra data for debugging/display
     daysWithReactions: daysWithReactions.size,
     prevMonthSymptoms,
     reactionCount: currentMonthReactions.length,
