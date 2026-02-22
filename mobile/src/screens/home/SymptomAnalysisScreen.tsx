@@ -1,20 +1,17 @@
 /**
  * SYMPTOM ANALYSIS SCREEN
  *
- * Features:
- * - Personalized insights (not just data dumps)
- * - Top trigger identification
- * - Monthly improvement tracking
- * - Top 5 trigger foods
- * - Weekly trend visualization
- * - Time-of-day patterns
- * - Beautiful, actionable UI
+ * Uses TasteBud Design System:
+ * - Spacing: 8pt grid (xs:4, sm:8, md:16, lg:24, xl:32, xxl:48)
+ * - Typography: title1, title2, title3, body, caption
+ * - Border radius: 12 (cards), 16 (large cards), 8 (badges)
  *
- * Possible Backend Integration?:
- * GET /api/users/{userId}/symptom-analysis?month={month}&year={year}
+ * BACKEND INTEGRATION: COMPLETE
+ * - GET /api/reactions/sus - top trigger foods
+ * - GET /api/reactions/analysis - monthly analysis data
  */
 
-import React, { useState } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -22,12 +19,13 @@ import {
   StatusBar,
   TouchableOpacity,
   ScrollView,
-  Dimensions,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useTheme } from "../../theme/ThemeContext";
+import { Spacing, Typography } from "../../theme/colors";
 import { TriggerCard } from "../../components/cards/TriggerCard";
 import { TopTriggerCard } from "../../components/cards/TopTriggerCard";
 import { useAnalysis } from "../../hooks/useAnalysis";
@@ -36,336 +34,350 @@ interface SymptomAnalysisScreenProps {
   onBack: () => void;
 }
 
-const { width } = Dimensions.get("window");
-
 export function SymptomAnalysisScreen({ onBack }: SymptomAnalysisScreenProps) {
   const { theme, isDark } = useTheme();
-  const { topTrigger, topTriggers, loading } = useAnalysis();
-  console.log("top trigger " + loading);
-
-  const [analysisData] = useState({
-    topTrigger: {
-      food: "Wheat",
-      appearances: 8,
-      avgSeverity: 6.5,
-      emoji: "🌾",
-    },
-    monthlyImprovement: 40, // 40% fewer symptoms than last month
-    weeklyTrend: [
-      { week: "Week 1", avgSeverity: 7.2 },
-      { week: "Week 2", avgSeverity: 5.8 },
-      { week: "Week 3", avgSeverity: 4.1 },
-      { week: "Week 4", avgSeverity: 3.5 },
-    ],
-    timeOfDay: {
-      breakfast: 15,
-      lunch: 45,
-      dinner: 40,
-    },
-    topTriggers: [
-      { food: "Wheat", count: 8, emoji: "🌾" },
-      { food: "Eggs", count: 6, emoji: "🥚" },
-      { food: "Dairy", count: 4, emoji: "🥛" },
-      { food: "Peanuts", count: 3, emoji: "🥜" },
-      { food: "Shellfish", count: 2, emoji: "🦐" },
-    ],
-    totalSymptoms: 23,
-    symptomFreeDays: 7,
-  });
+  const { topTrigger, topTriggers, monthlyAnalysis, loading, error } = useAnalysis();
 
   if (loading) {
     return (
-      <SafeAreaView
-        style={[styles.container, { backgroundColor: theme.background }]}
-      >
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
         <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
-        <View
-          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-        >
-          <Text style={{ color: theme.textSecondary, fontSize: 16 }}>
-            Loading...
+        <Header onBack={onBack} theme={theme} />
+        <View style={styles.centerContent}>
+          <ActivityIndicator size="large" color={theme.primary} />
+          <Text style={[styles.loadingText, { color: theme.textSecondary }]}>
+            Analyzing your data...
           </Text>
         </View>
       </SafeAreaView>
     );
   }
-  const maxTriggerCount = Math.max(...topTriggers.map((t) => t.count));
-  return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.background }]}
-    >
-      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
 
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={28} color={theme.textPrimary} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>
-          Symptom Analysis
-        </Text>
-        <View style={{ width: 40 }} />
-      </View>
+  if (error) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+        <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
+        <Header onBack={onBack} theme={theme} />
+        <View style={styles.centerContent}>
+          <Ionicons name="alert-circle-outline" size={48} color={theme.danger} />
+          <Text style={[styles.errorTitle, { color: theme.textPrimary }]}>
+            Failed to load analysis
+          </Text>
+          <Text style={[styles.errorSubtext, { color: theme.textSecondary }]}>
+            {error}
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  const analysisData = {
+    monthlyImprovement: monthlyAnalysis?.monthlyImprovement ?? 0,
+    totalSymptoms: monthlyAnalysis?.totalSymptoms ?? 0,
+    symptomFreeDays: monthlyAnalysis?.symptomFreeDays ?? 0,
+    weeklyTrend: monthlyAnalysis?.weeklyTrend ?? [],
+    timeOfDay: monthlyAnalysis?.timeOfDay ?? { breakfast: 0, lunch: 0, dinner: 0 },
+  };
+
+  const maxTriggerCount = topTriggers.length > 0 
+    ? Math.max(...topTriggers.map((t) => t.count)) 
+    : 1;
+
+  const hasData = analysisData.totalSymptoms > 0 || topTriggers.length > 0;
+
+  if (!hasData) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+        <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
+        <Header onBack={onBack} theme={theme} />
+        <View style={styles.centerContent}>
+          <Text style={styles.emptyEmoji}>📊</Text>
+          <Text style={[styles.emptyTitle, { color: theme.textPrimary }]}>
+            No data yet
+          </Text>
+          <Text style={[styles.emptySubtext, { color: theme.textSecondary }]}>
+            Log meals and track reactions to see your symptom analysis here.
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
+      <Header onBack={onBack} theme={theme} />
 
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-       {topTrigger && <TopTriggerCard topTrigger={topTrigger} theme={theme} isDark={isDark} />}
+        {/* Top Trigger Hero */}
+        {topTrigger && (
+          <TopTriggerCard topTrigger={topTrigger} theme={theme} isDark={isDark} />
+        )}
 
-        {/* Monthly Progress */}
+        {/* Monthly Stats Card */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
             This month
           </Text>
 
-          <View style={[styles.progressCard, { backgroundColor: theme.card }]}>
-            <View style={styles.progressHeader}>
-              <View>
-                <Text
-                  style={[styles.progressLabel, { color: theme.textSecondary }]}
-                >
-                  Monthly improvement
+          <View style={[styles.statsCard, { backgroundColor: theme.card }]}>
+            {/* Top Row: Improvement + Ring */}
+            <View style={styles.statsTopRow}>
+              <View style={styles.improvementInfo}>
+                <Text style={[styles.statsLabel, { color: theme.textSecondary }]}>
+                  vs last month
                 </Text>
-                <Text style={[styles.progressValue, { color: theme.success }]}>
-                  {analysisData.monthlyImprovement}% fewer symptoms! 🎉
+                <Text style={[
+                  styles.improvementValue,
+                  { color: analysisData.totalSymptoms === 0 ? theme.success : (analysisData.monthlyImprovement >= 0 ? theme.success : theme.danger) }
+                ]}>
+                  {analysisData.totalSymptoms === 0
+                    ? "No symptoms yet!"
+                    : analysisData.monthlyImprovement > 0
+                    ? `${analysisData.monthlyImprovement}% better`
+                    : analysisData.monthlyImprovement < 0
+                    ? `${Math.abs(analysisData.monthlyImprovement)}% worse`
+                    : "Same as before"}
                 </Text>
               </View>
-              <View style={styles.progressRing}>
-                <View
-                  style={[
-                    styles.progressRingOuter,
-                    { borderColor: theme.success },
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.progressPercentage,
-                      { color: theme.success },
-                    ]}
-                  >
-                    {analysisData.monthlyImprovement}%
-                  </Text>
-                </View>
+              
+              {/* Mini Progress Ring */}
+              <View style={[styles.miniRing, { 
+                borderColor: analysisData.monthlyImprovement >= 0 ? theme.success : theme.danger 
+              }]}>
+                <Text style={[styles.miniRingText, { 
+                  color: analysisData.monthlyImprovement >= 0 ? theme.success : theme.danger 
+                }]}>
+                  {analysisData.totalSymptoms === 0 ? "0" : `${Math.abs(analysisData.monthlyImprovement)}%`}
+                </Text>
               </View>
             </View>
 
-            {/* Quick Stats */}
-            <View style={styles.quickStats}>
-              <View style={styles.quickStat}>
-                <Text
-                  style={[styles.quickStatNumber, { color: theme.textPrimary }]}
-                >
-                  {analysisData.totalSymptoms}
-                </Text>
-                <Text
-                  style={[
-                    styles.quickStatLabel,
-                    { color: theme.textSecondary },
-                  ]}
-                >
-                  total symptoms
-                </Text>
-              </View>
-              <View
-                style={[
-                  styles.quickStatDivider,
-                  { backgroundColor: theme.border },
-                ]}
+            {/* Divider */}
+            <View style={[styles.divider, { backgroundColor: theme.border }]} />
+
+            {/* Stats Grid */}
+            <View style={styles.statsGrid}>
+              <StatItem 
+                value={analysisData.totalSymptoms}
+                label="symptoms"
+                color={analysisData.totalSymptoms === 0 ? theme.success : theme.danger}
+                theme={theme}
               />
-              <View style={styles.quickStat}>
-                <Text
-                  style={[styles.quickStatNumber, { color: theme.success }]}
-                >
-                  {analysisData.symptomFreeDays}
-                </Text>
-                <Text
-                  style={[
-                    styles.quickStatLabel,
-                    { color: theme.textSecondary },
-                  ]}
-                >
-                  symptom-free days
-                </Text>
-              </View>
+              <View style={[styles.statDivider, { backgroundColor: theme.border }]} />
+              <StatItem 
+                value={analysisData.symptomFreeDays}
+                label="good days"
+                color={theme.success}
+                theme={theme}
+              />
             </View>
           </View>
         </View>
 
         {/* Weekly Trend */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
-            Weekly trend
-          </Text>
-
-          <View style={[styles.chartCard, { backgroundColor: theme.card }]}>
-            <View style={styles.chart}>
-              {analysisData.weeklyTrend.map((week, index) => {
-                const maxSeverity = 10;
-                const barHeight = (week.avgSeverity / maxSeverity) * 120;
-                const isImproving =
-                  index > 0 &&
-                  week.avgSeverity <
-                    analysisData.weeklyTrend[index - 1].avgSeverity;
-
-                return (
-                  <View key={index} style={styles.chartBar}>
-                    <View style={styles.chartBarContainer}>
-                      <LinearGradient
-                        colors={
-                          isImproving
-                            ? ["#86EFAC", "#4ADE80"]
-                            : ["#FCA5A5", "#EF4444"]
-                        }
-                        style={[styles.chartBarFill, { height: barHeight }]}
-                      >
-                        <Text style={styles.chartBarValue}>
-                          {week.avgSeverity}
-                        </Text>
-                      </LinearGradient>
-                    </View>
-                    <Text
-                      style={[
-                        styles.chartLabel,
-                        { color: theme.textSecondary },
-                      ]}
-                    >
-                      {week.week.replace("Week ", "W")}
-                    </Text>
-                  </View>
-                );
-              })}
-            </View>
-            <Text style={[styles.chartCaption, { color: theme.textSecondary }]}>
-              Average severity per week (0-10 scale)
+        {analysisData.weeklyTrend.length > 0 && analysisData.weeklyTrend.some(w => w.avgSeverity > 0) && (
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
+              Weekly trend
             </Text>
-          </View>
-        </View>
 
-        {/* Time of Day Patterns */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
-            Your danger times
-          </Text>
-          <Text
-            style={[styles.sectionSubtitle, { color: theme.textSecondary }]}
-          >
-            When symptoms occur most
-          </Text>
+            <View style={[styles.chartCard, { backgroundColor: theme.card }]}>
+              <View style={styles.chartBars}>
+                {analysisData.weeklyTrend.map((week, index) => {
+                  const maxSeverity = 10;
+                  const barHeight = Math.max((week.avgSeverity / maxSeverity) * 100, 20);
+                  const isImproving =
+                    index > 0 && analysisData.weeklyTrend[index - 1] &&
+                    week.avgSeverity < analysisData.weeklyTrend[index - 1].avgSeverity;
 
-          <View style={[styles.timeCard, { backgroundColor: theme.card }]}>
-            <TimeOfDayBar
-              icon="sunny"
-              label="Breakfast"
-              percentage={analysisData.timeOfDay.breakfast}
-              color="#FCD34D"
-              theme={theme}
-            />
-            <TimeOfDayBar
-              icon="partly-sunny"
-              label="Lunch"
-              percentage={analysisData.timeOfDay.lunch}
-              color="#FB923C"
-              theme={theme}
-              isDanger
-            />
-            <TimeOfDayBar
-              icon="moon"
-              label="Dinner"
-              percentage={analysisData.timeOfDay.dinner}
-              color="#A78BFA"
-              theme={theme}
-            />
+                  return (
+                    <View key={index} style={styles.chartBarItem}>
+                      <View style={styles.chartBarWrapper}>
+                        <LinearGradient
+                          colors={
+                            week.avgSeverity === 0
+                              ? [theme.success, theme.success]
+                              : isImproving
+                              ? ["#86EFAC", "#22C55E"]
+                              : ["#FCA5A5", "#EF4444"]
+                          }
+                          style={[styles.chartBar, { height: barHeight }]}
+                        >
+                          <Text style={styles.chartBarText}>
+                            {week.avgSeverity > 0 ? week.avgSeverity.toFixed(1) : "0"}
+                          </Text>
+                        </LinearGradient>
+                      </View>
+                      <Text style={[styles.chartBarLabel, { color: theme.textSecondary }]}>
+                        W{index + 1}
+                      </Text>
+                    </View>
+                  );
+                })}
+              </View>
+              <Text style={[styles.chartCaption, { color: theme.textTertiary }]}>
+                Average severity (0-10)
+              </Text>
+            </View>
           </View>
-        </View>
+        )}
+
+        {/* Time of Day */}
+        {(analysisData.timeOfDay.breakfast > 0 || 
+          analysisData.timeOfDay.lunch > 0 || 
+          analysisData.timeOfDay.dinner > 0) && (
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
+              When symptoms hit
+            </Text>
+
+            <View style={[styles.timeCard, { backgroundColor: theme.card }]}>
+              <TimeBar
+                icon="sunny"
+                label="Morning"
+                percentage={analysisData.timeOfDay.breakfast}
+                color="#FCD34D"
+                theme={theme}
+              />
+              <TimeBar
+                icon="partly-sunny"
+                label="Afternoon"
+                percentage={analysisData.timeOfDay.lunch}
+                color="#FB923C"
+                theme={theme}
+              />
+              <TimeBar
+                icon="moon"
+                label="Evening"
+                percentage={analysisData.timeOfDay.dinner}
+                color="#A78BFA"
+                theme={theme}
+              />
+            </View>
+          </View>
+        )}
 
         {/* Top Trigger Foods */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
-            Top trigger foods
-          </Text>
-          <Text
-            style={[styles.sectionSubtitle, { color: theme.textSecondary }]}
-          >
-            Foods that caused reactions
-          </Text>
+        {topTriggers.length > 0 && (
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
+              Suspected triggers
+            </Text>
 
-          <View style={styles.triggersGrid}>
-            {topTriggers.map((trigger, index) => (
-              <TriggerCard
-                key={index}
-                rank={index + 1}
-                emoji={trigger.emoji}
-                food={trigger.food}
-                count={trigger.count}
-                maxCount={maxTriggerCount}
-                theme={theme}
-                isDark={isDark}
-              />
-            ))}
+            <View style={styles.triggersList}>
+              {topTriggers.slice(0, 5).map((trigger, index) => (
+                <TriggerCard
+                  key={index}
+                  rank={index + 1}
+                  emoji={trigger.emoji}
+                  food={trigger.food}
+                  count={trigger.count}
+                  maxCount={maxTriggerCount}
+                  theme={theme}
+                  isDark={isDark}
+                />
+              ))}
+            </View>
           </View>
-        </View>
+        )}
 
-        <View style={{ height: 40 }} />
+        <View style={{ height: Spacing.xl }} />
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-function TimeOfDayBar({
+// ============================================================================
+// SUB-COMPONENTS
+// ============================================================================
+
+function Header({ onBack, theme }: { onBack: () => void; theme: any }) {
+  return (
+    <View style={styles.header}>
+      <TouchableOpacity onPress={onBack} style={styles.backButton}>
+        <Ionicons name="chevron-back" size={28} color={theme.textPrimary} />
+      </TouchableOpacity>
+      <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>
+        Symptom Analysis
+      </Text>
+      <View style={{ width: 40 }} />
+    </View>
+  );
+}
+
+function StatItem({ 
+  value, 
+  label, 
+  color, 
+  theme 
+}: { 
+  value: number; 
+  label: string; 
+  color: string;
+  theme: any;
+}) {
+  return (
+    <View style={styles.statItem}>
+      <Text style={[styles.statValue, { color }]}>{value}</Text>
+      <Text style={[styles.statLabel, { color: theme.textSecondary }]}>{label}</Text>
+    </View>
+  );
+}
+
+function TimeBar({
   icon,
   label,
   percentage,
   color,
-  isDanger,
   theme,
 }: {
   icon: keyof typeof Ionicons.glyphMap;
   label: string;
   percentage: number;
   color: string;
-  isDanger?: boolean;
   theme: any;
 }) {
+  const isDanger = percentage >= 40;
+  
   return (
     <View style={styles.timeRow}>
+      {/* Fixed width container for the label to prevent overlap */}
       <View style={styles.timeRowLeft}>
-        <Ionicons name={icon} size={20} color={color} />
-        <Text style={[styles.timeLabel, { color: theme.textPrimary }]}>
+        <View style={[styles.timeIconBg, { backgroundColor: `${color}20` }]}>
+          <Ionicons name={icon} size={14} color={color} />
+        </View>
+        <Text style={[styles.timeLabel, { color: theme.textPrimary }]} numberOfLines={1}>
           {label}
         </Text>
       </View>
 
       <View style={styles.timeRowRight}>
+        {/* The Track (Flex: 1 ensures it fills ONLY the remaining space) */}
         <View style={[styles.timeBar, { backgroundColor: theme.border }]}>
           <View
             style={[
               styles.timeBarFill,
-              {
-                width: `${percentage}%`,
-                backgroundColor: color,
-              },
+              { width: `${Math.max(percentage, 5)}%`, backgroundColor: color }
             ]}
           />
         </View>
-        <Text
-          style={[
-            styles.timePercentage,
-            { color: isDanger ? "#EF4444" : theme.textPrimary },
-          ]}
-        >
+        {/* Fixed width for the percent text so the bar doesn't jump around */}
+        <Text style={[styles.timePercent, { color: isDanger ? theme.danger : theme.textPrimary }]}>
           {percentage}%
         </Text>
-        {isDanger && (
-          <View style={styles.dangerBadge}>
-            <Text style={styles.dangerText}>⚠️</Text>
-          </View>
-        )}
       </View>
     </View>
   );
 }
+
+// ============================================================================
+// STYLES - Using Design System
+// ============================================================================
 
 const styles = StyleSheet.create({
   container: {
@@ -375,16 +387,49 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 40,
+    paddingBottom: Spacing.xxl,
   },
 
-  // HEADER
+  // Center content (loading/error/empty)
+  centerContent: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: Spacing.xl,
+    gap: Spacing.md,
+  },
+  loadingText: {
+    fontSize: Typography.body.fontSize,
+  },
+  errorTitle: {
+    fontSize: Typography.title3.fontSize,
+    fontWeight: "600",
+  },
+  errorSubtext: {
+    fontSize: Typography.caption.fontSize,
+    textAlign: "center",
+  },
+  emptyEmoji: {
+    fontSize: 56,
+    marginBottom: Spacing.sm,
+  },
+  emptyTitle: {
+    fontSize: Typography.title3.fontSize,
+    fontWeight: "700",
+  },
+  emptySubtext: {
+    fontSize: Typography.body.fontSize,
+    textAlign: "center",
+    lineHeight: 22,
+  },
+
+  // Header
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
   },
   backButton: {
     width: 40,
@@ -392,151 +437,151 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: Typography.title3.fontSize,
     fontWeight: "700",
   },
 
-  // SECTIONS
+  // Sections
   section: {
-    paddingHorizontal: 24,
-    marginBottom: 32,
+    paddingHorizontal: Spacing.lg,
+    marginBottom: Spacing.lg,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: Typography.title3.fontSize,
     fontWeight: "700",
-    marginBottom: 6,
-    letterSpacing: -0.3,
-  },
-  sectionSubtitle: {
-    fontSize: 14,
-    marginBottom: 16,
+    marginBottom: Spacing.sm,
   },
 
-  // HERO CARD
-
-  // PROGRESS CARD
-  progressCard: {
-    borderRadius: 20,
-    padding: 20,
+  // Stats Card
+  statsCard: {
+    borderRadius: 16,
+    padding: Spacing.lg,
   },
-  progressHeader: {
+  statsTopRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 24,
   },
-  progressLabel: {
+  improvementInfo: {
+    flex: 1,
+    gap: 4,
+  },
+  statsLabel: {
+    fontSize: Typography.caption.fontSize,
+    fontWeight: "500",
+  },
+  improvementValue: {
+    fontSize: Typography.title3.fontSize,
+    fontWeight: "700",
+  },
+  miniRing: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    borderWidth: 4,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  miniRingText: {
     fontSize: 14,
-    marginBottom: 6,
-  },
-  progressValue: {
-    fontSize: 18,
     fontWeight: "700",
   },
-  progressRing: {
-    width: 80,
-    height: 80,
-    justifyContent: "center",
-    alignItems: "center",
+  divider: {
+    height: 1,
+    marginVertical: Spacing.md,
   },
-  progressRingOuter: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    borderWidth: 6,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  progressPercentage: {
-    fontSize: 18,
-    fontWeight: "700",
-  },
-  quickStats: {
+  statsGrid: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 20,
   },
-  quickStat: {
+  statItem: {
     flex: 1,
     alignItems: "center",
+    gap: 4,
   },
-  quickStatNumber: {
+  statValue: {
     fontSize: 32,
     fontWeight: "700",
-    marginBottom: 4,
   },
-  quickStatLabel: {
-    fontSize: 13,
-    textAlign: "center",
+  statLabel: {
+    fontSize: Typography.caption.fontSize,
   },
-  quickStatDivider: {
+  statDivider: {
     width: 1,
-    height: 50,
+    height: 40,
   },
 
-  // CHART
+  // Chart
   chartCard: {
-    borderRadius: 20,
-    padding: 20,
+    borderRadius: 16,
+    padding: Spacing.lg,
   },
-  chart: {
+  chartBars: {
     flexDirection: "row",
     justifyContent: "space-around",
     alignItems: "flex-end",
-    height: 140,
-    marginBottom: 16,
+    height: 120,
+    marginBottom: Spacing.sm,
   },
-  chartBar: {
+  chartBarItem: {
     flex: 1,
     alignItems: "center",
-    gap: 8,
+    gap: Spacing.xs,
   },
-  chartBarContainer: {
-    width: "80%",
-    height: 120,
+  chartBarWrapper: {
+    width: "70%",
+    height: 100,
     justifyContent: "flex-end",
   },
-  chartBarFill: {
+  chartBar: {
     width: "100%",
-    borderRadius: 8,
+    borderRadius: 6,
     justifyContent: "center",
     alignItems: "center",
-    minHeight: 30,
+    minHeight: 24,
   },
-  chartBarValue: {
+  chartBarText: {
     color: "#FFF",
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: "700",
   },
-  chartLabel: {
-    fontSize: 12,
+  chartBarLabel: {
+    fontSize: Typography.footnote.fontSize,
     fontWeight: "600",
   },
   chartCaption: {
-    fontSize: 12,
+    fontSize: Typography.footnote.fontSize,
     textAlign: "center",
   },
 
-  // TIME OF DAY
+  // Time of Day
   timeCard: {
-    borderRadius: 20,
-    padding: 20,
-    gap: 20,
+    borderRadius: 16,
+    padding: Spacing.lg,
+    gap: Spacing.md,
   },
   timeRow: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    marginBottom: 16,
   },
   timeRowLeft: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    gap: 8,
     width: 120,
+    paddingRight: 4,
+  },
+  timeIconBg: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    justifyContent: "center",
+    alignItems: "center",
   },
   timeLabel: {
-    fontSize: 15,
-    fontWeight: "600",
+    fontSize: Typography.body.fontSize,
+    fontWeight: "500",
   },
   timeRowRight: {
     flex: 1,
@@ -548,27 +593,22 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 8,
     borderRadius: 4,
+    backgroundColor: 'rgba(255,255,255,0.1)',
     overflow: "hidden",
   },
   timeBarFill: {
     height: "100%",
     borderRadius: 4,
   },
-  timePercentage: {
-    fontSize: 15,
+  timePercent: {
+    fontSize: 14,
     fontWeight: "700",
     width: 45,
     textAlign: "right",
   },
-  dangerBadge: {
-    marginLeft: 4,
-  },
-  dangerText: {
-    fontSize: 16,
-  },
 
-  // TRIGGERS GRID
-  triggersGrid: {
-    gap: 12,
+  // Triggers list
+  triggersList: {
+    gap: Spacing.sm,
   },
 });

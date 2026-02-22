@@ -6,11 +6,11 @@ import {
   StatusBar,
   TouchableOpacity,
   ScrollView,
+  Modal,
+  Alert,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
-
 import { SafeAreaView } from "react-native-safe-area-context";
-
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../../theme/ThemeContext";
 
@@ -22,6 +22,7 @@ import { MonthPicker } from "../../components/modals/MonthPicker";
 import { useMealLogByMonth } from "../../hooks/useMealLogByMonth";
 import { useCreateMealLog } from "../../hooks/useCreateMealLog";
 import { useCreateReaction } from "../../hooks/useCreateReaction";
+import { mealLogService } from "../../services/mealLogService";
 
 interface MealLogScreenProps {
   onBack: () => void;
@@ -32,7 +33,8 @@ interface Meal {
   name: string;
   time: string;
   ingredients: string[];
-  symptoms: { id: string; name: string; severity: number; time: string }[];
+  ingredientIds: string[];
+  symptoms: { id: string; name: string; severity: number; time: string; onsetMinutes?: number }[];
   unsafeIngredients: string[];
   color: string;
 }
@@ -49,43 +51,43 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
   const { theme, isDark } = useTheme();
 
   const currentDate = new Date();
-  const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth());
+  const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
   const [showMonthPicker, setShowMonthPicker] = useState(false);
-  const { createMealLog } = useCreateMealLog();
+  
+  const { createMealLog, updateMealLog } = useCreateMealLog();
   const { createReaction } = useCreateReaction();
 
   const [isAddingMeal, setIsAddingMeal] = useState(false);
   const [editingMealId, setEditingMealId] = useState<string | null>(null);
+  const [editingDayIndex, setEditingDayIndex] = useState<number | null>(null);
 
   const [mealName, setMealName] = useState("");
   const [ingredients, setIngredients] = useState<string[]>([]);
   const [ingredientId, setIngredientId] = useState<string[]>([]);
   const [ingredientInput, setIngredientInput] = useState("");
   const [symptomInput, setSymptomInput] = useState("");
-  const [severity, setSeverity] = useState(3);
-  const [symptoms, setSymptoms] = useState<
-    { id: string; name: string; severity: number; time: string }[]
-  >([]);
+  const [severity, setSeverity] = useState(5);
+  const [symptoms, setSymptoms] = useState<{ id: string; name: string; severity: number; time: string; onsetMinutes?: number }[]>([]);
 
-  const today = new Date();
-  const month = today.getMonth() + 1; // 0-based, so +1
-  const year = today.getFullYear();
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [mealToDelete, setMealToDelete] = useState<{ dayIndex: number; mealId: string; mealName: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const {
-  monthLogs: fetchedLogs,
-  loading,
-  error,
-  refetch,
-} = useMealLogByMonth(selectedYear, selectedMonth);
+    monthLogs: fetchedLogs,
+    loading,
+    error,
+    refetch,
+  } = useMealLogByMonth(selectedYear, selectedMonth);
 
   useFocusEffect(
-  useCallback(() => {
-    refetch();
-  }, [refetch, selectedMonth, selectedYear])
-);
+    useCallback(() => {
+      refetch();
+    }, [refetch, selectedMonth, selectedYear])
+  );
 
-  const [dayLogs, setDayLogs] = useState<DayLog[]>([]); //says day logs but is the meal log data for a month grouped by day
+  const [dayLogs, setDayLogs] = useState<DayLog[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
 
   useEffect(() => {
@@ -104,9 +106,12 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
 
   const addIngredient = (ingredient: string, id: string) => {
     const valueToAdd = ingredient?.trim() || ingredientInput.trim();
-    if (valueToAdd && !ingredients.includes(valueToAdd)) {
-      setIngredients([...ingredients, valueToAdd]);
-      setIngredientId([...ingredientId, id]);
+    if (valueToAdd) {
+      setIngredients(prev => {
+        if (prev.includes(valueToAdd)) return prev;
+        return [...prev, valueToAdd];
+      });
+      setIngredientId(prev => [...prev, id]);
       setShowDropdown(false);
       setIngredientInput("");
     }
@@ -114,29 +119,15 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
 
   const removeIngredient = (index: number) => {
     setIngredients(ingredients.filter((_, i) => i !== index));
+    setIngredientId(ingredientId.filter((_, i) => i !== index));
   };
 
-  const addSymptom = (symptom: string, id: string) => {
-    if (symptomInput.trim()) {
-      const now = new Date();
-      const timeString = now.toLocaleTimeString("en-US", {
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      });
-
-      setSymptoms([
-        ...symptoms,
-        {
-          id,
-          name: symptom,
-          severity,
-          time: timeString,
-        },
-      ]);
-      setSymptomInput("");
-      setSeverity(3);
-    }
+  const addSymptom = (symptom: string, id: string, sev?: number, onsetMinutes?: number) => {
+    const now = new Date();
+    const timeString = now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
+    setSymptoms([...symptoms, { id, name: symptom, severity: sev ?? severity, time: timeString, onsetMinutes: onsetMinutes ?? 0 }]);
+    setSymptomInput("");
+    setSeverity(5);
   };
 
   const removeSymptom = (index: number) => {
@@ -144,107 +135,79 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
   };
 
   const handleComplete = async () => {
-    if (!mealName.trim() || ingredients.length === 0) {
-      return;
+    if (!mealName.trim() || ingredients.length === 0) return;
+
+    const symptomPayload = symptoms.map((s) => ({ symptom: s.id, severity: s.severity, onsetMinutes: s.onsetMinutes || 0 }));
+    const hadReaction = symptomPayload.length > 0;
+
+    try {
+      let mealRes;
+      if (editingMealId) {
+        mealRes = await updateMealLog(editingMealId, mealName, ingredientId, ingredients, hadReaction);
+      } else {
+        const today = new Date();
+        mealRes = await createMealLog(today, mealName, ingredientId, ingredients, hadReaction);
+      }
+
+      if (symptomPayload.length > 0 && mealRes?._id) {
+        await createReaction(mealRes._id, symptomPayload);
+      }
+      resetForm();
+      refetch();
+    } catch (error) {
+      console.error("❌ Error saving meal:", error);
     }
+  };
 
-    const now = new Date();
-    const timeString = now.toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    });
-
-    const newMeal: Meal = {
-      id: Date.now().toString(),
-      name: mealName,
-      time: timeString,
-      ingredients: ingredients,
-      symptoms: symptoms,
-      unsafeIngredients: [],
-      color: symptoms.length > 0 ? "#FF9E80" : "#9ACD32",
-    };
-
-    const today = new Date();
-    const todayIndex = dayLogs.findIndex(
-      (day) => day.date.toDateString() === today.toDateString(),
-    );
-
-    if (todayIndex >= 0) {
-      const updatedDayLogs = [...dayLogs];
-      updatedDayLogs[todayIndex].meals.push(newMeal);
-      updatedDayLogs[todayIndex].isExpanded = true;
-      setDayLogs(updatedDayLogs);
-    } else {
-      const dayNames = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
-      const newDayLog: DayLog = {
-        date: today,
-        dayName: dayNames[today.getDay()],
-        dayNumber: today.getDate(),
-        meals: [newMeal],
-        isExpanded: true,
-      };
-      setDayLogs([newDayLog, ...dayLogs]);
-    }
-    const symptomPayload = symptoms.map((s) => ({
-      symptom: s.id,
-      severity: s.severity,
-    }));
-    const hadReaction = symptomPayload.length > 0 ? true : false;
-    const mealRes = await createMealLog(
-      today,
-      mealName,
-      ingredientId,
-      hadReaction,
-    );
-    if (symptomPayload.length > 0) {
-      console.log(symptomPayload.length > 0);
-
-      const createRes = await createReaction(mealRes._id, symptomPayload);
-      console.log("Reaction added:", createRes);
-    }
-
+  const resetForm = () => {
     setMealName("");
     setIngredients([]);
     setIngredientId([]);
     setSymptoms([]);
+    setEditingMealId(null);
+    setEditingDayIndex(null);
     setIsAddingMeal(false);
   };
 
   const handleDeleteMeal = (dayIndex: number, mealId: string) => {
-    const updatedDayLogs = [...dayLogs];
-    updatedDayLogs[dayIndex].meals = updatedDayLogs[dayIndex].meals.filter(
-      (meal) => meal.id !== mealId,
-    );
-    setDayLogs(updatedDayLogs);
+    const meal = dayLogs[dayIndex]?.meals.find(m => m.id === mealId);
+    setMealToDelete({ dayIndex, mealId, mealName: meal?.name || "this meal" });
+    setShowDeleteModal(true);
   };
 
-  const handleEditMeal = (dayIndex: number, meal: Meal) => {
-    setMealName(meal.name);
-    setIngredients(meal.ingredients);
-    setSymptoms(meal.symptoms);
+  const confirmDelete = async () => {
+  if (!mealToDelete) return;
+  setIsDeleting(true);
+  try {
+    await mealLogService.deleteMealLog(mealToDelete.mealId);
+    await refetch();
+  } catch (error) {
+    Alert.alert("Error", "Failed to delete meal.");
+  } finally {
+    setIsDeleting(false);
+    setShowDeleteModal(false);
+    setMealToDelete(null);
+  }
+};
+
+  const handleEditMeal = (dayIndex: number, meal: any) => {
+    setMealName(meal.name || "");
+    setIngredients(meal.ingredients || []);
+    setIngredientId(meal.ingredientIds || []);
+    setSymptoms(meal.symptoms || []);
     setEditingMealId(meal.id);
+    setEditingDayIndex(dayIndex);
     setIsAddingMeal(true);
-
-    handleDeleteMeal(dayIndex, meal.id);
-
-    console.log("✏️ Editing meal:", meal.id);
   };
 
   const goToPreviousMonth = () => {
-    if (selectedMonth === 0) {
-      setSelectedMonth(11);
-    } else {
-      setSelectedMonth(selectedMonth - 1);
-    }
+    if (selectedMonth === 1) { setSelectedMonth(12); setSelectedYear(selectedYear - 1); }
+    else { setSelectedMonth(selectedMonth - 1); }
   };
 
   const goToNextMonth = () => {
-    if (selectedMonth === 11) {
-      setSelectedMonth(0);
-    } else {
-      setSelectedMonth(selectedMonth + 1);
-    }
+    if (selectedMonth === 12) { setSelectedMonth(1); setSelectedYear(selectedYear + 1); }
+    else { setSelectedMonth(selectedMonth + 1); }
   };
 
   if (isAddingMeal) {
@@ -252,13 +215,7 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
       <AddMealForm
         theme={theme}
         isDark={isDark}
-        onBack={() => {
-          setIsAddingMeal(false);
-          setEditingMealId(null);
-          setMealName("");
-          setIngredients([]);
-          setSymptoms([]);
-        }}
+        onBack={resetForm}
         mealName={mealName}
         setMealName={setMealName}
         ingredients={ingredients}
@@ -276,122 +233,61 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
         handleComplete={handleComplete}
         showDropdown={showDropdown}
         setShowDropdown={setShowDropdown}
+        isEditing={!!editingMealId}
       />
     );
   }
-  if (loading) {
+
+  if (loading && dayLogs.length === 0) {
     return (
-      <SafeAreaView
-        style={[styles.container, { backgroundColor: theme.background }]}
-      >
-        <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
-        <View
-          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-        >
-          <Text style={{ color: theme.textSecondary, fontSize: 16 }}>
-            Loading meals...
-          </Text>
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <Text style={{ color: theme.textSecondary }}>Loading meals...</Text>
         </View>
       </SafeAreaView>
     );
   }
 
-  if (error) {
-    return (
-      <SafeAreaView
-        style={[styles.container, { backgroundColor: theme.background }]}
-      >
-        <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
-        <View
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center",
-            padding: 24,
-          }}
-        >
-          <Text
-            style={{
-              color: theme.danger,
-              fontSize: 18,
-              fontWeight: "600",
-              marginBottom: 8,
-            }}
-          >
-            Oops!
-          </Text>
-          <Text
-            style={{
-              color: theme.textSecondary,
-              fontSize: 14,
-              textAlign: "center",
-              marginBottom: 16,
-            }}
-          >
-            {error}
-          </Text>
-          <TouchableOpacity
-            onPress={refetch}
-            style={{
-              backgroundColor: theme.primary,
-              paddingHorizontal: 24,
-              paddingVertical: 12,
-              borderRadius: 8,
-            }}
-          >
-            <Text style={{ color: "#FFF", fontWeight: "600" }}>Try Again</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    );
-  }
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.background }]}
-    >
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
 
+      {/* FIXED: Inlined Modal to prevent state-change freezes */}
+      <Modal visible={showDeleteModal} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: isDark ? '#1c1c1e' : '#fff' }]}>
+            <View style={styles.modalIcon}><Ionicons name="trash-outline" size={32} color="#EF4444" /></View>
+            <Text style={[styles.modalTitle, { color: theme.textPrimary }]}>Delete Meal?</Text>
+            <Text style={[styles.modalMessage, { color: theme.textSecondary }]}>Are you sure you want to delete "{mealToDelete?.mealName}"?</Text>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity style={[styles.modalButton, styles.cancelButton, { borderColor: theme.border }]} onPress={() => setShowDeleteModal(false)} disabled={isDeleting}>
+                <Text style={[styles.cancelButtonText, { color: theme.textPrimary }]}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.modalButton, styles.deleteButton]} onPress={confirmDelete} disabled={isDeleting}>
+                <Text style={styles.deleteButtonText}>{isDeleting ? "Deleting..." : "Delete"}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       <View style={styles.header}>
-        <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={28} color={theme.textPrimary} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>
-          Meal Log
-        </Text>
+        <TouchableOpacity onPress={onBack}><Ionicons name="chevron-back" size={28} color={theme.textPrimary} /></TouchableOpacity>
+        <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>Meal Log</Text>
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Month/Year Selector - WORKING */}
-        <MonthYearSelector
-          goToPreviousMonth={goToPreviousMonth}
-          goToNextMonth={goToNextMonth}
-          theme={theme}
-          setShowMonthPicker={setShowMonthPicker}
-          selectedMonth={selectedMonth}
-          selectedYear={selectedYear}
-        />
-
-        {/* Past Meal Logs Section */}
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <MonthYearSelector goToPreviousMonth={goToPreviousMonth} goToNextMonth={goToNextMonth} theme={theme} setShowMonthPicker={setShowMonthPicker} selectedMonth={selectedMonth} selectedYear={selectedYear} />
+        
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
-            Past Meal Logs
-          </Text>
-          <Text
-            style={[styles.sectionSubtitle, { color: theme.textSecondary }]}
-          >
-            View and edit your previous entries
-          </Text>
+          <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>Past Meal Logs</Text>
+          <Text style={[styles.sectionSubtitle, { color: theme.textSecondary }]}>View and edit your previous entries</Text>
         </View>
 
-        {/* Collapsible Day Logs */}
         {dayLogs.map((dayLog, dayIndex) => (
           <DayLogCard
-            key={dayIndex}
+            key={dayLog.date.toString()} 
             dayLog={dayLog}
             dayIndex={dayIndex}
             onToggle={() => toggleDay(dayIndex)}
@@ -405,83 +301,34 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
         <View style={{ height: 100 }} />
       </ScrollView>
 
-      {/* Floating Add Button */}
-      <TouchableOpacity
-        onPress={() => setIsAddingMeal(true)}
-        style={[styles.fab, { backgroundColor: theme.primary }]}
-      >
+      <TouchableOpacity onPress={() => setIsAddingMeal(true)} style={[styles.fab, { backgroundColor: theme.primary }]}>
         <Ionicons name="add" size={32} color="#FFF" />
       </TouchableOpacity>
 
-      {/* Month Picker Modal */}
-      <MonthPicker
-        showMonthPicker={showMonthPicker}
-        setShowMonthPicker={setShowMonthPicker}
-        theme={theme}
-        setSelectedMonth={setSelectedMonth}
-        selectedMonth={selectedMonth}
-        selectedYear={selectedYear}
-        setSelectedYear={setSelectedYear}
-      />
+      <MonthPicker showMonthPicker={showMonthPicker} setShowMonthPicker={setShowMonthPicker} theme={theme} setSelectedMonth={setSelectedMonth} selectedMonth={selectedMonth} selectedYear={selectedYear} setSelectedYear={setSelectedYear} />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingBottom: 40,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    justifyContent: "center",
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-  },
-
-  section: {
-    paddingHorizontal: 24,
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    marginBottom: 6,
-  },
-  sectionSubtitle: {
-    fontSize: 14,
-  },
-
-  fab: {
-    position: "absolute",
-    bottom: 110,
-    right: 24,
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-
-  // MODAL
+  container: { flex: 1 },
+  scrollView: { flex: 1 },
+  scrollContent: { paddingBottom: 40 },
+  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingVertical: 12 },
+  headerTitle: { fontSize: 18, fontWeight: "700" },
+  section: { paddingHorizontal: 24, marginBottom: 24 },
+  sectionTitle: { fontSize: 20, fontWeight: "700", marginBottom: 6 },
+  sectionSubtitle: { fontSize: 14 },
+  fab: { position: "absolute", bottom: 110, right: 24, width: 64, height: 64, borderRadius: 32, justifyContent: "center", alignItems: "center", elevation: 8 },
+  modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "center", alignItems: "center", padding: 24 },
+  modalContent: { width: "100%", maxWidth: 320, borderRadius: 20, padding: 24, alignItems: "center" },
+  modalIcon: { width: 64, height: 64, borderRadius: 32, backgroundColor: "rgba(239, 68, 68, 0.1)", justifyContent: "center", alignItems: "center", marginBottom: 16 },
+  modalTitle: { fontSize: 20, fontWeight: "700", marginBottom: 8 },
+  modalMessage: { fontSize: 14, textAlign: "center", marginBottom: 24 },
+  modalButtons: { flexDirection: "row", gap: 12, width: "100%" },
+  modalButton: { flex: 1, paddingVertical: 14, borderRadius: 12, alignItems: "center" },
+  cancelButton: { borderWidth: 1 },
+  cancelButtonText: { fontSize: 15, fontWeight: "600" },
+  deleteButton: { backgroundColor: "#EF4444" },
+  deleteButtonText: { color: "#FFF", fontSize: 15, fontWeight: "600" },
 });

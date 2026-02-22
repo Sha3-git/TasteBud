@@ -149,3 +149,8 @@ export const Typography = {
   caption: { fontSize: 13, fontWeight: '400' as const, lineHeight: 18 },
   footnote: { fontSize: 11, fontWeight: '500' as const, lineHeight: 13 },
 };
+// Theme exports for ThemeContext
+export const lightTheme = Colors.light;
+export const darkTheme = Colors.dark;
+export type Theme = typeof Colors.light;
+

@@ -58,7 +58,7 @@ jobs:
           git pull origin main
 
           echo "MONGODB_URI=${{ secrets.MONGODB_URI}}" > .env
-          echo "MONGO_FOODS_URI=${{secrets.EMAIL_HOST}}" >> .env
+          echo "MONGO_FOODS_URI=${{secrets.MONGO_FOODS_URI}}" >> .env
           
           
           pm2 start tastebud-api

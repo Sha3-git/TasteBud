@@ -17,7 +17,7 @@ app.use(cors({}));
 
 const port = 4000;
 
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
 
@@ -30,6 +30,7 @@ const unsafeFoodsRoute = require("./routes/unsafeFoodsRoute")
 const brandedFoodRoute = require("./routes/brandedFoodRoute")
 const crossReactionRoute = require("./routes/crossReactionsRoute")
 const symptomRoute = require("./routes/symptomRoute")
+const authRoute = require("./routes/authRoute")
 
 app.use(`${apiPrefix}/ingredients`, /*auth,*/ ingredientsRoute);
 app.use(`${apiPrefix}/meallogs`, /*auth,*/ mealLogsRoute);
@@ -38,3 +39,4 @@ app.use(`${apiPrefix}/unsafefood`, /*auth,*/ unsafeFoodsRoute);
 app.use(`${apiPrefix}/brandedfood`, /*auth,*/ brandedFoodRoute);
 app.use(`${apiPrefix}/crossReaction`, /*auth,*/ crossReactionRoute);
 app.use(`${apiPrefix}/symptoms`, /*auth,*/ symptomRoute);
+app.use(`${apiPrefix}/auth`, authRoute);

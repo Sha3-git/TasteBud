@@ -6,65 +6,8 @@
  * - Supports MULTIPLE selections for both allergies and symptoms
  * - Users can skip if they have no known allergies
  * 
- * BACKEND INTEGRATION REQUIRED:
- * ==================================
- * 
- * API ENDPOINT 1: GET /api/allergens
- * PURPOSE: Fetch list of all possible allergens from your database
- * EXPECTED RESPONSE:
- * {
- *   "allergens": [
- *     { "id": "allergen_1", "name": "Peanuts", "category": "Legumes" },
- *     { "id": "allergen_2", "name": "Tree nuts", "category": "Tree Nuts" },
- *     ...
- *   ]
- * }
- * 
- * API ENDPOINT 2: GET /api/symptoms
- * PURPOSE: Fetch list of all possible symptoms
- * EXPECTED RESPONSE:
- * {
- *   "symptoms": [
- *     { "id": "symptom_1", "name": "Itching" },
- *     { "id": "symptom_2", "name": "Swelling" },
- *     ...
- *   ]
- * }
- * 
- * API ENDPOINT 3: POST /api/users/{userId}/allergies
- * PURPOSE: Save user's declared allergies and symptoms
- * REQUEST BODY:
- * {
- *   "allergies": ["allergen_1", "allergen_3"],  // Array of allergen IDs
- *   "symptoms": ["symptom_1", "symptom_2", "symptom_5"]  // Array of symptom IDs
- * }
- * 
- * EXPECTED RESPONSE (Success - 201 Created):
- * {
- *   "success": true,
- *   "userAllergies": {
- *     "userId": "user_123abc",
- *     "allergies": [...],
- *     "symptoms": [...],
- *     "createdAt": "2024-11-14T12:00:00Z"
- *   }
- * }
- * 
- * DATA STRUCTURE:
- * - allergies: Array of allergy names (strings)
- * - symptoms: Array of symptom names (strings)
- * - Empty arrays [] means user has no known allergies/symptoms
- * 
- * IMPORTANT NOTES FOR BACKEND:
- * - Users can select 0 or more allergies
- * - Users can select 0 or more symptoms
- * - Store this as baseline data for pattern detection later
- * - Link allergies to their cross-reactive foods in your database
- * 
- * TODO:
- * - Replace hardcoded allergies/symptoms with API data
- * - Send allergen IDs instead of names to backend
- * - Add loading states for API calls
+ * BACKEND INTEGRATION: COMPLETE
+ * - Calls POST /api/unsafefood/onboarding to save allergies
  */
 
 import React, { useState } from 'react';
@@ -77,6 +20,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { onboardingService } from '../../services/onboardingService';
 
 interface AllergyDeclarationScreenProps {
   onBack: () => void;
@@ -88,16 +32,15 @@ export function AllergyDeclarationScreen({ onBack, onContinue }: AllergyDeclarat
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
   const [showAllergyPicker, setShowAllergyPicker] = useState(false);
   const [showSymptomPicker, setShowSymptomPicker] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   
-  /**
-   * TODO BACKEND: Replace these hardcoded arrays with API data
-   * Call GET /api/allergens and GET /api/symptoms on component mount
-   */
+  // TODO: Replace with API call to fetch allergens from database
   const allergies = [
     'Peanuts', 'Tree nuts', 'Dairy', 'Eggs', 'Shellfish',
     'Fish', 'Soy', 'Wheat', 'Sesame', 'Gluten',
   ];
   
+  // TODO: Replace with API call to fetch symptoms from database
   const symptoms = [
     'Itching', 'Swelling', 'Hives', 'Nausea', 'Vomiting',
     'Diarrhea', 'Shortness of breath', 'Abdominal pain', 'Headache', 'Dizziness',
@@ -119,50 +62,48 @@ export function AllergyDeclarationScreen({ onBack, onContinue }: AllergyDeclarat
     }
   };
   
-  /**
-   * handleContinue - Send allergy data to backend
-   * 
-   * BACKEND TEAM: API call implementation example:
-   * 
-   * const handleContinue = async () => {
-   *   try {
-   *     const response = await fetch(`YOUR_API_URL/api/users/${userId}/allergies`, {
-   *       method: 'POST',
-   *       headers: {
-   *         'Content-Type': 'application/json',
-   *         'Authorization': `Bearer ${authToken}`
-   *       },
-   *       body: JSON.stringify({
-   *         allergies: selectedAllergies,  // Array of allergen IDs
-   *         symptoms: selectedSymptoms     // Array of symptom IDs
-   *       })
-   *     });
-   *     
-   *     if (response.ok) {
-   *       onContinue({ allergies: selectedAllergies, symptoms: selectedSymptoms });
-   *     }
-   *   } catch (error) {
-   *     alert('Failed to save allergy data');
-   *   }
-   * };
-   */
-  const handleContinue = () => {
+  const handleContinue = async () => {
     console.log('🏥 ALLERGY DATA TO SEND TO BACKEND:', {
       allergies: selectedAllergies,
       symptoms: selectedSymptoms,
       timestamp: new Date().toISOString()
     });
-    // TODO BACKEND: Replace with actual API call
-    onContinue({ allergies: selectedAllergies, symptoms: selectedSymptoms });
+    
+    setIsSaving(true);
+    try {
+      // TODO: Replace with real userId from auth context when ready
+      const testUserId = "69173dd5a3866b85b59d9760";
+      
+      await onboardingService.saveAllergies(testUserId, {
+        allergies: selectedAllergies,
+        symptoms: selectedSymptoms
+      });
+      
+      console.log('Allergies saved successfully');
+      onContinue({ allergies: selectedAllergies, symptoms: selectedSymptoms });
+    } catch (error) {
+      console.error('Failed to save allergies:', error);
+      // Still continue even if save fails - don't block onboarding
+      onContinue({ allergies: selectedAllergies, symptoms: selectedSymptoms });
+    } finally {
+      setIsSaving(false);
+    }
   };
   
-  /**
-   * handleSkip - User has no known allergies
-   * Still needs to be saved in backend as "no allergies declared"
-   */
-  const handleSkip = () => {
-    console.log('🏥 USER SKIPPED - No known allergies');
-    // TODO BACKEND: Still save this as empty arrays in database
+  const handleSkip = async () => {
+    console.log('USER SKIPPED - No known allergies');
+    setIsSaving(true);
+    try {
+      const testUserId = "69173dd5a3866b85b59d9760";
+      await onboardingService.saveAllergies(testUserId, {
+        allergies: [],
+        symptoms: []
+      });
+    } catch (error) {
+      console.error('Skip save error:', error);
+    } finally {
+      setIsSaving(false);
+    }
     onContinue({ allergies: [], symptoms: [] });
   };
   
@@ -306,11 +247,12 @@ export function AllergyDeclarationScreen({ onBack, onContinue }: AllergyDeclarat
         </View>
         
         <TouchableOpacity 
-          style={styles.skipButton}
+          style={[styles.skipButton, isSaving && styles.buttonDisabled]}
           onPress={handleSkip}
+          disabled={isSaving}
         >
           <Text style={styles.skipButtonText}>
-            I'm not aware of any allergies or symptoms
+            {isSaving ? 'Saving...' : "I'm not aware of any allergies or symptoms"}
           </Text>
         </TouchableOpacity>
         
@@ -320,10 +262,11 @@ export function AllergyDeclarationScreen({ onBack, onContinue }: AllergyDeclarat
       {(selectedAllergies.length > 0 || selectedSymptoms.length > 0) && (
         <TouchableOpacity 
           onPress={handleContinue}
-          style={styles.continueButton}
+          style={[styles.continueButton, isSaving && styles.buttonDisabled]}
           activeOpacity={0.8}
+          disabled={isSaving}
         >
-          <Text style={styles.continueIcon}>→</Text>
+          <Text style={styles.continueIcon}>{isSaving ? '...' : '→'}</Text>
         </TouchableOpacity>
       )}
     </View>
@@ -481,5 +424,8 @@ const styles = StyleSheet.create({
     color: '#000',
     fontSize: 28,
     fontWeight: '600',
+  },
+  buttonDisabled: {
+    opacity: 0.6,
   },
 });

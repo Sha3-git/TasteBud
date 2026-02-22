@@ -15,7 +15,7 @@ const unsafeFoodSchema = new mongoose.Schema({
       },
       status: {
         type: String,
-        enum: ["suspected", "confirmed"],
+        enum: ["safe", "suspected", "confirmed"],
         required: true,
       },
       preExisting: {

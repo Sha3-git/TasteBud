@@ -1,19 +1,10 @@
-import React, { useState, useRef } from "react";
+import React from "react";
 import {
   View,
   Text,
   StyleSheet,
-  StatusBar,
   TouchableOpacity,
-  ScrollView,
-  SafeAreaView,
-  TextInput,
-  Animated,
-  Modal,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
-import { useTheme } from "../../theme/ThemeContext";
 
 interface Meal {
   id: string;
@@ -27,7 +18,6 @@ interface Meal {
 
 export function MealDetailCard({
   meal,
-  dayIndex,
   onEdit,
   onDelete,
   theme,
@@ -40,6 +30,13 @@ export function MealDetailCard({
   theme: any;
   isDark: boolean;
 }) {
+  // Logic for the top 5
+  const displayedIngredients = meal.ingredients.slice(0, 5);
+  const remainingIngredients = meal.ingredients.length - 5;
+
+  const displayedUnsafe = meal.unsafeIngredients.slice(0, 5);
+  const remainingUnsafe = meal.unsafeIngredients.length - 5;
+
   return (
     <View
       style={[
@@ -60,9 +57,7 @@ export function MealDetailCard({
         </View>
         <View style={styles.mealActions}>
           <TouchableOpacity onPress={onEdit} style={styles.actionButton}>
-            <Text
-              style={[styles.actionButtonText, { color: theme.textSecondary }]}
-            >
+            <Text style={[styles.actionButtonText, { color: theme.textSecondary }]}>
               Edit
             </Text>
           </TouchableOpacity>
@@ -74,12 +69,13 @@ export function MealDetailCard({
         </View>
       </View>
 
+      {/* Ingredients Section */}
       <View style={styles.detailSection}>
         <Text style={[styles.detailLabel, { color: theme.textSecondary }]}>
           Ingredients
         </Text>
         <View style={styles.tags}>
-          {meal.ingredients.map((ingredient, index) => (
+          {displayedIngredients.map((ingredient, index) => (
             <View
               key={index}
               style={[
@@ -95,9 +91,17 @@ export function MealDetailCard({
               </Text>
             </View>
           ))}
+          {remainingIngredients > 0 && (
+            <View style={[styles.tag, { borderColor: theme.border, borderStyle: 'dashed' }]}>
+              <Text style={[styles.tagText, { color: theme.textSecondary }]}>
+                +{remainingIngredients} more
+              </Text>
+            </View>
+          )}
         </View>
       </View>
 
+      {/* Symptoms Section */}
       <View style={styles.detailSection}>
         <Text style={[styles.detailLabel, { color: theme.textSecondary }]}>
           Symptoms
@@ -108,21 +112,14 @@ export function MealDetailCard({
               key={index}
               style={[
                 styles.symptomCard,
-                {
-                  backgroundColor: isDark ? "#000" : "#1F2937",
-                },
+                { backgroundColor: isDark ? "#000" : "#1F2937" },
               ]}
             >
               <Text style={[styles.symptomName, { color: "#FFF" }]}>
                 {symptom.name}
               </Text>
-              <Text
-                style={[
-                  styles.symptomDetails,
-                  { color: "rgba(255,255,255,0.7)" },
-                ]}
-              >
-                Severity: {symptom.severity}/9 at {symptom.time}
+              <Text style={[styles.symptomDetails, { color: "rgba(255,255,255,0.7)" }]}>
+                Severity: {symptom.severity}/10 at {symptom.time}
               </Text>
             </View>
           ))
@@ -133,21 +130,20 @@ export function MealDetailCard({
         )}
       </View>
 
+      {/* Unsafe Section */}
       <View style={styles.detailSection}>
         <Text style={[styles.detailLabel, { color: theme.textSecondary }]}>
           Possible unsafe ingredients
         </Text>
         {meal.unsafeIngredients.length > 0 ? (
           <View style={styles.tags}>
-            {meal.unsafeIngredients.map((ingredient, index) => (
+            {displayedUnsafe.map((ingredient, index) => (
               <View
                 key={index}
                 style={[
                   styles.tag,
                   styles.unsafeTag,
-                  {
-                    borderColor: "#FCD34D",
-                  },
+                  { borderColor: "#FCD34D" },
                 ]}
               >
                 <Text style={[styles.tagText, { color: "#F59E0B" }]}>
@@ -155,6 +151,13 @@ export function MealDetailCard({
                 </Text>
               </View>
             ))}
+            {remainingUnsafe > 0 && (
+              <View style={[styles.tag, styles.unsafeTag, { borderColor: "#FCD34D", borderStyle: 'dashed' }]}>
+                <Text style={[styles.tagText, { color: "#F59E0B" }]}>
+                  +{remainingUnsafe} more
+                </Text>
+              </View>
+            )}
           </View>
         ) : (
           <Text style={[styles.noneText, { color: theme.textSecondary }]}>
@@ -171,6 +174,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: "hidden",
     position: "relative",
+    marginBottom: 16,
   },
   mealColorBar: {
     position: "absolute",
@@ -230,7 +234,6 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 16,
     borderWidth: 1,
-    gap: 6,
   },
   unsafeTag: {
     borderWidth: 1.5,
@@ -242,17 +245,10 @@ const styles = StyleSheet.create({
   noneText: {
     fontSize: 14,
   },
-
   symptomCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     padding: 12,
     borderRadius: 8,
     marginTop: 8,
-  },
-  symptomCardContent: {
-    flex: 1,
   },
   symptomName: {
     fontSize: 14,

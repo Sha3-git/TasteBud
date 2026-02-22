@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const mealLogSchema = new mongoose.Schema({
     userId:{
         type: mongoose.Schema.Types.ObjectId,
-                ref: "User"
+        ref: "User"
     },
     mealName: {
         type: String, 
@@ -11,19 +11,16 @@ const mealLogSchema = new mongoose.Schema({
     },
     ingredients: [{ 
         type: mongoose.Schema.Types.ObjectId,
-                ref: "Ingredient"
+        ref: "Ingredient"
     }],
     reaction:{
         type: mongoose.Schema.Types.ObjectId,
-                ref: "Reaction"
+        ref: "Reaction"
     },
     hadReaction: {
         type: Boolean,
         required: true
     },
-    /*photoUrl: {
-        type: String
-    },*/
     deleted: {type: Boolean, default: false},
     edited: Date,
 },
