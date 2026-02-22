@@ -20,7 +20,7 @@ async function importCrossReactions() {
     const crossReactionsCollection = db.collection('crossreactions');
     
     // Read the JSON file
-    const dataPath = path.join(__dirname, 'data', 'cross_reac.json');
+    const dataPath = path.join(__dirname, '..', 'data', 'cross_reac.json');
     const rawData = fs.readFileSync(dataPath, 'utf8');
     const data = JSON.parse(rawData);
     
@@ -62,7 +62,7 @@ async function importCrossReactions() {
         await createCrossReaction(crossReactionsCollection, partialMatch, item);
         created++;
       } else {
-        await createCrossReaction(crossReactionsCollection, ingredient, item);
+        await createCrossReaction(crossReactionsCollection, ingredient, item, ingredientsCollection);
         created++;
       }
     }
@@ -90,15 +90,25 @@ async function importCrossReactions() {
   }
 }
 
-async function createCrossReaction(collection, ingredient, item) {
-  // Transform similarity_scores object to array, filter >= 50%
-  const similarities = Object.entries(item.similarity_scores)
-    .filter(([name, score]) => score >= 50 && name.toLowerCase() !== ingredient.name.toLowerCase())
-    .map(([name, score]) => ({
+async function createCrossReaction(collection, ingredient, item, ingredientsCollection) {
+  const similarities = [];
+  
+  for (const [name, score] of Object.entries(item.similarity_scores)) {
+    if (score < 50 || name.toLowerCase() === ingredient.name.toLowerCase()) continue;
+    
+    // Look up the ingredient ID for this similar food
+    const similarIng = await ingredientsCollection.findOne({
+      name: { $regex: new RegExp(`^${escapeRegex(name)}$`, 'i') }
+    });
+    
+    similarities.push({
+      ingredient: similarIng?._id || null,
       name: name,
-      score: Math.round(score * 10) / 10  // Round to 1 decimal
-    }))
-    .sort((a, b) => b.score - a.score);
+      score: Math.round(score * 10) / 10
+    });
+  }
+  
+  similarities.sort((a, b) => b.score - a.score);
   
   if (similarities.length === 0) return;
   
