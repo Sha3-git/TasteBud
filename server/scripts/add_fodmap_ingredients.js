@@ -6,7 +6,7 @@
  * 
  * Run: node add_fodmap_ingredients.js
  */
-
+require('dotenv').config();
 const { MongoClient } = require('mongodb');
 
 const MONGO_URI = process.env.MONGO_URI;;
@@ -16,86 +16,70 @@ const MONGO_URI = process.env.MONGO_URI;;
 // ============================================================
 
 const FODMAP_INGREDIENTS = [
-  // ----------------------
-  // POLYOLS (Sugar Alcohols) - The "P" in FODMAP
-  // ----------------------
-  { name: "Erythritol", foodGroup: "FODMAP - Polyol", intoleranceType: ["FODMAP", "Polyol"], allergens: [] },
-  { name: "Sorbitol", foodGroup: "FODMAP - Polyol", intoleranceType: ["FODMAP", "Polyol"], allergens: [] },
-  { name: "Mannitol", foodGroup: "FODMAP - Polyol", intoleranceType: ["FODMAP", "Polyol"], allergens: [] },
-  { name: "Xylitol", foodGroup: "FODMAP - Polyol", intoleranceType: ["FODMAP", "Polyol"], allergens: [] },
-  { name: "Maltitol", foodGroup: "FODMAP - Polyol", intoleranceType: ["FODMAP", "Polyol"], allergens: [] },
-  { name: "Isomalt", foodGroup: "FODMAP - Polyol", intoleranceType: ["FODMAP", "Polyol"], allergens: [] },
-  { name: "Lactitol", foodGroup: "FODMAP - Polyol", intoleranceType: ["FODMAP", "Polyol"], allergens: [] },
+  // POLYOLS
+  { name: "Erythritol", foodGroup: "FODMAP - Polyol", intoleranceType: ["FODMAP"], allergens: [] },
+  { name: "Sorbitol", foodGroup: "FODMAP - Polyol", intoleranceType: ["FODMAP"], allergens: [] },
+  { name: "Mannitol", foodGroup: "FODMAP - Polyol", intoleranceType: ["FODMAP"], allergens: [] },
+  { name: "Xylitol", foodGroup: "FODMAP - Polyol", intoleranceType: ["FODMAP"], allergens: [] },
+  { name: "Maltitol", foodGroup: "FODMAP - Polyol", intoleranceType: ["FODMAP"], allergens: [] },
+  { name: "Isomalt", foodGroup: "FODMAP - Polyol", intoleranceType: ["FODMAP"], allergens: [] },
+  { name: "Lactitol", foodGroup: "FODMAP - Polyol", intoleranceType: ["FODMAP"], allergens: [] },
   
-  // ----------------------
-  // OLIGOSACCHARIDES - The "O" in FODMAP (Fructans & GOS)
-  // ----------------------
-  { name: "Inulin", foodGroup: "FODMAP - Fructan", intoleranceType: ["FODMAP", "Fructan"], allergens: [] },
-  { name: "Chicory root fiber", foodGroup: "FODMAP - Fructan", intoleranceType: ["FODMAP", "Fructan"], allergens: [] },
-  { name: "Chicory root extract", foodGroup: "FODMAP - Fructan", intoleranceType: ["FODMAP", "Fructan"], allergens: [] },
-  { name: "Fructooligosaccharides", foodGroup: "FODMAP - Fructan", intoleranceType: ["FODMAP", "Fructan"], allergens: [] },
-  { name: "FOS", foodGroup: "FODMAP - Fructan", intoleranceType: ["FODMAP", "Fructan"], allergens: [] },
-  { name: "Galactooligosaccharides", foodGroup: "FODMAP - GOS", intoleranceType: ["FODMAP", "GOS"], allergens: [] },
-  { name: "GOS", foodGroup: "FODMAP - GOS", intoleranceType: ["FODMAP", "GOS"], allergens: [] },
-  { name: "Isomalto-oligosaccharides", foodGroup: "FODMAP - Prebiotic", intoleranceType: ["FODMAP", "Prebiotic"], allergens: [] },
+  // OLIGOSACCHARIDES
+  { name: "Inulin", foodGroup: "FODMAP - Fructan", intoleranceType: ["FODMAP"], allergens: [] },
+  { name: "Chicory root fiber", foodGroup: "FODMAP - Fructan", intoleranceType: ["FODMAP"], allergens: [] },
+  { name: "Chicory root extract", foodGroup: "FODMAP - Fructan", intoleranceType: ["FODMAP"], allergens: [] },
+  { name: "Fructooligosaccharides", foodGroup: "FODMAP - Fructan", intoleranceType: ["FODMAP"], allergens: [] },
+  { name: "FOS", foodGroup: "FODMAP - Fructan", intoleranceType: ["FODMAP"], allergens: [] },
+  { name: "Galactooligosaccharides", foodGroup: "FODMAP - GOS", intoleranceType: ["FODMAP"], allergens: [] },
+  { name: "GOS", foodGroup: "FODMAP - GOS", intoleranceType: ["FODMAP"], allergens: [] },
+  { name: "Isomalto-oligosaccharides", foodGroup: "FODMAP - Prebiotic", intoleranceType: ["FODMAP"], allergens: [] },
   
-  // ----------------------
-  // ARTIFICIAL SWEETENERS (Non-FODMAP but cause issues)
-  // ----------------------
-  { name: "Sucralose", foodGroup: "Artificial sweetener", intoleranceType: ["Artificial Sweetener"], allergens: [] },
-  { name: "Aspartame", foodGroup: "Artificial sweetener", intoleranceType: ["Artificial Sweetener"], allergens: [] },
-  { name: "Acesulfame potassium", foodGroup: "Artificial sweetener", intoleranceType: ["Artificial Sweetener"], allergens: [] },
-  { name: "Saccharin", foodGroup: "Artificial sweetener", intoleranceType: ["Artificial Sweetener"], allergens: [] },
-  { name: "Stevia", foodGroup: "Natural sweetener", intoleranceType: ["Natural Sweetener"], allergens: [] },
-  { name: "Monk fruit extract", foodGroup: "Natural sweetener", intoleranceType: ["Natural Sweetener"], allergens: [] },
+  // ARTIFICIAL SWEETENERS
+  { name: "Sucralose", foodGroup: "Artificial sweetener", intoleranceType: ["Unspecified"], allergens: [] },
+  { name: "Aspartame", foodGroup: "Artificial sweetener", intoleranceType: ["Unspecified"], allergens: [] },
+  { name: "Acesulfame potassium", foodGroup: "Artificial sweetener", intoleranceType: ["Unspecified"], allergens: [] },
+  { name: "Saccharin", foodGroup: "Artificial sweetener", intoleranceType: ["Unspecified"], allergens: [] },
+  { name: "Stevia", foodGroup: "Natural sweetener", intoleranceType: ["Unspecified"], allergens: [] },
+  { name: "Monk fruit extract", foodGroup: "Natural sweetener", intoleranceType: ["Unspecified"], allergens: [] },
   
-  // ----------------------
-  // GUMS & THICKENERS (Common IBS triggers)
-  // ----------------------
-  { name: "Xanthan gum", foodGroup: "Additive - Gum", intoleranceType: ["Additive - Gum"], allergens: [] },
-  { name: "Guar gum", foodGroup: "Additive - Gum", intoleranceType: ["Additive - Gum"], allergens: [] },
-  { name: "Carrageenan", foodGroup: "Additive - Gum", intoleranceType: ["Additive - Gum"], allergens: [] },
-  { name: "Locust bean gum", foodGroup: "Additive - Gum", intoleranceType: ["Additive - Gum"], allergens: [] },
-  { name: "Cellulose gum", foodGroup: "Additive - Gum", intoleranceType: ["Additive - Gum"], allergens: [] },
-  { name: "Gellan gum", foodGroup: "Additive - Gum", intoleranceType: ["Additive - Gum"], allergens: [] },
-  { name: "Agar", foodGroup: "Additive - Gum", intoleranceType: ["Additive - Gum"], allergens: [] },
-  { name: "Pectin", foodGroup: "Additive - Gum", intoleranceType: ["Additive - Gum"], allergens: [] },
+  // GUMS & THICKENERS
+  { name: "Xanthan gum", foodGroup: "Additive - Gum", intoleranceType: ["Unspecified"], allergens: [] },
+  { name: "Guar gum", foodGroup: "Additive - Gum", intoleranceType: ["Unspecified"], allergens: [] },
+  { name: "Carrageenan", foodGroup: "Additive - Gum", intoleranceType: ["Unspecified"], allergens: [] },
+  { name: "Locust bean gum", foodGroup: "Additive - Gum", intoleranceType: ["Unspecified"], allergens: [] },
+  { name: "Cellulose gum", foodGroup: "Additive - Gum", intoleranceType: ["Unspecified"], allergens: [] },
+  { name: "Gellan gum", foodGroup: "Additive - Gum", intoleranceType: ["Unspecified"], allergens: [] },
+  { name: "Agar", foodGroup: "Additive - Gum", intoleranceType: ["Unspecified"], allergens: [] },
+  { name: "Pectin", foodGroup: "Additive - Gum", intoleranceType: ["Unspecified"], allergens: [] },
   
-  // ----------------------
-  // FIBERS (Can cause issues in sensitive individuals)
-  // ----------------------
-  { name: "Soluble corn fiber", foodGroup: "Fiber additive", intoleranceType: ["Fiber additive"], allergens: [] },
-  { name: "Resistant starch", foodGroup: "Fiber additive", intoleranceType: ["Fiber additive"], allergens: [] },
-  { name: "Polydextrose", foodGroup: "Fiber additive", intoleranceType: ["Fiber additive"], allergens: [] },
-  { name: "Resistant maltodextrin", foodGroup: "Fiber additive", intoleranceType: ["Fiber additive"], allergens: [] },
-  { name: "Psyllium", foodGroup: "Fiber additive", intoleranceType: ["Fiber additive"], allergens: [] },
+  // FIBERS
+  { name: "Soluble corn fiber", foodGroup: "Fiber additive", intoleranceType: ["FODMAP"], allergens: [] },
+  { name: "Resistant starch", foodGroup: "Fiber additive", intoleranceType: ["Unspecified"], allergens: [] },
+  { name: "Polydextrose", foodGroup: "Fiber additive", intoleranceType: ["FODMAP"], allergens: [] },
+  { name: "Resistant maltodextrin", foodGroup: "Fiber additive", intoleranceType: ["Unspecified"], allergens: [] },
+  { name: "Psyllium", foodGroup: "Fiber additive", intoleranceType: ["Unspecified"], allergens: [] },
   
-  // ----------------------
-  // COMMON DIGESTIVE IRRITANTS
-  // ----------------------
-  { name: "MSG", foodGroup: "Flavor enhancer", intoleranceType: ["Flavor enhancer"], allergens: [] },
-  { name: "Monosodium glutamate", foodGroup: "Flavor enhancer", intoleranceType: ["Flavor enhancer"], allergens: [] },
-  { name: "Sulfites", foodGroup: "Preservative", intoleranceType: ["Preservative"], allergens: [] },
-  { name: "Sodium sulfite", foodGroup: "Preservative", intoleranceType: ["Preservative"], allergens: [] },
-  { name: "Sodium metabisulfite", foodGroup: "Preservative", intoleranceType: ["Preservative"], allergens: [] },
-  { name: "Sodium nitrite", foodGroup: "Preservative", intoleranceType: ["Preservative"], allergens: [] },
-  { name: "Sodium nitrate", foodGroup: "Preservative", intoleranceType: ["Preservative"], allergens: [] },
+  // DIGESTIVE IRRITANTS
+  { name: "MSG", foodGroup: "Flavor enhancer", intoleranceType: ["Unspecified"], allergens: [] },
+  { name: "Monosodium glutamate", foodGroup: "Flavor enhancer", intoleranceType: ["Unspecified"], allergens: [] },
+  { name: "Sulfites", foodGroup: "Preservative", intoleranceType: ["Sulfate"], allergens: [] },
+  { name: "Sodium sulfite", foodGroup: "Preservative", intoleranceType: ["Sulfate"], allergens: [] },
+  { name: "Sodium metabisulfite", foodGroup: "Preservative", intoleranceType: ["Sulfate"], allergens: [] },
+  { name: "Sodium nitrite", foodGroup: "Preservative", intoleranceType: ["Unspecified"], allergens: [] },
+  { name: "Sodium nitrate", foodGroup: "Preservative", intoleranceType: ["Unspecified"], allergens: [] },
   
-  // ----------------------
-  // HISTAMINE TRIGGERS (Often confused with allergies)
-  // ----------------------
-  { name: "Citric acid", foodGroup: "Acid additive", intoleranceType: ["Acid additive"], allergens: [] },
-  { name: "Malic acid", foodGroup: "Acid additive", intoleranceType: ["Acid additive"], allergens: [] },
-  { name: "Tartaric acid", foodGroup: "Acid additive", intoleranceType: ["Acid additive"], allergens: [] },
-  { name: "Lactic acid", foodGroup: "Acid additive", intoleranceType: ["Acid additive"], allergens: [] },
+  // ACIDS
+  { name: "Citric acid", foodGroup: "Acid additive", intoleranceType: ["Histamine"], allergens: [] },
+  { name: "Malic acid", foodGroup: "Acid additive", intoleranceType: ["Unspecified"], allergens: [] },
+  { name: "Tartaric acid", foodGroup: "Acid additive", intoleranceType: ["Unspecified"], allergens: [] },
+  { name: "Lactic acid", foodGroup: "Acid additive", intoleranceType: ["Histamine"], allergens: [] },
   
-  // ----------------------
-  // COMMON HIGH-FODMAP FOODS (if not already in DB)
-  // ----------------------
-  { name: "High fructose corn syrup", foodGroup: "FODMAP - Fructose", intoleranceType: ["FODMAP", "Fructose"], allergens: [] },
-  { name: "Agave syrup", foodGroup: "FODMAP - Fructose", intoleranceType: ["FODMAP", "Fructose"], allergens: [] },
-  { name: "Agave nectar", foodGroup: "FODMAP - Fructose", intoleranceType: ["FODMAP", "Fructose"], allergens: [] },
-  { name: "Crystalline fructose", foodGroup: "FODMAP - Fructose", intoleranceType: ["FODMAP", "Fructose"], allergens: [] },
+  // HIGH-FODMAP FOODS
+  { name: "High fructose corn syrup", foodGroup: "FODMAP - Fructose", intoleranceType: ["FODMAP"], allergens: [] },
+  { name: "Agave syrup", foodGroup: "FODMAP - Fructose", intoleranceType: ["FODMAP"], allergens: [] },
+  { name: "Agave nectar", foodGroup: "FODMAP - Fructose", intoleranceType: ["FODMAP"], allergens: [] },
+  { name: "Crystalline fructose", foodGroup: "FODMAP - Fructose", intoleranceType: ["FODMAP"], allergens: [] },
 ];
 
 // ============================================================
