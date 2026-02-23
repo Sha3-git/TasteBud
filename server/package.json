@@ -21,7 +21,6 @@
     "nodemon": "^3.1.10",
     "readline-sync": "^1.4.10",
     "stream-chain": "^3.4.0",
-    "stream-json": "^1.9.1",
-    "xlsx": "^0.18.5"
+    "stream-json": "^1.9.1"
   }
 }
