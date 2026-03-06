@@ -28,9 +28,10 @@ interface ProfileScreenProps {
   onBack: () => void;
   onEditAllergies: () => void;
   onSignOut: () => void;
+  onViewTutorial: () => void;
 }
 
-export function ProfileScreen({ onBack, onEditAllergies, onSignOut }: ProfileScreenProps) {
+  export function ProfileScreen({ onBack, onEditAllergies, onSignOut, onViewTutorial }: ProfileScreenProps) {
   const { theme, isDark } = useTheme();
   
   /**
@@ -274,6 +275,17 @@ export function ProfileScreen({ onBack, onEditAllergies, onSignOut }: ProfileScr
                 <Ionicons name="information-circle" size={22} color={theme.textPrimary} />
                 <Text style={[styles.settingText, { color: theme.textPrimary }]}>
                   About TasteBud
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
+            </TouchableOpacity>
+            <View style={[styles.divider, { backgroundColor: theme.border }]} />
+            
+            <TouchableOpacity style={styles.optionRow} onPress={onViewTutorial}>
+              <View style={styles.settingLeft}>
+                <Ionicons name="book-outline" size={22} color={theme.textPrimary} />
+                <Text style={[styles.settingText, { color: theme.textPrimary }]}>
+                  View Tutorial
                 </Text>
               </View>
               <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />

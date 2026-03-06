@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
+
 import {
   View,
   Text,
@@ -10,6 +11,8 @@ import {
   TextInput,
   ActivityIndicator,
   Modal,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -63,6 +66,9 @@ export function AddMealForm({
     hasMoreBranded,
   } = useSearchFoods(ingredientInput);
   
+
+  const scrollViewRef = useRef<ScrollView>(null);
+
   const { expandBrandedFood, loading: expandLoading } = useExpandBrandedFood();
   const symptomRes = useSearchSymptom(symptomInput);
   
@@ -227,10 +233,12 @@ export function AddMealForm({
       </View>
 
       <ScrollView
+        ref={scrollViewRef}
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        automaticallyAdjustKeyboardInsets={true}
       >
         <View style={styles.formSection}>
           {/* MEAL NAME */}
@@ -456,6 +464,11 @@ export function AddMealForm({
                   setSymptomDropdownVisible(true);
                   if (text === '') setSelectedSymptom(null);
                 }}
+                onFocus={() => {
+                  setTimeout(() => {
+                    scrollViewRef.current?.scrollTo({ y: 350, animated: true });
+                  }, 100);
+                }}
                 input={symptomInput}
                 setShowDropdown={setSymptomDropdownVisible}
                 addInput={(name: string, id: string) => {
@@ -629,7 +642,7 @@ export function AddMealForm({
 const styles = StyleSheet.create({
   container: { flex: 1 },
   scrollView: { flex: 1 },
-  scrollContent: { paddingBottom: 40 },
+  scrollContent: { paddingBottom: 350},
   header: {
     flexDirection: "row",
     alignItems: "center",

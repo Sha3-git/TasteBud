@@ -1,32 +1,9 @@
 /**
  * WELCOME SCREENS (Transition Screens)
- * 
- * PURPOSE:
- * - Three celebratory screens shown after user completes registration
- * - Provides positive feedback and smooth transition to main app
- * 
- * SCREENS INCLUDED:
- * 1. SetupProgressScreen - "Setting Up Your Account" (2 seconds)
- * 2. WelcomeUserScreen - "Welcome [FirstName]" (2.5 seconds)
- * 3. GreatChoiceScreen - "You've Made a Great Choice [FirstName]!" (2.5 seconds)
- * 
- * BACKEND INTEGRATION:
- * - No API calls needed for these screens
- * - These are purely UI/UX delight screens
- * 
- * NOTES:
- * - These screens auto-transition (no user interaction needed)
- * - They provide time for any background data syncing if needed
- * - Could add subtle animations with react-native-reanimated in future
  */
+import React, { useEffect, useRef, useState } from 'react';
+import { View, Text, StyleSheet, StatusBar, Animated } from 'react-native';
 
-import React from 'react';
-import { View, Text, StyleSheet, StatusBar } from 'react-native';
-
-/**
- * SetupProgressScreen - Shows while account is being set up
- * Could show loading spinner or progress indicator here
- */
 export function SetupProgressScreen() {
   return (
     <View style={styles.container}>
@@ -36,9 +13,6 @@ export function SetupProgressScreen() {
   );
 }
 
-/**
- * WelcomeUserScreen - Personalized welcome with user's first name
- */
 export function WelcomeUserScreen({ userName }: { userName: string }) {
   return (
     <View style={styles.container}>
@@ -49,16 +23,63 @@ export function WelcomeUserScreen({ userName }: { userName: string }) {
   );
 }
 
-/**
- * GreatChoiceScreen - Final congratulatory message
- */
 export function GreatChoiceScreen({ userName }: { userName: string }) {
+  const progressAnim = useRef(new Animated.Value(0)).current;
+  const [visibleEmojis, setVisibleEmojis] = useState(0);
+  const foodEmojis = ['🥗', '🍎', '🥑', '🍳', '🥜'];
+  
+  useEffect(() => {
+    // Animate progress bar
+    Animated.timing(progressAnim, {
+      toValue: 1,
+      duration: 2200,
+      useNativeDriver: false,
+    }).start();
+    
+    // Show emojis progressively
+    foodEmojis.forEach((_, index) => {
+      setTimeout(() => {
+        setVisibleEmojis(index + 1);
+      }, (index + 1) * 400);
+    });
+  }, []);
+
+  const progressWidth = progressAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0%', '100%'],
+  });
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
-      <Text style={styles.greatChoiceText}>
-        You've Made a Great{'\n'}Choice!
-      </Text>
+      
+      <Text style={styles.almostThereText}>Almost There</Text>
+      <Text style={styles.subtitleText}>Preparing your experience</Text>
+      
+      {/* Food emoji row - appear progressively */}
+      <View style={styles.emojiRow}>
+        {foodEmojis.map((emoji, index) => (
+          <Animated.Text 
+            key={index} 
+            style={[
+              styles.foodEmoji,
+              { opacity: index < visibleEmojis ? 1 : 0.2 }
+            ]}
+          >
+            {emoji}
+          </Animated.Text>
+        ))}
+      </View>
+      
+      {/* Progress bar */}
+      <View style={styles.progressContainer}>
+        <Animated.View 
+          style={[
+            styles.progressBar,
+            { width: progressWidth }
+          ]} 
+        />
+      </View>
     </View>
   );
 }
@@ -90,11 +111,38 @@ const styles = StyleSheet.create({
     fontSize: 48,
     fontWeight: '600',
   },
-  greatChoiceText: {
+  almostThereText: {
     color: '#fff',
-    fontSize: 32,
-    fontWeight: '600',
+    fontSize: 36,
+    fontWeight: '700',
     textAlign: 'center',
-    lineHeight: 40,
+    marginBottom: 8,
+  },
+  subtitleText: {
+    color: 'rgba(255,255,255,0.6)',
+    fontSize: 16,
+    fontWeight: '400',
+    marginBottom: 40,
+  },
+  emojiRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 16,
+    marginBottom: 32,
+  },
+  foodEmoji: {
+    fontSize: 36,
+  },
+  progressContainer: {
+    width: '80%',
+    height: 6,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  progressBar: {
+    height: '100%',
+    backgroundColor: '#4A90E2',
+    borderRadius: 3,
   },
 });
