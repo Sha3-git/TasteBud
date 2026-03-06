@@ -14,7 +14,7 @@ import {
 
 import { FlatList } from "react-native";
 
-export function SearchForm({theme, text, setInput, input, setShowDropdown, addInput, showDropdown, results}: any){
+export function SearchForm({theme, text, setInput, input, setShowDropdown, addInput, showDropdown, results, onFocus}: any){
     return(
       <>
                   <View style={styles.searchContainer}>
@@ -34,6 +34,7 @@ export function SearchForm({theme, text, setInput, input, setShowDropdown, addIn
                         setInput(text);
                         setShowDropdown(true);
                       }}
+                      onFocus={onFocus}
                       returnKeyType="done"
                     />
                   </View>

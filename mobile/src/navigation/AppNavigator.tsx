@@ -31,6 +31,8 @@ import {
   GreatChoiceScreen,
 } from "../screens/onboarding/WelcomeScreens";
 
+import { TutorialScreen } from "../screens/onboarding/TutorialScreen";
+
 // Home screens
 import { HomeScreen } from "../screens/home/HomeScreen";
 import { MealLogScreen } from "../screens/home/MealLogScreen";
@@ -50,6 +52,7 @@ export type RootStackParamList = {
   SetupProgress: undefined;
   WelcomeUser: { userName: string };
   GreatChoice: { userName: string };
+  Tutorial: { userName: string };
   MainApp: { userName: string };
   Notifications: undefined;
   SymptomAnalysis: undefined;
@@ -144,13 +147,17 @@ function MainTabNavigator({ route }: { route: { params: { userName: string } } }
         {({ navigation }) => <FoodLibraryScreen onBack={() => navigation.navigate("Home")} />}
       </Tab.Screen>
       <Tab.Screen name="Profile">
-        {({ navigation }) => (
-          <ProfileScreen
-            onBack={() => navigation.navigate("Home")}
-            onEditAllergies={() => {}}
-            onSignOut={() => {}}
-          />
-        )}
+        {({ navigation }) => {
+          const stackNav = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+          return (
+            <ProfileScreen
+              onBack={() => navigation.navigate("Home")}
+              onEditAllergies={() => {}}
+              onSignOut={() => {}}
+              onViewTutorial={() => stackNav.navigate("Tutorial", { userName: "User" })}
+            />
+          );
+        }}
       </Tab.Screen>
     </Tab.Navigator>
   );
@@ -257,22 +264,30 @@ export function AppNavigator() {
             return <WelcomeUserScreen userName={route.params.userName} />;
           }}
         </Stack.Screen>
-
         <Stack.Screen name="GreatChoice">
           {({ navigation, route }) => {
             React.useEffect(() => {
               const timer = setTimeout(() => {
-                navigation.reset({
-                  index: 0,
-                  routes: [{ name: "MainApp", params: { userName: route.params.userName } }],
-                });
+                navigation.navigate("Tutorial", { userName: route.params.userName });
+
               }, 2500);
               return () => clearTimeout(timer);
             }, []);
             return <GreatChoiceScreen userName={route.params.userName} />;
           }}
         </Stack.Screen>
-
+        <Stack.Screen name="Tutorial">
+          {({ navigation, route }) => (
+            <TutorialScreen
+              onComplete={() => {
+                navigation.reset({
+                  index: 0,
+                  routes: [{ name: "MainApp", params: { userName: route.params.userName } }],
+                });
+              }}
+            />
+          )}
+        </Stack.Screen>
         {/* Main App with Tab Bar */}
         <Stack.Screen name="MainApp" component={MainTabNavigator} />
 
