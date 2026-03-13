@@ -15,24 +15,21 @@ export interface UnsafeFoodIngredient {
 
 export interface UnsafeFoodsResponse {
   _id: string;
-  userId: string;
   ingredients: UnsafeFoodIngredient[];
 }
 
 export const unsafeFoodsService = {
-  getUnsafeFoods: (userId: string) => {
+  getUnsafeFoods: () => {
     return api.get<UnsafeFoodsResponse>("/unsafefood/get", {
-      params: { userId }
     });
   },
   
-  createUnsafeFood: (userId: string, data: {
+  createUnsafeFood: (data: {
     ingredient: string;
     status: string;
     preExisting: boolean;
   }) => {
     return api.post("/unsafefood/create", data, {
-      params: { userId }
     });
   },
   

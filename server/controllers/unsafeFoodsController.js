@@ -2,7 +2,7 @@ const unsafeFoodsService = require("../services/unsafeFoodsService");
 
 const getUnsafeFoods = async (req, res) => {
     try {
-        const { userId } = req.query;
+       const userId = req.user;
         const unsafeFoods = await unsafeFoodsService.getUnsafeFoods(userId);
         if (!unsafeFoods) return res.status(404).json({ error: "Food not found" });
         res.status(200).json(unsafeFoods);
@@ -13,7 +13,7 @@ const getUnsafeFoods = async (req, res) => {
 
 const createUnsafeFood = async (req, res) => {
     try {
-        const { userId } = req.query;
+       const userId = req.user;
         const unsafeFoods = await unsafeFoodsService.createUnsafeFood(userId, req.body);
         if (!unsafeFoods) return res.status(404).json({ error: "Food not found" });
         res.status(201).json(unsafeFoods);
@@ -44,7 +44,7 @@ const deleteUnsafeFood = async (req, res) => {
 
 const saveOnboardingAllergies = async (req, res) => {
     try {
-        const { userId } = req.query;
+       const userId = req.user;
         const { allergies } = req.body;
         
         if (!userId) {

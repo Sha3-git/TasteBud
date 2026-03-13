@@ -9,7 +9,6 @@ const {
 } = require("../controllers/authController");
 
 router.post("/register", registerUser);
-router.get("/verify", verifyEmail);
 router.post("/login", loginUser);
 router.post("/refresh", refreshToken);
 

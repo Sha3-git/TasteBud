@@ -14,7 +14,6 @@ interface Symptom {
 }
 
 interface Reaction {
-  userId: string;
   mealLogId: string;
   symptoms: Array<Symptom>;
 }
@@ -31,16 +30,16 @@ export interface MonthlyAnalysis {
 
 export const reactionService = {
   getReactionByDay: (params: ReacParam) => {
-    const { userId, date, page = 1, limit = 10 } = params;
+    const {date, page = 1, limit = 10 } = params;
     return api.get("/reactions/daily", {
-      params: { userId, date, page, limit },
+      params: {date, page, limit },
     });
   },
   
   getdailyReactionCount: (params: ReacParam) => {
-    const { userId, date, tzOffset } = params;
+    const {date, tzOffset } = params;
     return api.get("/reactions/stats", {
-      params: { userId, date, tzOffset },
+      params: {date, tzOffset },
     });
   },
   
@@ -52,7 +51,6 @@ export const reactionService = {
   
   createReaction: (params: Reaction) => {
     return api.post("/reactions/create", params, {
-      params: { userId: params.userId },
     });
   },
   
@@ -60,9 +58,9 @@ export const reactionService = {
     return api.get("reactions/", { params: { mealLogId: mealLogId } });
   },
   
-  getMonthlyAnalysis: (userId: string, year: number, month: number) => {
+  getMonthlyAnalysis: ( year: number, month: number) => {
     return api.get<MonthlyAnalysis>("/reactions/analysis", {
-      params: { userId, year, month },
+      params: {year, month },
     });
   },
 };

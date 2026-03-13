@@ -28,16 +28,13 @@ export function useAnalysis() {
     setError(null);
     
     try {
-      // Get current month/year
       const now = new Date();
       const year = now.getFullYear();
-      const month = now.getMonth() + 1; // 1-indexed
+      const month = now.getMonth() + 1;
 
-      // Fetch top trigger foods
       const reacRes = await reactionService.getTopTriggerFoods(userId);
       const triggers = reacRes.data;
       
-      // Check if triggers array exists AND has items
       if (triggers && Array.isArray(triggers) && triggers.length > 0) {
         const top: TopTrigger = {
           food: triggers[0].ingredient,
@@ -58,7 +55,6 @@ export function useAnalysis() {
         setTopTriggers([]);
       }
 
-      // Fetch monthly analysis
       const analysisRes = await reactionService.getMonthlyAnalysis(userId, year, month);
       if (analysisRes.data) {
         setMonthlyAnalysis(analysisRes.data);

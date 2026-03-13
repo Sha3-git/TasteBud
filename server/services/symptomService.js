@@ -1,4 +1,4 @@
-const Symptom = require("../models/symptom")
+const Symptom = require("../models/symptom");
 
 const searchSymptoms = async (query, limit = 20) => {
   try {
@@ -7,17 +7,19 @@ const searchSymptoms = async (query, limit = 20) => {
     const q = query.trim();
 
     const results = await Symptom.find({
-      name: { $regex: q, $options: "i" }
-    })
-    .limit(limit);
+      $or: [
+        { name: { $regex: q, $options: "i" } },
+        { synonyms: { $regex: q, $options: "i" } }
+      ]
+    }).limit(limit);
 
     return results;
+
   } catch (err) {
     console.error(err);
     return [];
   }
 };
-
 
 module.exports = {
   searchSymptoms

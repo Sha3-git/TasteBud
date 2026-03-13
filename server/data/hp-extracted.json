@@ -1,0 +1,770 @@
+[
+  {
+    "name": "flatulence",
+    "description": "Passage of excessive amounts of gas and the feeling of abdominal fullness and bloating.",
+    "isA": "abdominal symptom",
+    "reactionType": [
+      "FODMAP"
+    ],
+    "hpoId": "HP:0033589",
+    "definition": "Passage of excessive amounts of gas and the feeling of abdominal fullness and bloating.",
+    "synonyms": []
+  },
+  {
+    "name": "mucus in stool",
+    "description": "Abnormally increased amount of mucus in the feces. Mucus is a slippery aqueous secretion produced by mucous membranes including those of the intestines.",
+    "isA": "abnormal stool composition",
+    "reactionType": [
+      "FODMAP"
+    ],
+    "hpoId": "HP:6000686",
+    "definition": "Abnormally increased amount of mucus in the feces. Mucus is a slippery aqueous secretion produced by mucous membranes including those of the intestines.",
+    "synonyms": []
+  },
+  {
+    "name": "fatigue",
+    "description": "Persistent tiredness and lack of energy",
+    "isA": "general",
+    "reactionType": [
+      "FODMAP"
+    ],
+    "hpoId": "HP:0012378",
+    "definition": "A subjective feeling of tiredness characterized by a lack of energy and motivation.",
+    "synonyms": [
+      "Fatigue",
+      "Tired",
+      "Tiredness"
+    ]
+  },
+  {
+    "name": "back pain",
+    "description": "An unpleasant sensation characterized by physical discomfort (such as pricking, throbbing, or aching) localized to the back.",
+    "isA": "abnormality of the vertebral column",
+    "reactionType": [
+      "FODMAP"
+    ],
+    "hpoId": "HP:0003418",
+    "definition": "An unpleasant sensation characterized by physical discomfort (such as pricking, throbbing, or aching) localized to the back.",
+    "synonyms": [
+      "Back pain"
+    ]
+  },
+  {
+    "name": "frequent urination",
+    "description": "Needing to urinate often",
+    "isA": "functional abnormality of the bladder",
+    "reactionType": [
+      "FODMAP"
+    ],
+    "hpoId": null,
+    "definition": "Needing to urinate often",
+    "synonyms": []
+  },
+  {
+    "name": "urinary urgency",
+    "description": "Urge incontinence is the strong, sudden need to urinate.",
+    "isA": "abnormality of the bladder",
+    "reactionType": [
+      "FODMAP"
+    ],
+    "hpoId": "HP:0000012",
+    "definition": "Urge incontinence is the strong, sudden need to urinate.",
+    "synonyms": [
+      "Overactive bladder",
+      "Overactive bladder syndrome",
+      "Urgency frequency syndrome",
+      "Urgent micturition",
+      "Urinary urgency"
+    ]
+  },
+  {
+    "name": "urinary retention",
+    "description": "Inability to completely empty the urinary bladder during the process of urination.",
+    "isA": "functional abnormality of the bladder",
+    "reactionType": [
+      "FODMAP",
+      "neurological"
+    ],
+    "hpoId": "HP:0000016",
+    "definition": "Inability to completely empty the urinary bladder during the process of urination.",
+    "synonyms": [
+      "Increased post-void residual urine volume"
+    ]
+  },
+  {
+    "name": "bowel incontinence",
+    "description": "Loss of control over bowel movements",
+    "isA": "gastrointestinal",
+    "reactionType": [
+      "FODMAP"
+    ],
+    "hpoId": "HP:0002607",
+    "definition": "Involuntary fecal soiling in adults and children who have usually already been toilet trained.",
+    "synonyms": [
+      "Anal incontinence",
+      "Faecal incontinence",
+      "Fecal incontinence",
+      "Loss of bowel control"
+    ]
+  },
+  {
+    "name": "urticaria",
+    "description": "Raised itchy welts on the skin",
+    "isA": "skin",
+    "reactionType": [
+      "allergic"
+    ],
+    "hpoId": "HP:0001025",
+    "definition": "Raised, well-circumscribed areas of erythema and edema involving the dermis and epidermis. Urticaria is intensely pruritic, and blanches completely with pressure.",
+    "synonyms": [
+      "Hives"
+    ]
+  },
+  {
+    "name": "swelling of face lips or tongue",
+    "description": "Swelling affecting facial tissues",
+    "isA": "skin",
+    "reactionType": [
+      "allergic"
+    ],
+    "hpoId": null,
+    "definition": "Swelling affecting facial tissues",
+    "synonyms": []
+  },
+  {
+    "name": "Pruritus",
+    "description": "Irritating sensation causing desire to scratch",
+    "isA": "skin",
+    "reactionType": [
+      "allergic"
+    ],
+    "hpoId": "HP:0000989",
+    "definition": "Pruritus is an itch or a sensation that makes a person want to scratch. This term refers to an abnormally increased disposition to experience pruritus.",
+    "synonyms": [
+      "Itching",
+      "Itchy skin",
+      "Skin itching"
+    ]
+  },
+  {
+    "name": "erythema",
+    "description": "Visible redness of the skin",
+    "isA": "skin",
+    "reactionType": [
+      "allergic"
+    ],
+    "hpoId": "HP:0010783",
+    "definition": "Redness of the skin, caused by hyperemia of the capillaries in the lower layers of the skin.",
+    "synonyms": [
+      "Redness of skin or mucous membrane"
+    ]
+  },
+  {
+    "name": "cough",
+    "description": "Sudden expulsion of air from lungs",
+    "isA": "respiratory",
+    "reactionType": [
+      "allergic"
+    ],
+    "hpoId": "HP:0012735",
+    "definition": "A sudden, audible expulsion of air from the lungs through a partially closed glottis, preceded by inhalation.",
+    "synonyms": [
+      "Cough",
+      "Coughing"
+    ]
+  },
+  {
+    "name": "wheezing",
+    "description": "High-pitched whistling sound during breathing",
+    "isA": "respiratory",
+    "reactionType": [
+      "allergic"
+    ],
+    "hpoId": "HP:0030828",
+    "definition": "A high-pitched whistling sound associated with labored breathing.",
+    "synonyms": [
+      "Wheezing"
+    ]
+  },
+  {
+    "name": "shortness of breath",
+    "description": "Difficulty breathing or feeling breathless",
+    "isA": "respiratory",
+    "reactionType": [
+      "allergic"
+    ],
+    "hpoId": null,
+    "definition": "Difficulty breathing or feeling breathless",
+    "synonyms": []
+  },
+  {
+    "name": "Chest pain described as pressure",
+    "description": "Pressure or tight sensation in chest",
+    "isA": "respiratory",
+    "reactionType": [
+      "allergic"
+    ],
+    "hpoId": "HP:6000048",
+    "definition": "Discomfort in the chest described as pressure, heaviness, or tightness.",
+    "synonyms": []
+  },
+  {
+    "name": "throat tightness",
+    "description": "Constriction feeling in throat",
+    "isA": "respiratory",
+    "reactionType": [
+      "allergic"
+    ],
+    "hpoId": null,
+    "definition": "Constriction feeling in throat",
+    "synonyms": []
+  },
+  {
+    "name": "hoarse voice",
+    "description": "Rough or strained voice",
+    "isA": "respiratory",
+    "reactionType": [
+      "allergic"
+    ],
+    "hpoId": "HP:0001609",
+    "definition": "Hoarseness refers to a change in the pitch or quality of the voice, with the voice sounding weak, very breathy, scratchy, or husky.",
+    "synonyms": [
+      "Hoarse voice",
+      "Hoarseness",
+      "Husky voice"
+    ]
+  },
+  {
+    "name": "nasal congestion",
+    "description": "Blocked or stuffy nose",
+    "isA": "respiratory",
+    "reactionType": [
+      "allergic"
+    ],
+    "hpoId": "HP:0001742",
+    "definition": "Reduced ability to pass air through the nasal cavity often leading to mouth breathing.",
+    "synonyms": [
+      "Blockage of nose",
+      "Congestion of nose",
+      "Nasal blockage",
+      "Nasal obstruction",
+      "Obstruction of nose",
+      "Stuffy nose"
+    ]
+  },
+  {
+    "name": "Rhinorrhea",
+    "description": "Excess nasal drainage",
+    "isA": "respiratory",
+    "reactionType": [
+      "allergic"
+    ],
+    "hpoId": "HP:0031417",
+    "definition": "Increased discharge of mucus from the nose.",
+    "synonyms": [
+      "Nasal Discharge",
+      "Runny Nose"
+    ]
+  },
+  {
+    "name": "sneezing",
+    "description": "Sudden involuntary expulsion of air through nose",
+    "isA": "respiratory",
+    "reactionType": [
+      "allergic"
+    ],
+    "hpoId": null,
+    "definition": "Sudden involuntary expulsion of air through nose",
+    "synonyms": []
+  },
+  {
+    "name": "Difficulty in swallowing",
+    "description": "Difficulty swallowing",
+    "isA": "gastrointestinal",
+    "reactionType": [
+      "allergic"
+    ],
+    "hpoId": null,
+    "definition": "Difficulty swallowing",
+    "synonyms": []
+  },
+  {
+    "name": "choking sensation",
+    "description": "Feeling of airway blockage",
+    "isA": "respiratory",
+    "reactionType": [
+      "allergic"
+    ],
+    "hpoId": null,
+    "definition": "Feeling of airway blockage",
+    "synonyms": []
+  },
+  {
+    "name": "abdominal pain",
+    "description": "An unpleasant sensation characterized by physical discomfort (such as pricking, throbbing, or aching) and perceived to originate in the abdomen. Abdominal pain can be crampy, achy, dull, intermittent or sharp. The terms stomach ache and stomach cramps are nonmedical terms often used to describe pain in the mid- or upper abdominal area, even though it is not the case that the (smooth) muscles of the stomach or the abdomen have cramps. Stomach pain is another layperson term commonly used to refer to abdominal pain.",
+    "isA": "abdominal symptom",
+    "reactionType": [
+      "allergic"
+    ],
+    "hpoId": "HP:0002027",
+    "definition": "An unpleasant sensation characterized by physical discomfort (such as pricking, throbbing, or aching) and perceived to originate in the abdomen.",
+    "synonyms": [
+      "Abdominal discomfort",
+      "Abdominal pain",
+      "Gastro pain",
+      "Gastrointestinal pain",
+      "Pain in stomach",
+      "Stomach pain",
+      "Upset stomach"
+    ]
+  },
+  {
+    "name": "nausea and vomiting",
+    "description": "Nausea is a commonly encountered symptom that has been defined as an unpleasant painless subjective feeling that one will imminently vomit. Vomiting has been defined as the forceful expulsion of the contents of the stomach, duodenum, or jejunum through the oral cavity. While nausea and vomiting are often thought to exist on a temporal continuum, this is not always the case. There are situations when severe nausea may be present without emesis and less frequently, when emesis may be present without preceding nausea.",
+    "isA": "abdominal symptom",
+    "reactionType": [
+      "allergic"
+    ],
+    "hpoId": "HP:0002017",
+    "definition": "Nausea is a commonly encountered symptom that has been defined as an unpleasant painless subjective feeling that one will imminently vomit. Vomiting has been defined as the forceful expulsion of the contents of the stomach, duodenum, or jejunum through the oral cavity. While nausea and vomiting are often thought to exist on a temporal continuum, this is not always the case. There are situations when severe nausea may be present without emesis and less frequently, when emesis may be present without preceding nausea.",
+    "synonyms": [
+      "Nausea and vomiting"
+    ]
+  },
+  {
+    "name": "diarrhea",
+    "description": "Abnormally increased frequency (usually defined as three or more) loose or watery bowel movements a day.",
+    "isA": "abdominal symptom",
+    "reactionType": [
+      "allergic"
+    ],
+    "hpoId": "HP:0002014",
+    "definition": "Abnormally increased frequency (usually defined as three or more) loose or watery bowel movements a day.",
+    "synonyms": [
+      "Diarrhea",
+      "Diarrhoea",
+      "Watery stool"
+    ]
+  },
+  {
+    "name": "Pallor",
+    "description": "Abnormal skin coloration due to oxygen issues",
+    "isA": "cardiovascular",
+    "reactionType": [
+      "allergic"
+    ],
+    "hpoId": "HP:0000980",
+    "definition": "Abnormally pale skin.",
+    "synonyms": [
+      "Paleness",
+      "Skin paleness"
+    ]
+  },
+  {
+    "name": "cyanosis",
+    "description": "Abnormal skin coloration due to oxygen issues",
+    "isA": "cardiovascular",
+    "reactionType": [
+      "allergic"
+    ],
+    "hpoId": "HP:0000961",
+    "definition": "Bluish discoloration of the skin and mucosa due to poor circulation or inadequate oxygenation of arterial or capillary blood.",
+    "synonyms": [
+      "Blue discoloration of the skin"
+    ]
+  },
+  {
+    "name": "weak pulse",
+    "description": "Reduced strength of pulse",
+    "isA": "cardiovascular",
+    "reactionType": [
+      "allergic"
+    ],
+    "hpoId": "HP:0032553",
+    "definition": "A diminution in the amplitude (strength) of the pulse such that the examiner has difficulty feeling the pulse.",
+    "synonyms": []
+  },
+  {
+    "name": "Loss of consciousness",
+    "description": "Temporary loss of consciousness",
+    "isA": "cardiovascular",
+    "reactionType": [
+      "allergic"
+    ],
+    "hpoId": "HP:0007185",
+    "definition": "Loss of alertness and orientation to place and time.",
+    "synonyms": [
+      "Fainting",
+      "Loss of consciousness",
+      "Passing out"
+    ]
+  },
+  {
+    "name": "dizziness",
+    "description": "Feeling lightheaded or unsteady",
+    "isA": "neurological",
+    "reactionType": [
+      "allergic"
+    ],
+    "hpoId": null,
+    "definition": "Feeling lightheaded or unsteady",
+    "synonyms": []
+  },
+  {
+    "name": "anxiety",
+    "description": "Feeling of fear or nervousness",
+    "isA": "psychological",
+    "reactionType": [
+      "allergic"
+    ],
+    "hpoId": "HP:0000739",
+    "definition": "Intense feelings of nervousness, tension, or panic often arise in response to interpersonal stresses. There is worry about the negative effects of past unpleasant experiences and future negative possibilities. Individuals may feel fearful, apprehensive, or threatened by uncertainty, and they may also have fears of falling apart or losing control.",
+    "synonyms": [
+      "Anxiety",
+      "Anxiety disease",
+      "Anxiousness",
+      "Excessive, persistent worry and fear"
+    ]
+  },
+  {
+    "name": "sense of doom",
+    "description": "Feeling something bad is about to happen",
+    "isA": "psychological",
+    "reactionType": [
+      "allergic"
+    ],
+    "hpoId": null,
+    "definition": "Feeling something bad is about to happen",
+    "synonyms": []
+  },
+  {
+    "name": "headache",
+    "description": "Pain in the head region",
+    "isA": "neurological",
+    "reactionType": [
+      "allergic"
+    ],
+    "hpoId": "HP:0002315",
+    "definition": "Cephalgia, or pain sensed in various parts of the head, not confined to the area of distribution of any nerve.",
+    "synonyms": [
+      "Headache",
+      "Headaches"
+    ]
+  },
+  {
+    "name": "uterine cramps",
+    "description": "Painful contractions in uterus",
+    "isA": "reproductive",
+    "reactionType": [
+      "allergic"
+    ],
+    "hpoId": null,
+    "definition": "Painful contractions in uterus",
+    "synonyms": []
+  },
+  {
+    "name": "Parageusia",
+    "description": "Metal-like taste sensation in mouth",
+    "isA": "ent",
+    "reactionType": [
+      "allergic"
+    ],
+    "hpoId": "HP:0031249",
+    "definition": "A distortion of the sense of taste, often characterized by the sensation of a metallic taste.",
+    "synonyms": [
+      "Altered sense of taste",
+      "Dysgeusia",
+      "Metallic taste",
+      "Metallic taste in mouth"
+    ]
+  },
+  {
+    "name": "stomach pain",
+    "description": "Pain or discomfort in abdomen",
+    "isA": "gastrointestinal",
+    "reactionType": [
+      "food poisoning"
+    ],
+    "hpoId": null,
+    "definition": "Pain or discomfort in abdomen",
+    "synonyms": []
+  },
+  {
+    "name": "fever",
+    "description": "Elevated body temperature",
+    "isA": "general",
+    "reactionType": [
+      "food poisoning"
+    ],
+    "hpoId": "HP:0001945",
+    "definition": "Body temperature elevated above the normal range.",
+    "synonyms": [
+      "Fever",
+      "Hyperthermia",
+      "Pyrexia"
+    ]
+  },
+  {
+    "name": "bloody diarrhea",
+    "description": "Diarrhea containing blood",
+    "isA": "gastrointestinal",
+    "reactionType": [
+      "food poisoning"
+    ],
+    "hpoId": "HP:0025085",
+    "definition": "Passage of many stools containing blood.",
+    "synonyms": [
+      "Blood in stool",
+      "Bloody bowel movement",
+      "Bloody diarrhea",
+      "Bloody stool"
+    ]
+  },
+  {
+    "name": "dehydration",
+    "description": "Loss of body fluids causing dryness and weakness",
+    "isA": "general",
+    "reactionType": [
+      "food poisoning"
+    ],
+    "hpoId": "HP:0001944",
+    "definition": "Loss of body fluids causing dryness and weakness",
+    "synonyms": [
+      "Dehydration",
+      "Exsiccosis"
+    ]
+  },
+  {
+    "name": "abdominal pain",
+    "description": "Pain in the stomach region",
+    "isA": "gastrointestinal",
+    "reactionType": [
+      "intolerance"
+    ],
+    "hpoId": "HP:0002027",
+    "definition": "An unpleasant sensation characterized by physical discomfort (such as pricking, throbbing, or aching) and perceived to originate in the abdomen.",
+    "synonyms": [
+      "Abdominal discomfort",
+      "Abdominal pain",
+      "Gastro pain",
+      "Gastrointestinal pain",
+      "Pain in stomach",
+      "Stomach pain",
+      "Upset stomach"
+    ]
+  },
+  {
+    "name": "bloating",
+    "description": "Feeling of fullness or swelling in abdomen",
+    "isA": "gastrointestinal",
+    "reactionType": [
+      "intolerance"
+    ],
+    "hpoId": null,
+    "definition": "Feeling of fullness or swelling in abdomen",
+    "synonyms": []
+  },
+  {
+    "name": "gas",
+    "description": "Excess gas in digestive tract",
+    "isA": "gastrointestinal",
+    "reactionType": [
+      "intolerance"
+    ],
+    "hpoId": null,
+    "definition": "Excess gas in digestive tract",
+    "synonyms": []
+  },
+  {
+    "name": "cognitive impairment",
+    "description": "Difficulty thinking or remembering",
+    "isA": "neurological",
+    "reactionType": [
+      "intolerance"
+    ],
+    "hpoId": "HP:0100543",
+    "definition": "Abnormal cognition is characterized by deficits in thinking, reasoning, or remembering.",
+    "synonyms": [
+      "Abnormality of cognition",
+      "Cognitive abnormality",
+      "Cognitive defects",
+      "Cognitive deficits",
+      "Cognitive impairment",
+      "Intellectual impairment"
+    ]
+  },
+  {
+    "name": "constipation",
+    "description": "Difficulty passing stool",
+    "isA": "gastrointestinal",
+    "reactionType": [
+      "intolerance"
+    ],
+    "hpoId": "HP:0002019",
+    "definition": "Infrequent or difficult evacuation of feces.",
+    "synonyms": [
+      "Constipation",
+      "Costiveness",
+      "Dyschezia"
+    ]
+  },
+  {
+    "name": "depression",
+    "description": "Persistent low mood",
+    "isA": "psychological",
+    "reactionType": [
+      "intolerance"
+    ],
+    "hpoId": "HP:0000716",
+    "definition": "Frequently experiencing feelings of being down, miserable, and/or hopeless; struggling to recover from these moods; having a pessimistic outlook on the future; feeling a pervasive sense of shame; having a low self-worth; experiencing thoughts of suicide and engaging in suicidal behavior.",
+    "synonyms": [
+      "Depression",
+      "Depressive disorder",
+      "Depressive episode",
+      "Depressivity"
+    ]
+  },
+  {
+    "name": "migraine",
+    "description": "Severe recurring headache",
+    "isA": "neurological",
+    "reactionType": [
+      "intolerance"
+    ],
+    "hpoId": "HP:0002076",
+    "definition": "Migraine is a chronic neurological disorder characterized by episodic attacks of headache and associated symptoms.",
+    "synonyms": [
+      "Intermittent migraine headaches",
+      "Migraine",
+      "Migraine headache",
+      "Migraine headaches"
+    ]
+  },
+  {
+    "name": "iron deficiency anemia",
+    "description": "Low iron causing reduced red blood cells",
+    "isA": "blood",
+    "reactionType": [
+      "intolerance"
+    ],
+    "hpoId": "HP:0001891",
+    "definition": "Low iron causing reduced red blood cells",
+    "synonyms": [
+      "Ferropenic",
+      "Iron deficiency anaemia",
+      "Iron-deficiency anaemia",
+      "Iron-deficiency anemia"
+    ]
+  },
+  {
+    "name": "itchy blistering skin rash",
+    "description": "Blistering rash causing itching",
+    "isA": "skin",
+    "reactionType": [
+      "intolerance"
+    ],
+    "hpoId": null,
+    "definition": "Blistering rash causing itching",
+    "synonyms": []
+  },
+  {
+    "name": "joint pain",
+    "description": "Pain in joints",
+    "isA": "musculoskeletal",
+    "reactionType": [
+      "intolerance"
+    ],
+    "hpoId": null,
+    "definition": "Pain in joints",
+    "synonyms": []
+  },
+  {
+    "name": "missed periods",
+    "description": "Absence of menstrual cycle",
+    "isA": "reproductive",
+    "reactionType": [
+      "intolerance"
+    ],
+    "hpoId": null,
+    "definition": "Absence of menstrual cycle",
+    "synonyms": []
+  },
+  {
+    "name": "oral ulcers",
+    "description": "Erosion of the mucous mebrane of the mouth with local excavation of the surface, resulting from the sloughing of inflammatory necrotic tissue.",
+    "isA": "Erosion of oral mucosa",
+    "reactionType": [
+      "intolerance"
+    ],
+    "hpoId": null,
+    "definition": "Erosion of the mucous mebrane of the mouth with local excavation of the surface, resulting from the sloughing of inflammatory necrotic tissue.",
+    "synonyms": []
+  },
+  {
+    "name": "peripheral neuropathy",
+    "description": "Peripheral neuropathy is a general term for any disorder of the peripheral nervous system. The main clinical features used to classify peripheral neuropathy are distribution, type (mainly demyelinating versus mainly axonal), duration, and course.",
+    "isA": "Abnormal peripheral nervous system physiology",
+    "reactionType": [
+      "intolerance"
+    ],
+    "hpoId": "HP:0009830",
+    "definition": "Peripheral neuropathy is a general term for any disorder of the peripheral nervous system. The main clinical features used to classify peripheral neuropathy are distribution, type (mainly demyelinating versus mainly axonal), duration, and course.",
+    "synonyms": [
+      "Neuropathy",
+      "Peripheral nerve damage",
+      "Peripheral neuritis"
+    ]
+  },
+  {
+    "name": "weight loss",
+    "description": "Unintentional reduction in body weight",
+    "isA": "general",
+    "reactionType": [
+      "intolerance"
+    ],
+    "hpoId": "HP:0001824",
+    "definition": "Reduction of total body weight.",
+    "synonyms": [
+      "Loss of weight"
+    ]
+  },
+  {
+    "name": "Non-spinning vertigo",
+    "description": "A perception of unsteadiness of dizziness that is not characterized bythe spinning sensation of classic vertigo, but rather by an oscillatory perception (rocking, bobbing, or swaying despite the fact that the subject is not moving).",
+    "isA": "Abnormal vestibular function",
+    "reactionType": [
+      "intolerance"
+    ],
+    "hpoId": "HP:4000033",
+    "definition": "A perception of unsteadiness of dizziness that is not characterized bythe spinning sensation of classic vertigo, but rather by an oscillatory perception (rocking, bobbing, or swaying despite the fact that the subject is not moving).",
+    "synonyms": []
+  },
+  {
+    "name": "vertigo",
+    "description": "An abnormal sensation of spinning while the body is actually stationary.",
+    "isA": "Abnormal vestibular function",
+    "reactionType": [
+      "other"
+    ],
+    "hpoId": "HP:0002321",
+    "definition": "An abnormal sensation of spinning while the body is actually stationary.",
+    "synonyms": [
+      "Dizziness",
+      "Dizzy spell"
+    ]
+  },
+  {
+    "name": "tinnitus",
+    "description": "The perception of sound in the absence of an external source. It is often described as a ringing, buzzing, hissing, or roaring sound in the ears.",
+    "isA": "Abnormal auditory function",
+    "reactionType": [
+      "other"
+    ],
+    "hpoId": "HP:0000360",
+    "definition": "Tinnitus is an auditory perception that can be described as the experience of sound, in the ear or in the head, in the absence of external acoustic stimulation.",
+    "synonyms": [
+      "Ringing in ears",
+      "Ringing in the ears"
+    ]
+  }
+]

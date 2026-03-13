@@ -41,10 +41,6 @@ async function dailyStats(userId, date, tzOffset) {
   };
 }
 
-/**
- * Look up ingredient names from ingredient_mappings collection
- * This handles old meals that stored ObjectId references
- */
 async function resolveIngredientNames(ingredients) {
   if (!ingredients || ingredients.length === 0) return [];
   
@@ -53,7 +49,6 @@ async function resolveIngredientNames(ingredients) {
   
   const resolved = await Promise.all(
     ingredients.map(async (ing) => {
-      // Already in new format with name
       if (ing && typeof ing === 'object' && ing.name && ing.ingredientId) {
         return {
           ingredientId: ing.ingredientId.toString ? ing.ingredientId.toString() : ing.ingredientId,
@@ -61,7 +56,6 @@ async function resolveIngredientNames(ingredients) {
         };
       }
       
-      // Populated format from Mongoose
       if (ing && typeof ing === 'object' && ing.name && ing._id) {
         return {
           ingredientId: ing._id.toString ? ing._id.toString() : ing._id,
@@ -69,7 +63,6 @@ async function resolveIngredientNames(ingredients) {
         };
       }
       
-      // Raw ObjectId or string - need to look up name
       let idString;
       if (typeof ing === 'string') {
         idString = ing;
@@ -80,7 +73,6 @@ async function resolveIngredientNames(ingredients) {
       }
       
       try {
-        // First try ingredient_mappings (for old mapped ingredients)
         const mapping = await mappingsCollection.findOne({ 
           matchedId: new mongoose.Types.ObjectId(idString) 
         });
@@ -92,7 +84,6 @@ async function resolveIngredientNames(ingredients) {
           };
         }
         
-        // Fallback: try ingredients collection directly
         const ingredientsCollection = db.collection("ingredients");
         const ingredient = await ingredientsCollection.findOne({
           _id: new mongoose.Types.ObjectId(idString)
@@ -105,7 +96,6 @@ async function resolveIngredientNames(ingredients) {
           };
         }
         
-        // Last resort: return ID as name
         return { ingredientId: idString, name: idString };
         
       } catch (err) {
@@ -126,13 +116,11 @@ async function getMealLogsInRange(userId, start, end, page = 1, limit = 10) {
     deleted: false,
     createdAt: { $gte: start, $lte: end },
   })
-    .populate("reaction")
     .skip(skip)
     .limit(limit)
     .sort({ createdAt: -1 })
     .lean();
 
-  // Resolve ingredient names for all meals
   const mealsWithNames = await Promise.all(
     results.map(async (meal) => ({
       ...meal,
@@ -195,7 +183,7 @@ async function getMealLogByMonth(userId, year, month, page = 1, limit, tzOffset)
       createdAt: log.createdAt,
       updatedAt: log.updatedAt,
       hadReaction: log.hadReaction,
-      ingredients: log.ingredients,  // Now has {ingredientId, name} objects
+      ingredients: log.ingredients,  
       reaction: log.reaction,
     });
   });

@@ -2,10 +2,7 @@ const UnsafeFood = require("../models/unsafeFoods");
 const Ingredient = require("../models/ingredients");
 const mongoose = require("mongoose");
 
-/**
- * Resolve ingredient IDs to full ingredient info
- * Looks up from ingredient_mappings first, then ingredients, then branded_foods
- */
+
 async function resolveIngredientInfo(ingredientId) {
   if (!ingredientId) return null;
   
@@ -19,11 +16,9 @@ async function resolveIngredientInfo(ingredientId) {
   try {
     const objectId = new mongoose.Types.ObjectId(idString);
     
-    // First try ingredient_mappings
     const mapping = await mappingsCollection.findOne({ matchedId: objectId });
     
     if (mapping) {
-      // Try to get full ingredient data from ingredients collection
       const fullIngredient = await ingredientsCollection.findOne({ 
         name: { $regex: new RegExp(`^${escapeRegex(mapping.matchedName)}$`, 'i') }
       });
@@ -36,7 +31,6 @@ async function resolveIngredientInfo(ingredientId) {
       };
     }
     
-    // Try direct lookup in ingredients collection
     const ingredient = await ingredientsCollection.findOne({ _id: objectId });
     
     if (ingredient) {
@@ -48,7 +42,6 @@ async function resolveIngredientInfo(ingredientId) {
       };
     }
     
-    // Try branded_foods collection
     const branded = await brandedCollection.findOne({ _id: objectId });
     
     if (branded) {
@@ -73,14 +66,12 @@ function escapeRegex(str) {
 }
 
 const getUnsafeFoods = async (userId) => {
-  // Get the document without populate (it will fail anyway)
   const result = await UnsafeFood.findOne({ userId: userId }).lean();
   
   if (!result || !result.ingredients) {
     return result;
   }
   
-  // Manually resolve each ingredient
   const resolvedIngredients = await Promise.all(
     result.ingredients.map(async (item) => {
       const ingredientInfo = await resolveIngredientInfo(item.ingredient);
@@ -91,7 +82,6 @@ const getUnsafeFoods = async (userId) => {
     })
   );
   
-  // Filter out items where ingredient couldn't be resolved
   result.ingredients = resolvedIngredients.filter(item => item.ingredient !== null);
   
   return result;
@@ -117,7 +107,6 @@ const createUnsafeFood = async (userId, data) => {
     }
   ).lean();
   
-  // Resolve ingredients manually
   if (result && result.ingredients) {
     result.ingredients = await Promise.all(
       result.ingredients.map(async (item) => {
@@ -148,7 +137,6 @@ const updateUnsafeFood = async (id, body) => {
     { new: true }
   ).lean();
   
-  // Resolve ingredients manually
   if (result && result.ingredients) {
     result.ingredients = await Promise.all(
       result.ingredients.map(async (item) => {
@@ -174,7 +162,6 @@ const deleteUnsafeFood = async (id, body) => {
     { new: true }
   ).lean();
   
-  // Resolve ingredients manually
   if (result && result.ingredients) {
     result.ingredients = await Promise.all(
       result.ingredients.map(async (item) => {
@@ -188,10 +175,6 @@ const deleteUnsafeFood = async (id, body) => {
   return result;
 };
 
-/**
- * Save allergies declared during onboarding
- * Searches for matching ingredients and marks them as preExisting
- */
 const saveOnboardingAllergies = async (userId, allergyNames) => {
   if (!allergyNames || allergyNames.length === 0) {
     return { message: "No allergies to save", ingredients: [] };
@@ -233,7 +216,6 @@ const saveOnboardingAllergies = async (userId, allergyNames) => {
     }
   ).lean();
   
-  // Resolve ingredients manually
   if (result && result.ingredients) {
     result.ingredients = await Promise.all(
       result.ingredients.map(async (item) => {

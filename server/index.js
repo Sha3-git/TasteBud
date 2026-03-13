@@ -30,13 +30,18 @@ const unsafeFoodsRoute = require("./routes/unsafeFoodsRoute")
 const brandedFoodRoute = require("./routes/brandedFoodRoute")
 const crossReactionRoute = require("./routes/crossReactionsRoute")
 const symptomRoute = require("./routes/symptomRoute")
+const analysisRoute = require("./routes/analysisRoute")
 const authRoute = require("./routes/authRoute")
+const publicRoute = require("./routes/public")
 
 app.use(`${apiPrefix}/ingredients`, /*auth,*/ ingredientsRoute);
-app.use(`${apiPrefix}/meallogs`, /*auth,*/ mealLogsRoute);
-app.use(`${apiPrefix}/reactions`, /*auth,*/ reactionRoute);
-app.use(`${apiPrefix}/unsafefood`, /*auth,*/ unsafeFoodsRoute);
+app.use(`${apiPrefix}/meallogs`, auth, mealLogsRoute);
+app.use(`${apiPrefix}/reactions`, auth, reactionRoute);
+app.use(`${apiPrefix}/unsafefood`, auth, unsafeFoodsRoute);
 app.use(`${apiPrefix}/brandedfood`, /*auth,*/ brandedFoodRoute);
 app.use(`${apiPrefix}/crossReaction`, /*auth,*/ crossReactionRoute);
 app.use(`${apiPrefix}/symptoms`, /*auth,*/ symptomRoute);
 app.use(`${apiPrefix}/auth`, authRoute);
+app.use(`${apiPrefix}/analysis`, /*auth,*/ analysisRoute);
+app.use('/verify', publicRoute);
+

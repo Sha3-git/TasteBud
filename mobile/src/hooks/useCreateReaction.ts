@@ -9,10 +9,8 @@ export function useCreateReaction() {
     mealLogId: string,
     symptoms: Array<Symptom>,
   ) => {
-    const userId = "69173dd5a3866b85b59d9760";
     console.log("reached hook");
       const reactionLog = {
-        userId,
         mealLogId,
         symptoms,
       };

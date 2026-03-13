@@ -15,13 +15,6 @@ const reactionSchema = new mongoose.Schema({
                 ref: "Symptom"
             },
             severity: Number,
-            // NEW: When did symptoms start AFTER eating the meal?
-            // Stored as minutes after the meal
-            onsetMinutes: {
-                type: Number,
-                default: 0
-            },
-            // Optional: Actual timestamp when user reported feeling symptoms
             reportedAt: {
                 type: Date
             }

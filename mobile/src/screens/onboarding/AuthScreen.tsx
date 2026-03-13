@@ -1,23 +1,3 @@
-/**
- * AUTH SCREEN (Sign Up / Login Selection)
- * 
- * PURPOSE:
- * - User chooses between creating a new account or logging into existing account
- * - Entry point for authentication flow
- * 
- * BACKEND INTEGRATION:
- * - No API calls on this screen
- * - This screen just routes users to the appropriate authentication flow
- * 
- * NAVIGATION:
- * - "Sign up with email" → EmailPasswordScreen (for new users)
- * - "Login" → Login flow (NOT YET IMPLEMENTED - needs backend team)
- * 
- * TODO FOR BACKEND TEAM:
- * - Implement Login screen and authentication endpoint
- * - Add OAuth providers if needed (Google, Apple Sign-In, etc.)
- */
-
 import React from 'react';
 import { View, Text, StyleSheet, StatusBar, TouchableOpacity } from 'react-native';
 
@@ -44,9 +24,9 @@ export function AuthScreen({ onSignUpPress, onLoginPress }: AuthScreenProps) {
           
           <TouchableOpacity 
             style={[styles.button, styles.loginButton]}
-            onPress={onLoginPress}  // <-- This now goes to home!
+            onPress={onLoginPress}  
           >
-            <Text style={styles.loginButtonText}>Login (Skip to Home)</Text>
+            <Text style={styles.loginButtonText}>Login </Text>
           </TouchableOpacity>
         </View>
       </View>

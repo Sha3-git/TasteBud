@@ -33,10 +33,7 @@ export interface CombinedSearchResults {
 
 const PAGE_SIZE = 10;
 
-/**
- * Search hook with "Load More" support
- * Backend returns: { ingredients, branded, ingredientsTotal, brandedTotal }
- */
+
 export function useSearchFoods(query: string): CombinedSearchResults {
   const [ingredients, setIngredients] = useState<IngredientResult[]>([]);
   const [brandedFoods, setBrandedFoods] = useState<BrandedFoodResult[]>([]);
@@ -45,7 +42,6 @@ export function useSearchFoods(query: string): CombinedSearchResults {
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
 
-  // Reset and search when query changes
   useEffect(() => {
     const timeout = setTimeout(async () => {
       if (!query.trim() || query.length < 2) {
@@ -62,7 +58,6 @@ export function useSearchFoods(query: string): CombinedSearchResults {
         const res = await ingredientsService.search(query, PAGE_SIZE);
         
         if (res.status === 200 && res.data) {
-          // Handle new format with totals
           if (res.data.ingredients !== undefined && res.data.branded !== undefined) {
             setIngredients(
               res.data.ingredients.map((item: any) => ({
@@ -87,7 +82,6 @@ export function useSearchFoods(query: string): CombinedSearchResults {
             setIngredientsTotal(res.data.ingredientsTotal || res.data.ingredients.length);
             setBrandedTotal(res.data.brandedTotal || res.data.branded.length);
           } 
-          // Fallback for old format
           else if (Array.isArray(res.data)) {
             const ingredientItems = res.data.filter((item: any) => item.type === 'ingredient');
             const brandedItems = res.data.filter((item: any) => item.type === 'branded');
@@ -131,7 +125,6 @@ export function useSearchFoods(query: string): CombinedSearchResults {
     return () => clearTimeout(timeout);
   }, [query]);
 
-  // Load more ingredients
   const loadMoreIngredients = useCallback(async () => {
     if (loadingMore || ingredients.length >= ingredientsTotal) return;
     
@@ -140,8 +133,8 @@ export function useSearchFoods(query: string): CombinedSearchResults {
       const res = await ingredientsService.searchWithSkip(
         query, 
         PAGE_SIZE,
-        ingredients.length,  // ingredientSkip
-        brandedFoods.length  // brandedSkip (keep same)
+        ingredients.length, 
+        brandedFoods.length
       );
       
       if (res.status === 200 && res.data?.ingredients) {
@@ -161,7 +154,6 @@ export function useSearchFoods(query: string): CombinedSearchResults {
     }
   }, [query, ingredients.length, brandedFoods.length, ingredientsTotal, loadingMore]);
 
-  // Load more branded foods
   const loadMoreBranded = useCallback(async () => {
     if (loadingMore || brandedFoods.length >= brandedTotal) return;
     
@@ -170,8 +162,8 @@ export function useSearchFoods(query: string): CombinedSearchResults {
       const res = await ingredientsService.searchWithSkip(
         query,
         PAGE_SIZE,
-        ingredients.length,    // ingredientSkip (keep same)
-        brandedFoods.length    // brandedSkip
+        ingredients.length,
+        brandedFoods.length  
       );
       
       if (res.status === 200 && res.data?.branded) {
@@ -207,9 +199,6 @@ export function useSearchFoods(query: string): CombinedSearchResults {
   };
 }
 
-/**
- * Helper hook to expand branded food to its mapped ingredients
- */
 export function useExpandBrandedFood() {
   const [loading, setLoading] = useState(false);
 

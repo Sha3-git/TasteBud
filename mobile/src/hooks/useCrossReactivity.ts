@@ -48,7 +48,6 @@ function getEmojiForFoodGroup(foodGroup: string): string {
   return emojiMap[foodGroup] || '🍽️';
 }
 
-// Helper to get color based on food group
 function getColorForFoodGroup(foodGroup: string): string {
   const colorMap: Record<string, string> = {
     'Dairy': '#F5F5DC',
@@ -68,14 +67,12 @@ function getColorForFoodGroup(foodGroup: string): string {
   return colorMap[foodGroup] || '#6B7280';
 }
 
-// Helper to determine risk level from score
 function getRiskLevel(score: number): 'high' | 'medium' | 'low' {
   if (score >= 70) return 'high';
   if (score >= 50) return 'medium';
   return 'low';
 }
 
-// Helper to generate readable scientific explanation
 function generateScientificReason(allergenName: string, topFoods: RelatedFood[]): string {
   const highRiskCount = topFoods.filter(f => f.riskLevel === 'high').length;
   const avgScore = Math.round(topFoods.reduce((sum, f) => sum + f.percentage, 0) / topFoods.length);
@@ -86,7 +83,6 @@ function generateScientificReason(allergenName: string, topFoods: RelatedFood[])
 }
 
 export function useCrossReactivity() {
-  const userId = "69173dd5a3866b85b59d9760"; // TODO: Replace with auth context
   
   const [data, setData] = useState<CrossReactivityResult | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -98,7 +94,7 @@ export function useCrossReactivity() {
     
     try {
       // Step 1: Get user's unsafe foods
-      const unsafeFoodsResponse = await unsafeFoodsService.getUnsafeFoods(userId);
+      const unsafeFoodsResponse = await unsafeFoodsService.getUnsafeFoods();
       const unsafeFoods = unsafeFoodsResponse.data;
       
       if (!unsafeFoods?.ingredients || unsafeFoods.ingredients.length === 0) {
@@ -198,7 +194,7 @@ export function useCrossReactivity() {
     } finally {
       setIsLoading(false);
     }
-  }, [userId]);
+  }, []);
 
   useEffect(() => {
     fetchData();

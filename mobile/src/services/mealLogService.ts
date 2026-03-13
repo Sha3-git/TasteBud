@@ -11,7 +11,6 @@ interface MealParam {
 }
 
 interface MealLog {
-  userId: string;
   mealName: string;
   ingredients: Array<string>;
   hadReaction: Boolean;
@@ -22,39 +21,38 @@ interface MealLog {
 
 export const mealLogService = {
   getMealLogByDay: (params: MealParam) => {
-    const { userId, date, page = 1, limit = 10, tzOffset } = params;
+    const {date, page = 1, limit = 10, tzOffset } = params;
 
     return api.get("/meallogs/daily", {
-      params: { userId, date, page, limit, tzOffset },
+      params: {date, page, limit, tzOffset },
     });
   },
 
   getMealLogByWeek: (params: MealParam) => {
-    const { userId, date, page = 1, limit = 10 } = params;
+    const {date, page = 1, limit = 10 } = params;
 
     return api.get("/meallogs/weekly", {
-      params: { userId, date, page, limit },
+      params: {date, page, limit },
     });
   },
 
   getMealLogByMonth: (params: MealParam) => {
-    const { userId, year, month, page = 1, limit = 100, tzOffset } = params;
+    const {year, month, page = 1, limit = 100, tzOffset } = params;
 
     return api.get("/meallogs/monthly", {
-      params: { userId, year, month, page, limit, tzOffset },
+      params: {year, month, page, limit, tzOffset },
     });
   },
 
   getDailyMealLogCount: (params: MealParam) => {
-    const { userId, date, tzOffset } = params;
+    const {date, tzOffset } = params;
     return api.get("/meallogs/stats", {
-      params: { userId, date, tzOffset },
+      params: {date, tzOffset },
     });
   },
 
   createMealLog: (params: MealLog) => {
     return api.post("/meallogs/create", params, {
-      params: { userId: params.userId },
     });
   },
 

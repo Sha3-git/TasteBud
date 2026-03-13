@@ -1,14 +1,3 @@
-/**
- * ALLERGY DECLARATION SCREEN
- * 
- * PURPOSE:
- * - Allows users to declare pre-existing allergies and symptoms
- * - Supports MULTIPLE selections for both allergies and symptoms
- * - Users can skip if they have no known allergies
- * 
- * BACKEND INTEGRATION: COMPLETE
- * - Calls POST /api/unsafefood/onboarding to save allergies
- */
 
 import React, { useState } from 'react';
 import {

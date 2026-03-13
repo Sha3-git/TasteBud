@@ -54,10 +54,6 @@ const searchBrandedFoods = async (query, limit = 20) => {
   }
 };
 
-/**
- * Get a branded food and map its ingredients using AI-powered mappings
- * Uses the pre-computed 'ingredient_mappings' collection for instant lookups
- */
 const getBrandedFoodWithIngredients = async (brandedFoodId) => {
   const brandedFood = await BrandedFood.findById(brandedFoodId).lean();
   if (!brandedFood) return null;
@@ -65,7 +61,6 @@ const getBrandedFoodWithIngredients = async (brandedFoodId) => {
   const mappedIngredients = [];
   const seenIds = new Set();
   
-  // Get the mappings collection from the main database
   const db = mongoose.connection.db;
   const mappingsCollection = db.collection("ingredient_mappings");
 
@@ -73,11 +68,9 @@ const getBrandedFoodWithIngredients = async (brandedFoodId) => {
     if (!rawIngredient || rawIngredient.length < 2) continue;
     
     try {
-      // Look up pre-computed AI mapping
       const mapping = await mappingsCollection.findOne({ original: rawIngredient });
       
       if (mapping && mapping.matchedId) {
-        // Check if we already have this ingredient (avoid duplicates)
         const idString = mapping.matchedId.toString();
         if (!seenIds.has(idString)) {
           seenIds.add(idString);
@@ -90,7 +83,6 @@ const getBrandedFoodWithIngredients = async (brandedFoodId) => {
           });
         }
       }
-      // If no mapping found, skip this ingredient (it was likely filtered out as additive/vitamin)
     } catch (err) {
       console.error(`Error looking up mapping for "${rawIngredient}":`, err.message);
     }
@@ -99,13 +91,10 @@ const getBrandedFoodWithIngredients = async (brandedFoodId) => {
   return {
     ...brandedFood,
     mappedIngredients,
-    mappingMethod: "ai-embeddings"  // Indicates we used the new AI method
+    mappingMethod: "ai-embeddings"  
   };
 };
 
-/**
- * Get mapping statistics (for admin/debugging)
- */
 const getMappingStats = async () => {
   const db = mongoose.connection.db;
   const mappingsCollection = db.collection("ingredient_mappings");

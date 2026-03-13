@@ -1,32 +1,7 @@
-/**
- * WELCOME SCREENS (Transition Screens)
- * 
- * PURPOSE:
- * - Three celebratory screens shown after user completes registration
- * - Provides positive feedback and smooth transition to main app
- * 
- * SCREENS INCLUDED:
- * 1. SetupProgressScreen - "Setting Up Your Account" (2 seconds)
- * 2. WelcomeUserScreen - "Welcome [FirstName]" (2.5 seconds)
- * 3. GreatChoiceScreen - "You've Made a Great Choice [FirstName]!" (2.5 seconds)
- * 
- * BACKEND INTEGRATION:
- * - No API calls needed for these screens
- * - These are purely UI/UX delight screens
- * 
- * NOTES:
- * - These screens auto-transition (no user interaction needed)
- * - They provide time for any background data syncing if needed
- * - Could add subtle animations with react-native-reanimated in future
- */
 
 import React from 'react';
 import { View, Text, StyleSheet, StatusBar } from 'react-native';
 
-/**
- * SetupProgressScreen - Shows while account is being set up
- * Could show loading spinner or progress indicator here
- */
 export function SetupProgressScreen() {
   return (
     <View style={styles.container}>
@@ -36,9 +11,7 @@ export function SetupProgressScreen() {
   );
 }
 
-/**
- * WelcomeUserScreen - Personalized welcome with user's first name
- */
+
 export function WelcomeUserScreen({ userName }: { userName: string }) {
   return (
     <View style={styles.container}>
@@ -49,9 +22,7 @@ export function WelcomeUserScreen({ userName }: { userName: string }) {
   );
 }
 
-/**
- * GreatChoiceScreen - Final congratulatory message
- */
+
 export function GreatChoiceScreen({ userName }: { userName: string }) {
   return (
     <View style={styles.container}>

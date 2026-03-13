@@ -1,46 +1,3 @@
-/**
- * NAME INPUT SCREEN
- * 
- * PURPOSE:
- * - Collects user's first and last name
- * - Required for personalizing user experience
- * 
- * BACKEND INTEGRATION REQUIRED:
- * ==================================
- * 
- * API ENDPOINT NEEDED: PATCH /api/users/{userId}/profile
- * 
- * REQUEST BODY:
- * {
- *   "firstName": "John",
- *   "lastName": "Doe"
- * }
- * 
- * EXPECTED RESPONSE (Success - 200 OK):
- * {
- *   "success": true,
- *   "user": {
- *     "id": "user_123abc",
- *     "firstName": "John",
- *     "lastName": "Doe",
- *     "email": "john@example.com"
- *   }
- * }
- * 
- * WHEN TO CALL THIS API:
- * - After successful email/password registration
- * - User should already have a userId from previous step
- * 
- * VALIDATION:
- * - Both first and last name are required
- * - Minimum 1 character each (after trimming whitespace)
- * 
- * TODO FOR BACKEND:
- * - Store firstName and lastName in user profile
- * - Return updated user object
- * - Handle special characters in names appropriately
- */
-
 import React, { useState } from 'react';
 import {
   View,
@@ -64,44 +21,13 @@ export function NameInputScreen({ onBack, onContinue }: NameInputScreenProps) {
   
   const isValid = firstName.trim().length > 0 && lastName.trim().length > 0;
   
-  /**
-   * handleContinue - Send user's name to backend
-   * 
-   * BACKEND TEAM: API call implementation example:
-   * 
-   * const handleContinue = async () => {
-   *   try {
-   *     const response = await fetch(`YOUR_API_URL/api/users/${userId}/profile`, {
-   *       method: 'PATCH',
-   *       headers: {
-   *         'Content-Type': 'application/json',
-   *         'Authorization': `Bearer ${authToken}`
-   *       },
-   *       body: JSON.stringify({
-   *         firstName: firstName.trim(),
-   *         lastName: lastName.trim()
-   *       })
-   *     });
-   *     
-   *     const data = await response.json();
-   *     
-   *     if (response.ok) {
-   *       onContinue(firstName.trim(), lastName.trim());
-   *     } else {
-   *       alert(data.error);
-   *     }
-   *   } catch (error) {
-   *     alert('Network error. Please try again.');
-   *   }
-   * };
-   */
+
   const handleContinue = () => {
     if (isValid) {
       console.log('👤 NAME DATA TO SEND TO BACKEND:', {
         firstName: firstName.trim(),
         lastName: lastName.trim()
       });
-      // TODO BACKEND: Replace with actual API call
       onContinue(firstName.trim(), lastName.trim());
     }
   };

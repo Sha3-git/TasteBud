@@ -1,13 +1,4 @@
-/**
- * UPGRADED INGREDIENT SEARCH SERVICE
- * 
- * Features:
- * 1. Searches BOTH ingredients and brandedfoods collections
- * 2. Returns total counts for "Show X more" UX
- * 3. Supports pagination with skip parameter
- * 4. Excludes embeddings from response (saves ~90% bandwidth)
- * 5. Better ranking - exact matches first
- */
+
 
 const Ingredient = require("../models/ingredients");
 const BrandedFood = require("../models/brandedFoods");
@@ -54,7 +45,6 @@ const searchIngredients = async (query, limit = 10, ingredientSkip = 0, brandedS
       .select('-embedding')
       .lean();
     
-    // Sort by exact match first, then starts-with, then contains
     ingredientResults.sort((a, b) => {
       const aLower = a.name.toLowerCase();
       const bLower = b.name.toLowerCase();
@@ -70,20 +60,13 @@ const searchIngredients = async (query, limit = 10, ingredientSkip = 0, brandedS
       return aLower.localeCompare(bLower);
     });
 
-    // Apply skip and limit after sorting
     ingredientResults = ingredientResults.slice(ingredientSkip, ingredientSkip + limit);
 
-    // Add type indicator
     ingredientResults = ingredientResults.map(ing => ({
       ...ing,
       type: 'ingredient'
     }));
 
-    // =======================================================================
-    // SEARCH 2: Branded foods using ATLAS SEARCH
-    // =======================================================================
-    
-    // Get total count for branded (using $searchMeta or separate count)
     let brandedTotal = 0;
     try {
       const countResult = await BrandedFood.aggregate([
@@ -101,11 +84,9 @@ const searchIngredients = async (query, limit = 10, ingredientSkip = 0, brandedS
       ]);
       brandedTotal = countResult[0]?.total || 0;
     } catch (e) {
-      // If count fails, estimate from results
       brandedTotal = 0;
     }
 
-    // Get paginated branded results
     let brandedResults = await BrandedFood.aggregate([
       {
         $search: {
@@ -130,7 +111,6 @@ const searchIngredients = async (query, limit = 10, ingredientSkip = 0, brandedS
       }
     ]);
 
-    // Transform branded foods to unified format
     brandedResults = brandedResults.map(bf => {
       const displayName = bf.brandedFoodCategory 
         ? `${bf.brandOwner} - ${bf.brandedFoodCategory}`
@@ -148,10 +128,6 @@ const searchIngredients = async (query, limit = 10, ingredientSkip = 0, brandedS
       };
     });
 
-    // =======================================================================
-    // RETURN WITH TOTALS
-    // =======================================================================
-    
     return {
       ingredients: ingredientResults,
       branded: brandedResults,
@@ -165,9 +141,6 @@ const searchIngredients = async (query, limit = 10, ingredientSkip = 0, brandedS
   }
 };
 
-/**
- * Search ONLY base ingredients using regex
- */
 const searchBaseIngredients = async (query, limit = 20, skip = 0) => {
   try {
     if (!query || query.trim() === "") return { results: [], total: 0 };
@@ -186,7 +159,6 @@ const searchBaseIngredients = async (query, limit = 20, skip = 0) => {
       .select('-embedding')
       .lean();
 
-    // Sort by exact match first, then starts-with, then contains
     results.sort((a, b) => {
       const aLower = a.name.toLowerCase();
       const bLower = b.name.toLowerCase();
@@ -202,7 +174,6 @@ const searchBaseIngredients = async (query, limit = 20, skip = 0) => {
       return aLower.localeCompare(bLower);
     });
 
-    // Apply pagination after sorting
     results = results.slice(skip, skip + limit);
 
     return { results, total };
@@ -212,14 +183,10 @@ const searchBaseIngredients = async (query, limit = 20, skip = 0) => {
   }
 };
 
-/**
- * Search ONLY branded foods using Atlas Search
- */
 const searchBrandedFoods = async (query, limit = 20, skip = 0) => {
   try {
     if (!query || query.trim() === "") return { results: [], total: 0 };
 
-    // Get total
     let total = 0;
     try {
       const countResult = await BrandedFood.aggregate([
@@ -285,9 +252,6 @@ const searchBrandedFoods = async (query, limit = 20, skip = 0) => {
   }
 };
 
-/**
- * Get ingredient by ID (with embedding excluded)
- */
 const getIngredientById = async (id) => {
   try {
     return await Ingredient.findById(id).select('-embedding').lean();

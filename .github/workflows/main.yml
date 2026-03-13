@@ -58,7 +58,10 @@ jobs:
           git pull origin main
 
           echo "MONGODB_URI=${{ secrets.MONGODB_URI}}" > .env
-          echo "MONGO_FOODS_URI=${{secrets.MONGO_FOODS_URI}}" >> .env
-          
+          echo "MAIL_ACCESS=${{secrets.MAIL_ACCESS}}" >> .env
+          echo "GOOGLE_APP_PASSWORD=${{secrets.GOOGLE_APP_PASSWORD}}" >> .env
+          echo "EMAIL_USER=${{secrets.EMAIL_USER}}" >> .env
+          echo "CLIENT_URL=${{secrets.CLIENT_URL}}" >> .env
+          echo "CLIENT_URL=${{secrets.JWT_SECRET}}" >> .env
           
           pm2 start tastebud-api

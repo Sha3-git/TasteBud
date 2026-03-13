@@ -13,10 +13,7 @@ const mealLogSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Ingredient"
     }],
-    reaction:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Reaction"
-    },
+ 
     hadReaction: {
         type: Boolean,
         required: true

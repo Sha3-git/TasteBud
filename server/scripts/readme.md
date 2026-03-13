@@ -27,10 +27,6 @@ Script to populate the foods from the final_foods into the mongoDB database
 node ./scripts/population/ingredPop.js
 ```
 
-### Branded foods population
-
-### Script running order
-
 # Protein sequence comparison
 
 Utilizes the BLAST+ comparison tool from [NCBI](https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST)

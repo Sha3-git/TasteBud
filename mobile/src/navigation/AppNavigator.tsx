@@ -1,28 +1,20 @@
-/**
- * APP NAVIGATOR
- * 
- * Handles all screen navigation using React Navigation.
- * 
- * Structure:
- * - Stack Navigator: Onboarding flow + screens that overlay the tabs
- * - Tab Navigator: Main app screens (all show tab bar)
- */
-
 import React, { useState } from "react";
 import { View, Text } from "react-native";
 import { NavigationContainer, useNavigation } from "@react-navigation/native";
-import { createNativeStackNavigator, NativeStackNavigationProp } from "@react-navigation/native-stack";
+import {
+  createNativeStackNavigator,
+  NativeStackNavigationProp,
+} from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../theme/ThemeContext";
 
-// Components
 import { LiquidGlassTabBar } from "../components/modules/LiquidGlassTabBar";
 
-// Onboarding screens
 import { SplashScreen } from "../screens/onboarding/SplashScreen";
 import { AuthScreen } from "../screens/onboarding/AuthScreen";
 import { EmailPasswordScreen } from "../screens/onboarding/EmailPasswordScreen";
+import { LoginScreen } from "../screens/onboarding/LoginScreen";
 import { NameInputScreen } from "../screens/onboarding/NameInputScreen";
 import { AllergyDeclarationScreen } from "../screens/onboarding/AllergyDeclarationScreen";
 import {
@@ -31,7 +23,6 @@ import {
   GreatChoiceScreen,
 } from "../screens/onboarding/WelcomeScreens";
 
-// Home screens
 import { HomeScreen } from "../screens/home/HomeScreen";
 import { MealLogScreen } from "../screens/home/MealLogScreen";
 import { FoodLibraryScreen } from "../screens/home/FoodLibraryScreen";
@@ -39,12 +30,13 @@ import { ProfileScreen } from "../screens/home/ProfileScreen";
 import { NotificationsScreen } from "../screens/home/NotificationsScreen";
 import { SymptomAnalysisScreen } from "../screens/home/SymptomAnalysisScreen";
 import { CrossReactivityScreen } from "../screens/home/CrossReactivityScreen";
+import { useAuth } from "../hooks/useAuth";
 
-// Type definitions
 export type RootStackParamList = {
   Splash: undefined;
   Auth: undefined;
   EmailPassword: undefined;
+  Login: undefined;
   NameInput: undefined;
   AllergyDeclaration: undefined;
   SetupProgress: undefined;
@@ -67,27 +59,34 @@ export type MainTabParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
-// Placeholder for Scan screen
 function ScanScreen() {
   const { theme } = useTheme();
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: theme.background }}>
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: theme.background,
+      }}
+    >
       <Ionicons name="camera" size={64} color={theme.textSecondary} />
-      <Text style={{ color: theme.textSecondary, marginTop: 16, fontSize: 18 }}>Scan Coming Soon</Text>
+      <Text style={{ color: theme.textSecondary, marginTop: 16, fontSize: 18 }}>
+        Scan Coming Soon
+      </Text>
     </View>
   );
 }
 
-// Home Screen wrapper with navigation
 function HomeScreenWrapper({ userName }: { userName: string }) {
-  const stackNavigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const stackNavigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const tabNavigation = useNavigation<any>();
-  
+
   return (
     <HomeScreen
       userName={userName}
       onNavigate={(screen) => {
-        // Tab screens - use tab navigation
         if (screen === "mealLog") {
           tabNavigation.navigate("MealLog");
         } else if (screen === "foodLibrary") {
@@ -106,18 +105,45 @@ function HomeScreenWrapper({ userName }: { userName: string }) {
   );
 }
 
-// Tab Navigator for main app
-function MainTabNavigator({ route }: { route: { params: { userName: string } } }) {
+function MainTabNavigator({
+  route,
+}: {
+  route: { params: { userName: string } };
+}) {
   const { theme, isDark } = useTheme();
   const userName = route.params?.userName || "User";
 
-  // Tab configuration for LiquidGlassTabBar
   const tabs = [
-    { id: "Home", icon: "home-outline" as const, iconFilled: "home" as const, label: "Home" },
-    { id: "MealLog", icon: "restaurant-outline" as const, iconFilled: "restaurant" as const, label: "Meals" },
-    { id: "Scan", icon: "camera-outline" as const, iconFilled: "camera" as const, label: "Scan" },
-    { id: "Library", icon: "book-outline" as const, iconFilled: "book" as const, label: "Library" },
-    { id: "Profile", icon: "person-outline" as const, iconFilled: "person" as const, label: "Profile" },
+    {
+      id: "Home",
+      icon: "home-outline" as const,
+      iconFilled: "home" as const,
+      label: "Home",
+    },
+    {
+      id: "MealLog",
+      icon: "restaurant-outline" as const,
+      iconFilled: "restaurant" as const,
+      label: "Meals",
+    },
+    {
+      id: "Scan",
+      icon: "camera-outline" as const,
+      iconFilled: "camera" as const,
+      label: "Scan",
+    },
+    {
+      id: "Library",
+      icon: "book-outline" as const,
+      iconFilled: "book" as const,
+      label: "Library",
+    },
+    {
+      id: "Profile",
+      icon: "person-outline" as const,
+      iconFilled: "person" as const,
+      label: "Profile",
+    },
   ];
 
   return (
@@ -137,11 +163,15 @@ function MainTabNavigator({ route }: { route: { params: { userName: string } } }
         {() => <HomeScreenWrapper userName={userName} />}
       </Tab.Screen>
       <Tab.Screen name="MealLog">
-        {({ navigation }) => <MealLogScreen onBack={() => navigation.navigate("Home")} />}
+        {({ navigation }) => (
+          <MealLogScreen onBack={() => navigation.navigate("Home")} />
+        )}
       </Tab.Screen>
       <Tab.Screen name="Scan" component={ScanScreen} />
       <Tab.Screen name="Library">
-        {({ navigation }) => <FoodLibraryScreen onBack={() => navigation.navigate("Home")} />}
+        {({ navigation }) => (
+          <FoodLibraryScreen onBack={() => navigation.navigate("Home")} />
+        )}
       </Tab.Screen>
       <Tab.Screen name="Profile">
         {({ navigation }) => (
@@ -165,6 +195,7 @@ export function AppNavigator() {
     allergies: [] as string[],
     symptoms: [] as string[],
   });
+  const { user } = useAuth();
 
   return (
     <NavigationContainer>
@@ -182,13 +213,20 @@ export function AppNavigator() {
           {({ navigation }) => (
             <AuthScreen
               onSignUpPress={() => navigation.navigate("EmailPassword")}
-              onLoginPress={() => {
-                setUserData({ ...userData, firstName: "Test User", lastName: "Demo" });
+              onLoginPress={() => navigation.navigate("Login")}
+              /*onLoginPress={() => {
+                setUserData({
+                  ...userData,
+                  firstName: "Test User",
+                  lastName: "Demo",
+                });
                 navigation.reset({
                   index: 0,
-                  routes: [{ name: "MainApp", params: { userName: "Test User" } }],
+                  routes: [
+                    { name: "MainApp", params: { userName: "Test User" } },
+                  ],
                 });
-              }}
+              }}*/
             />
           )}
         </Stack.Screen>
@@ -199,7 +237,22 @@ export function AppNavigator() {
               onBack={() => navigation.goBack()}
               onContinue={(email, password) => {
                 setUserData({ ...userData, email, password });
-                navigation.navigate("NameInput");
+                navigation.navigate("AllergyDeclaration");
+              }}
+            />
+          )}
+        </Stack.Screen>
+        <Stack.Screen name="Login">
+          {({ navigation }) => (
+            <LoginScreen
+              onBack={() => navigation.goBack()}
+              onContinue={() => {
+                navigation.reset({
+                  index: 0,
+                  routes: [
+                    { name: "MainApp", params: { userName: user.name } },
+                  ],
+                });
               }}
             />
           )}
@@ -238,7 +291,9 @@ export function AppNavigator() {
           {({ navigation }) => {
             React.useEffect(() => {
               const timer = setTimeout(() => {
-                navigation.navigate("WelcomeUser", { userName: userData.firstName });
+                navigation.navigate("WelcomeUser", {
+                  userName: userData.firstName,
+                });
               }, 2000);
               return () => clearTimeout(timer);
             }, []);
@@ -250,7 +305,9 @@ export function AppNavigator() {
           {({ navigation, route }) => {
             React.useEffect(() => {
               const timer = setTimeout(() => {
-                navigation.navigate("GreatChoice", { userName: route.params.userName });
+                navigation.navigate("GreatChoice", {
+                  userName: route.params.userName,
+                });
               }, 2500);
               return () => clearTimeout(timer);
             }, []);
@@ -264,7 +321,12 @@ export function AppNavigator() {
               const timer = setTimeout(() => {
                 navigation.reset({
                   index: 0,
-                  routes: [{ name: "MainApp", params: { userName: route.params.userName } }],
+                  routes: [
+                    {
+                      name: "MainApp",
+                      params: { userName: route.params.userName },
+                    },
+                  ],
                 });
               }, 2500);
               return () => clearTimeout(timer);

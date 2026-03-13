@@ -1,19 +1,6 @@
-/**
- * UPGRADED INGREDIENTS CONTROLLER
- * 
- * Endpoints:
- * GET /api/ingredients/search?q=xxx&limit=10&ingredientSkip=0&brandedSkip=0
- * GET /api/ingredients/base?q=xxx&limit=20&skip=0
- * GET /api/ingredients/branded?q=xxx&limit=20&skip=0
- * GET /api/ingredients/:id
- */
-
 const ingredientsService = require("../services/ingredientsService");
 
-/**
- * Search both ingredients and branded foods
- * Returns: { ingredients, branded, ingredientsTotal, brandedTotal }
- */
+
 async function search(req, res) {
   try {
     const query = req.query.q;
@@ -40,9 +27,6 @@ async function search(req, res) {
   }
 }
 
-/**
- * Search base ingredients only
- */
 async function searchBase(req, res) {
   try {
     const query = req.query.q;
@@ -62,9 +46,6 @@ async function searchBase(req, res) {
   }
 }
 
-/**
- * Search branded foods only
- */
 async function searchBranded(req, res) {
   try {
     const query = req.query.q;
@@ -84,9 +65,6 @@ async function searchBranded(req, res) {
   }
 }
 
-/**
- * Get single ingredient by ID
- */
 async function getById(req, res) {
   try {
     const { id } = req.params;

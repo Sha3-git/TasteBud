@@ -1,11 +1,3 @@
-/**
- * CLEANUP UNSAFE FOODS
- * 
- * Removes:
- * - Duplicate entries
- * - Unknown/unresolved ingredients
- * - Excluded ingredients (water, salt, sugar, flour, etc.)
- */
 
 const mongoose = require('mongoose');
 require('dotenv').config();
@@ -37,7 +29,6 @@ async function cleanup() {
     const unsafeFoodsCollection = db.collection('unsafefoods');
     const mappingsCollection = db.collection('ingredient_mappings');
     
-    // Get all unsafe food documents
     const docs = await unsafeFoodsCollection.find({}).toArray();
     console.log(`Found ${docs.length} users with unsafe foods`);
     
@@ -56,7 +47,6 @@ async function cleanup() {
       for (const item of doc.ingredients) {
         const ingredientId = item.ingredient.toString();
         
-        // Skip duplicates
         if (seenIds.has(ingredientId)) {
           totalDeduped++;
           console.log(`  🔄 Duplicate removed`);
@@ -81,14 +71,12 @@ async function cleanup() {
           // Invalid ID
         }
         
-        // Skip unresolved
         if (!ingredientName) {
           totalRemoved++;
           console.log(`  ❌ Removed: Unknown (ID: ${ingredientId})`);
           continue;
         }
         
-        // Skip excluded
         if (EXCLUDED_INGREDIENTS.has(ingredientName.toLowerCase().trim())) {
           totalRemoved++;
           console.log(`  ❌ Removed: ${ingredientName} (excluded)`);
@@ -100,7 +88,6 @@ async function cleanup() {
       
       console.log(`  Cleaned ingredients: ${cleanedIngredients.length}`);
       
-      // Update document
       await unsafeFoodsCollection.updateOne(
         { _id: doc._id },
         { $set: { ingredients: cleanedIngredients } }

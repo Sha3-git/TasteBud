@@ -1,17 +1,4 @@
-/**
- * TASTEBUD REACTION SERVICE - v4.2 (Exclusions + Auto-run)
- * 
- * WHAT'S NEW IN V4.2:
- * - Added EXCLUDED_INGREDIENTS list to filter out common foods (water, salt, flour, etc.)
- * - Auto-runs trigger detection when a reaction is logged
- * - Previous fixes maintained (ingredient resolution from ingredient_mappings)
- * 
- * Detection tracks:
- * 1. IgE-like (rapid onset, multi-system) - 0-4 hours
- * 2. FODMAP (GI-only, dose-dependent) - 1-24 hours  
- * 3. Intolerance (delayed, GI-predominant) - 2-48 hours
- * 4. Physiological (non-food patterns) - any timing
- */
+
 
 const Reaction = require("../models/reaction");
 const MealLog = require("../models/mealLogs");
@@ -19,48 +6,34 @@ const UnsafeFood = require("../models/unsafeFoods");
 const mongoose = require("mongoose");
 const { dayRange } = require("../utils/dateRange");
 
-// =============================================================================
-// EXCLUDED INGREDIENTS - Too common to be meaningful triggers
-// =============================================================================
 
 const EXCLUDED_INGREDIENTS = new Set([
-  // Water & basic liquids
   'water', 'tap water', 'spring water', 'mineral water', 'ice', 'ice water',
   
-  // Salt & basic seasonings
   'salt', 'sea salt', 'table salt', 'kosher salt', 'sodium chloride',
   'pepper', 'black pepper', 'white pepper',
   
-  // Sugar & sweeteners (too ubiquitous)
   'sugar', 'white sugar', 'brown sugar', 'cane sugar', 'granulated sugar',
   'powdered sugar', 'confectioners sugar', 'icing sugar',
   
-  // Basic oils (used in almost everything)
   'oil', 'vegetable oil', 'cooking oil', 'canola oil', 'sunflower oil',
   'palm oil', 'oil palm', 'soybean oil', 'corn oil', 'rapeseed oil',
   
-  // Basic flours & starches
   'flour', 'wheat flour', 'all-purpose flour', 'white flour', 'bread flour',
   'starch', 'corn starch', 'cornstarch', 'modified starch', 'modified food starch',
   
-  // Basic grains when used as fillers
   'rice', 'white rice', 'rice flour',
   
-  // Ubiquitous additives
   'yeast', 'baking powder', 'baking soda', 'sodium bicarbonate',
   'vinegar', 'white vinegar', 'distilled vinegar',
   
-  // Generic/vague entries
   'other', 'other ingredients', 'natural flavors', 'natural flavor',
   'artificial flavors', 'artificial flavor', 'flavoring', 'spices', 'seasoning',
   
-  // Test data artifacts
   'tobacco', 'unknown', 'unknown ingredient',
 ]);
 
-/**
- * Check if an ingredient should be excluded from analysis
- */
+
 function shouldExcludeIngredient(ingredientName) {
   if (!ingredientName) return true;
   const normalized = ingredientName.toLowerCase().trim();
@@ -261,15 +234,17 @@ const analyzeAllergenCodes = (allergenCodes) => {
   const sources = new Set();
   const majorAllergens = [];
   let highestRisk = 'low';
-  
   allergenCodes.forEach(code => {
     const info = ALLERGEN_INFO[code];
+  console.log("Analyzing allergen codes:", info);
+
     if (info) {
       sources.add(info.source);
       if (info.type === 'major') majorAllergens.push(code);
       if (info.risk === 'high') highestRisk = 'high';
       else if (info.risk === 'moderate' && highestRisk !== 'high') highestRisk = 'moderate';
     }
+
   });
   
   return {
@@ -281,9 +256,6 @@ const analyzeAllergenCodes = (allergenCodes) => {
   };
 };
 
-// =============================================================================
-// TIME WINDOW SCORING
-// =============================================================================
 
 const getTimeWindowScore = (hours, track) => {
   if (hours < 0) return 0;
@@ -479,8 +451,8 @@ const detectFODMAPPatterns = (ingredientStats) => {
         isFODMAPTagged,
         foodGroup: stats.foodGroup,
         recommendation: isFODMAPTagged
-          ? `⚠️ Known FODMAP. GI symptoms ~${Math.round(avgHours)}h after eating.`
-          : `❓ GI pattern suggests possible FODMAP sensitivity.`
+          ? `Known FODMAP. GI symptoms ~${Math.round(avgHours)}h after eating.`
+          : `GI pattern suggests possible FODMAP sensitivity.`
       });
     }
   }
@@ -770,10 +742,6 @@ async function syncSuspectedToUnsafeFoods(userId, suspectedFoods) {
   }
 }
 
-// =============================================================================
-// OTHER FUNCTIONS
-// =============================================================================
-
 async function getReactionByDay(userId, date, page = 1, limit = 10) {
   const { start, end } = dayRange(date, 360);
   return getReactionsInRange(userId, start, end, page, limit);
@@ -794,9 +762,7 @@ async function getReactionsInRange(userId, start, end, page = 1, limit = 10) {
     .limit(limit);
 }
 
-/**
- * Create a reaction and auto-run trigger detection
- */
+
 async function createReaction(userId, data) {
   const reaction = await Reaction.create({
     userId,
@@ -804,13 +770,11 @@ async function createReaction(userId, data) {
     symptoms: data.symptoms,
   });
   
-  // Auto-run trigger detection in the background (don't await)
   setImmediate(async () => {
     try {
-      console.log("🔄 Auto-running trigger detection after new reaction...");
       await getSuspectedFoods(userId);
     } catch (err) {
-      console.error("❌ Auto-detection failed:", err.message);
+      console.error( err.message);
     }
   });
   

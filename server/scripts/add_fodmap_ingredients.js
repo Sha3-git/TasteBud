@@ -1,22 +1,11 @@
-/**
- * TasteBud - Add FODMAP & Additive Ingredients
- * =============================================
- * Run this script to add FODMAP triggers and common additives
- * to your ingredients database so they can be tracked.
- * 
- * Run: node add_fodmap_ingredients.js
- */
+
 require('dotenv').config();
 const { MongoClient } = require('mongodb');
 
 const MONGO_URI = process.env.MONGO_URI;;
 
-// ============================================================
-// FODMAP INGREDIENTS TO ADD
-// ============================================================
 
 const FODMAP_INGREDIENTS = [
-  // POLYOLS
   { name: "Erythritol", foodGroup: "FODMAP - Polyol", intoleranceType: ["FODMAP"], allergens: [] },
   { name: "Sorbitol", foodGroup: "FODMAP - Polyol", intoleranceType: ["FODMAP"], allergens: [] },
   { name: "Mannitol", foodGroup: "FODMAP - Polyol", intoleranceType: ["FODMAP"], allergens: [] },
@@ -25,7 +14,6 @@ const FODMAP_INGREDIENTS = [
   { name: "Isomalt", foodGroup: "FODMAP - Polyol", intoleranceType: ["FODMAP"], allergens: [] },
   { name: "Lactitol", foodGroup: "FODMAP - Polyol", intoleranceType: ["FODMAP"], allergens: [] },
   
-  // OLIGOSACCHARIDES
   { name: "Inulin", foodGroup: "FODMAP - Fructan", intoleranceType: ["FODMAP"], allergens: [] },
   { name: "Chicory root fiber", foodGroup: "FODMAP - Fructan", intoleranceType: ["FODMAP"], allergens: [] },
   { name: "Chicory root extract", foodGroup: "FODMAP - Fructan", intoleranceType: ["FODMAP"], allergens: [] },
@@ -35,7 +23,6 @@ const FODMAP_INGREDIENTS = [
   { name: "GOS", foodGroup: "FODMAP - GOS", intoleranceType: ["FODMAP"], allergens: [] },
   { name: "Isomalto-oligosaccharides", foodGroup: "FODMAP - Prebiotic", intoleranceType: ["FODMAP"], allergens: [] },
   
-  // ARTIFICIAL SWEETENERS
   { name: "Sucralose", foodGroup: "Artificial sweetener", intoleranceType: ["Unspecified"], allergens: [] },
   { name: "Aspartame", foodGroup: "Artificial sweetener", intoleranceType: ["Unspecified"], allergens: [] },
   { name: "Acesulfame potassium", foodGroup: "Artificial sweetener", intoleranceType: ["Unspecified"], allergens: [] },
@@ -43,7 +30,6 @@ const FODMAP_INGREDIENTS = [
   { name: "Stevia", foodGroup: "Natural sweetener", intoleranceType: ["Unspecified"], allergens: [] },
   { name: "Monk fruit extract", foodGroup: "Natural sweetener", intoleranceType: ["Unspecified"], allergens: [] },
   
-  // GUMS & THICKENERS
   { name: "Xanthan gum", foodGroup: "Additive - Gum", intoleranceType: ["Unspecified"], allergens: [] },
   { name: "Guar gum", foodGroup: "Additive - Gum", intoleranceType: ["Unspecified"], allergens: [] },
   { name: "Carrageenan", foodGroup: "Additive - Gum", intoleranceType: ["Unspecified"], allergens: [] },
@@ -53,14 +39,12 @@ const FODMAP_INGREDIENTS = [
   { name: "Agar", foodGroup: "Additive - Gum", intoleranceType: ["Unspecified"], allergens: [] },
   { name: "Pectin", foodGroup: "Additive - Gum", intoleranceType: ["Unspecified"], allergens: [] },
   
-  // FIBERS
   { name: "Soluble corn fiber", foodGroup: "Fiber additive", intoleranceType: ["FODMAP"], allergens: [] },
   { name: "Resistant starch", foodGroup: "Fiber additive", intoleranceType: ["Unspecified"], allergens: [] },
   { name: "Polydextrose", foodGroup: "Fiber additive", intoleranceType: ["FODMAP"], allergens: [] },
   { name: "Resistant maltodextrin", foodGroup: "Fiber additive", intoleranceType: ["Unspecified"], allergens: [] },
   { name: "Psyllium", foodGroup: "Fiber additive", intoleranceType: ["Unspecified"], allergens: [] },
   
-  // DIGESTIVE IRRITANTS
   { name: "MSG", foodGroup: "Flavor enhancer", intoleranceType: ["Unspecified"], allergens: [] },
   { name: "Monosodium glutamate", foodGroup: "Flavor enhancer", intoleranceType: ["Unspecified"], allergens: [] },
   { name: "Sulfites", foodGroup: "Preservative", intoleranceType: ["Sulfate"], allergens: [] },
@@ -69,22 +53,17 @@ const FODMAP_INGREDIENTS = [
   { name: "Sodium nitrite", foodGroup: "Preservative", intoleranceType: ["Unspecified"], allergens: [] },
   { name: "Sodium nitrate", foodGroup: "Preservative", intoleranceType: ["Unspecified"], allergens: [] },
   
-  // ACIDS
   { name: "Citric acid", foodGroup: "Acid additive", intoleranceType: ["Histamine"], allergens: [] },
   { name: "Malic acid", foodGroup: "Acid additive", intoleranceType: ["Unspecified"], allergens: [] },
   { name: "Tartaric acid", foodGroup: "Acid additive", intoleranceType: ["Unspecified"], allergens: [] },
   { name: "Lactic acid", foodGroup: "Acid additive", intoleranceType: ["Histamine"], allergens: [] },
   
-  // HIGH-FODMAP FOODS
   { name: "High fructose corn syrup", foodGroup: "FODMAP - Fructose", intoleranceType: ["FODMAP"], allergens: [] },
   { name: "Agave syrup", foodGroup: "FODMAP - Fructose", intoleranceType: ["FODMAP"], allergens: [] },
   { name: "Agave nectar", foodGroup: "FODMAP - Fructose", intoleranceType: ["FODMAP"], allergens: [] },
   { name: "Crystalline fructose", foodGroup: "FODMAP - Fructose", intoleranceType: ["FODMAP"], allergens: [] },
 ];
 
-// ============================================================
-// MAIN SCRIPT
-// ============================================================
 
 async function main() {
   console.log("\n" + "=".repeat(60));
@@ -100,16 +79,13 @@ async function main() {
     const db = client.db("TasteBud");
     const ingredientsCol = db.collection("ingredients");
     
-    // Get current count
     const beforeCount = await ingredientsCol.countDocuments();
     console.log(`📊 Current ingredients: ${beforeCount}`);
     
-    // Check which ingredients already exist
     const existingNames = new Set();
     const existing = await ingredientsCol.find({}, { projection: { name: 1 } }).toArray();
     existing.forEach(doc => existingNames.add(doc.name.toLowerCase()));
     
-    // Filter to only new ingredients
     const toAdd = FODMAP_INGREDIENTS.filter(ing => 
       !existingNames.has(ing.name.toLowerCase())
     );
@@ -122,7 +98,6 @@ async function main() {
       return;
     }
     
-    // Show what we're adding
     console.log("📝 Adding:");
     const byGroup = {};
     toAdd.forEach(ing => {
@@ -135,7 +110,6 @@ async function main() {
       items.forEach(item => console.log(`      - ${item}`));
     }
     
-    // Confirm
     const readline = require('readline');
     const rl = readline.createInterface({
       input: process.stdin,
@@ -152,15 +126,12 @@ async function main() {
       return;
     }
     
-    // Insert
     const result = await ingredientsCol.insertMany(toAdd);
     console.log(`\n✅ Added ${result.insertedCount} new ingredients!`);
     
-    // Verify
     const afterCount = await ingredientsCol.countDocuments();
     console.log(`📊 Total ingredients now: ${afterCount}`);
     
-    // Show FODMAP-specific ingredients
     const fodmapCount = await ingredientsCol.countDocuments({
       foodGroup: { $regex: /FODMAP|Additive|sweetener|Fiber/i }
     });

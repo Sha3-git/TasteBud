@@ -1,39 +1,45 @@
+const path = require("path");
 const authService = require("../services/authService");
-
-const sendVerificationEmail = async (email, token) => {
-    //nodemailer implememt later
-};
 
 const registerUser = async (req, res) => {
     try {
-        const { user, verificationToken } =
-            await authService.register(req.body);
-
-        await sendVerificationEmail(user.email, verificationToken);
-
+        await authService.register(req.body);
         res.status(201).json({
             status: "success",
             message: "Check your email for verification link."
         });
 
     } catch (err) {
-        res.status(500).json({ error: "Server error" });
+        console.log(err);
+
+        let statusCode = 500;
+
+        if (err.message === "duplicate email") {
+            statusCode = 409;
+        }
+
+        res.status(statusCode).json({
+            error: err.message
+        });
     }
 };
 
 const verifyEmail = async (req, res) => {
     try {
         await authService.verifyEmail(req.query.token);
-        res.json({ status: "success", message: "Email verified!" });
+        res.sendFile(
+            path.join(__dirname, "public", "verification-success.html")
+        );
     } catch (err) {
-        res.status(400).json({ error: "Invalid or expired token" });
+        res.sendFile(
+            path.join(__dirname, "public", "verification-expired.html")
+        );
     }
 };
 
 const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
-
         const { user, accessToken, refreshToken } =
             await authService.login(email, password);
 

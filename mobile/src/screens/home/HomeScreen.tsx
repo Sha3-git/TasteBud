@@ -26,7 +26,6 @@ interface HomeScreenProps {
 }
 
 const { width } = Dimensions.get("window");
-
 export function HomeScreen({ userName, onNavigate }: HomeScreenProps) {
   const { theme, isDark } = useTheme();
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -38,11 +37,11 @@ export function HomeScreen({ userName, onNavigate }: HomeScreenProps) {
   const date = `${year}-${month}-${day}`;
 
   const { stats, loading, error, refetch } = useMealLogDailyStats(date);
-   useFocusEffect(
-      useCallback(() => {
-        refetch();
-      }, [refetch]),
-    );
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [refetch]),
+  );
 
   const getGreeting = () => {
     const hour = new Date().getHours();
