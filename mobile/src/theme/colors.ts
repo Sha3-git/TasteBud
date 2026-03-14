@@ -12,36 +12,36 @@ export const Colors = {
   // Light Mode
   light: {
     // Primary brand colors
-    primary: '#4A90E2',        // Calm, trustworthy blue
-    primaryLight: '#7AB3F5',   // Lighter accent
-    primaryDark: '#2E5C8A',    // Darker accent
+    primary: '#4A90E2',        // Calm, trustworthy medical blue
+    primaryLight: '#EBF4FF',   // EXCELLENT for light blue tinted backgrounds/tags
+    primaryDark: '#2C5282',    // Deep, confident accent for active states
     
     // Semantic colors
-    success: '#51CF66',        // Safe, positive
-    warning: '#FFB84D',        // Caution
-    danger: '#FF6B6B',         // Alert, symptoms
-    info: '#4ECDC4',           // Information
+    success: '#10B981',        // Premium Emerald (Matches your Get Started button)
+    warning: '#F59E0B',        // Warm Amber (Less harsh than pure orange)
+    danger: '#EF4444',         // Crisp Red (For alerts/symptoms)
+    info: '#06B6D4',           // Modern Cyan/Teal (Great for informational icons)
     
-    // Backgrounds - IMPROVED CONTRAST
-    background: '#FFFFFF',     // Pure white base (was #F8F9FA)
-    card: '#F8F9FA',           // Light gray cards (swapped)
-    elevated: '#FFFFFF',       // Elevated surfaces
+    // Backgrounds - IMPROVED CONTRAST & FLOW
+    background: '#F3F4F6',     // Crisp, cool light gray. Makes white cards pop distinctly.
+    card: '#FFFFFF',           // Pure white. Now stands out sharply against the gray background.
+    elevated: '#FFFFFF',       // Modals and floating elements (relies on shadow for depth)
     
     // Text
-    textPrimary: '#1A1A1A',    // Darker for better contrast (was #2C3E50)
-    textSecondary: '#6B7280',  // Better mid-tone (was #7F8C8D)
-    textTertiary: '#9CA3AF',   // Subtle gray (was #BDC3C7)
+    textPrimary: '#111827',    // Near-black for maximum contrast and clinical crispness
+    textSecondary: '#6B7280',  // Perfect mid-tone gray for descriptions/subtitles
+    textTertiary: '#9CA3AF',   // Subtle gray for placeholders and disabled states
     
     // Borders & Dividers
-    border: '#E5E7EB',         // Lighter border
-    divider: '#F3F4F6',        // Very light divider
+    border: '#E5E7EB',         // Soft borders to separate content cleanly
+    divider: '#E5E7EB',        // Darkened slightly to ensure it shows up on the new background
     
     // Glass effects
-    glassTint: 'rgba(255, 255, 255, 0.9)',
+    glassTint: 'rgba(255, 255, 255, 0.85)',
     glassBlur: 20,
   },
   
-  // Dark Mode - DRAMATICALLY IMPROVED
+  // Dark Mode - IMPROVED
   dark: {
     // Primary brand colors (adjusted for dark mode)
     primary: '#60A5FA',        // Brighter blue for dark (was #5DA5FF)
@@ -55,7 +55,7 @@ export const Colors = {
     info: '#22D3EE',           // Brighter cyan
     
     // Backgrounds - MUCH BETTER CONTRAST
-    background: '#000000',     // Pure black (was #0A0A0A)
+    background: '#111010',     // Pure black (was #0A0A0A)
     card: '#1C1C1E',           // iOS dark card color
     elevated: '#2C2C2E',       // Elevated surfaces
     

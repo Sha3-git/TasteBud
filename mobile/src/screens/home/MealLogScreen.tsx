@@ -92,7 +92,15 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
 
   useEffect(() => {
     if (fetchedLogs) {
-      setDayLogs(fetchedLogs);
+      const today = new Date();
+      const todayStr = today.toDateString();
+      
+      const logsWithExpansion = fetchedLogs.map((day: DayLog, index: number) => ({
+        ...day,
+        isExpanded: new Date(day.date).toDateString() === todayStr || index === 0,
+      }));
+      
+      setDayLogs(logsWithExpansion);
     }
   }, [fetchedLogs]);
 
@@ -200,16 +208,6 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
     setIsAddingMeal(true);
   };
 
-  const goToPreviousMonth = () => {
-    if (selectedMonth === 1) { setSelectedMonth(12); setSelectedYear(selectedYear - 1); }
-    else { setSelectedMonth(selectedMonth - 1); }
-  };
-
-  const goToNextMonth = () => {
-    if (selectedMonth === 12) { setSelectedMonth(1); setSelectedYear(selectedYear + 1); }
-    else { setSelectedMonth(selectedMonth + 1); }
-  };
-
   if (isAddingMeal) {
     return (
       <AddMealForm
@@ -278,7 +276,7 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
       </View>
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <MonthYearSelector goToPreviousMonth={goToPreviousMonth} goToNextMonth={goToNextMonth} theme={theme} setShowMonthPicker={setShowMonthPicker} selectedMonth={selectedMonth} selectedYear={selectedYear} />
+        <MonthYearSelector theme={theme} setShowMonthPicker={setShowMonthPicker} selectedMonth={selectedMonth} selectedYear={selectedYear} />
         
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>Past Meal Logs</Text>
@@ -293,6 +291,7 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
             onToggle={() => toggleDay(dayIndex)}
             onEditMeal={handleEditMeal}
             onDeleteMeal={handleDeleteMeal}
+            onAddMeal={() => setIsAddingMeal(true)}
             theme={theme}
             isDark={isDark}
           />

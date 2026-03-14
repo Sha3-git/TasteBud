@@ -1,34 +1,27 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
-  StatusBar,
   TouchableOpacity,
   ScrollView,
-  SafeAreaView,
-  TextInput,
-  Animated,
   Modal,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
-import { useTheme } from "../../theme/ThemeContext";
-
-import { DayLogCard } from "../../components/cards/DayLogCard";
-import { AddMealForm } from "../../components/forms/AddMealForm";
-
-
 
 interface MonthPickerProps {
-  showMonthPicker: any;
-  setShowMonthPicker: any;
+  showMonthPicker: boolean;
+  setShowMonthPicker: (show: boolean) => void;
   theme: any;
-  setSelectedMonth: any;
-  selectedMonth: any;
-  selectedYear: any;
-  setSelectedYear: any
+  setSelectedMonth: (month: number) => void;
+  selectedMonth: number;
+  selectedYear: number;
+  setSelectedYear: (year: number) => void;
 }
+
+const MONTHS = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"
+];
 
 export function MonthPicker({
   showMonthPicker,
@@ -37,10 +30,22 @@ export function MonthPicker({
   setSelectedMonth,
   selectedMonth,
   selectedYear,
-  setSelectedYear
+  setSelectedYear,
 }: MonthPickerProps) {
-   const currentYear = new Date().getFullYear();
-  const years = Array.from({ length: 50 }, (_, i) => currentYear - i); 
+  const [tab, setTab] = useState<'month' | 'year'>('month');
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 10 }, (_, i) => currentYear - i);
+
+  const handleMonthSelect = (monthIndex: number) => {
+    setSelectedMonth(monthIndex + 1);
+    setShowMonthPicker(false);
+  };
+
+  const handleYearSelect = (year: number) => {
+    setSelectedYear(year);
+    setTab('month');
+  };
+
   return (
     <Modal
       visible={showMonthPicker}
@@ -49,45 +54,87 @@ export function MonthPicker({
       onRequestClose={() => setShowMonthPicker(false)}
     >
       <TouchableOpacity
-        style={styles.modalOverlay}
+        style={styles.overlay}
         activeOpacity={1}
         onPress={() => setShowMonthPicker(false)}
       >
         <View
-          style={[styles.monthPickerContainer, { backgroundColor: theme.card }]}
+          style={[styles.container, { backgroundColor: theme.card }]}
+          onStartShouldSetResponder={() => true}
         >
-          <Text style={[styles.pickerTitle, { color: theme.textPrimary }]}>
-            Select Year
-          </Text>
-          <ScrollView style={styles.pickerScroll}>
-            {years.map((year) => (
-              <TouchableOpacity
-                key={year}
-                onPress={() => {
-                  //setSelectedMonth(index);
-                  setSelectedYear(year);
-                  setShowMonthPicker(false);
-                }}
-                style={[
-                  styles.pickerItem,
-                  year === selectedYear && {
-                    backgroundColor: theme.primary,
-                  },
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.pickerItemText,
-                    {
-                      color:
-                        year === selectedYear ? "#FFF" : theme.textPrimary,
-                    },
-                  ]}
-                >
-                   {year}
-                </Text>
-              </TouchableOpacity>
-            ))}
+          <View style={styles.tabs}>
+            <TouchableOpacity
+              style={[
+                styles.tab,
+                tab === 'month' && { backgroundColor: theme.primary }
+              ]}
+              onPress={() => setTab('month')}
+            >
+              <Text style={[
+                styles.tabText,
+                { color: tab === 'month' ? '#FFF' : theme.textSecondary }
+              ]}>
+                {MONTHS[selectedMonth - 1]}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.tab,
+                tab === 'year' && { backgroundColor: theme.primary }
+              ]}
+              onPress={() => setTab('year')}
+            >
+              <Text style={[
+                styles.tabText,
+                { color: tab === 'year' ? '#FFF' : theme.textSecondary }
+              ]}>
+                {selectedYear}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
+            {tab === 'month' ? (
+              <View style={styles.monthGrid}>
+                {MONTHS.map((month, index) => (
+                  <TouchableOpacity
+                    key={month}
+                    onPress={() => handleMonthSelect(index)}
+                    style={[
+                      styles.monthItem,
+                      (index + 1) === selectedMonth && { backgroundColor: theme.primary }
+                    ]}
+                  >
+                    <Text style={[
+                      styles.monthText,
+                      { color: (index + 1) === selectedMonth ? '#FFF' : theme.textPrimary }
+                    ]}>
+                      {month.slice(0, 3)}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            ) : (
+              <View style={styles.yearList}>
+                {years.map((year) => (
+                  <TouchableOpacity
+                    key={year}
+                    onPress={() => handleYearSelect(year)}
+                    style={[
+                      styles.yearItem,
+                      year === selectedYear && { backgroundColor: theme.primary }
+                    ]}
+                  >
+                    <Text style={[
+                      styles.yearText,
+                      { color: year === selectedYear ? '#FFF' : theme.textPrimary }
+                    ]}>
+                      {year}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
           </ScrollView>
         </View>
       </TouchableOpacity>
@@ -96,36 +143,62 @@ export function MonthPicker({
 }
 
 const styles = StyleSheet.create({
-  modalOverlay: {
+  overlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "center",
     alignItems: "center",
   },
-  monthPickerContainer: {
-    width: "80%",
-    maxHeight: "70%",
+  container: {
+    width: "85%",
     borderRadius: 20,
     padding: 20,
+    maxHeight: "60%",
   },
-  pickerTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    marginBottom: 16,
-    textAlign: "center",
+  tabs: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 20,
   },
-  pickerScroll: {
-    maxHeight: 400,
+  tab: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
   },
-  pickerItem: {
-    paddingVertical: 16,
+  tabText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  scroll: {
+    maxHeight: 300,
+  },
+  monthGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  monthItem: {
+    width: '30%',
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  monthText: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  yearList: {
+    gap: 8,
+  },
+  yearItem: {
+    paddingVertical: 14,
     paddingHorizontal: 20,
     borderRadius: 12,
-    marginBottom: 8,
+    alignItems: 'center',
   },
-  pickerItemText: {
+  yearText: {
     fontSize: 16,
-    fontWeight: "600",
-    textAlign: "center",
+    fontWeight: '600',
   },
 });
