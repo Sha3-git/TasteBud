@@ -84,26 +84,26 @@ export function DayLogCard({
         activeOpacity={0.7}
       >
         <View style={styles.dayInfo}>
-          <View style={[
-            styles.dayNumberContainer,
-            isToday && { backgroundColor: theme.primary }
-          ]}>
-            <Text style={[
-              styles.dayNumber,
-              { color: isToday ? '#FFF' : theme.textPrimary }
-            ]}>
-              {dayLog.dayNumber}
-            </Text>
-          </View>
-          <View>
-            <Text style={[styles.dayName, { color: theme.textPrimary }]}>
-              {dayLog.dayName}
-            </Text>
-            {isToday && (
-              <Text style={[styles.todayLabel, { color: theme.primary }]}>Today</Text>
-            )}
-          </View>
-        </View>
+  <View style={[
+    styles.dayNumberContainer,
+    isToday && { backgroundColor: theme.todayBadgeBg }
+  ]}>
+    <Text style={[
+      styles.dayNumber,
+      { color: isToday ? theme.todayBadgeText : theme.textPrimary }
+    ]}>
+      {dayLog.dayNumber}
+    </Text>
+  </View>
+  <View style={{ flex: 0 }}>
+    <Text style={[styles.dayName, { color: isToday ? theme.todayLabelText : theme.textPrimary }]}>
+      {dayLog.dayName}
+    </Text>
+    {isToday && (
+      <Text style={[styles.todayLabel, { color: theme.todayLabelText }]}>Today</Text>            
+    )}
+  </View>
+</View>
         
         <View style={styles.headerRight}>
           {dayLog.meals.length > 0 && !dayLog.isExpanded && (

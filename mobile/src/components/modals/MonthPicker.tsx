@@ -59,7 +59,7 @@ export function MonthPicker({
         onPress={() => setShowMonthPicker(false)}
       >
         <View
-          style={[styles.container, { backgroundColor: theme.card }]}
+style={[styles.container, { backgroundColor: theme.todayBadgeBg }]}
           onStartShouldSetResponder={() => true}
         >
           <View style={styles.tabs}>
@@ -72,7 +72,7 @@ export function MonthPicker({
             >
               <Text style={[
                 styles.tabText,
-                { color: tab === 'month' ? '#FFF' : theme.textSecondary }
+                { color: tab === 'month' ? '#FFF' : theme.todayBadgeText }
               ]}>
                 {MONTHS[selectedMonth - 1]}
               </Text>
@@ -86,7 +86,7 @@ export function MonthPicker({
             >
               <Text style={[
                 styles.tabText,
-                { color: tab === 'year' ? '#FFF' : theme.textSecondary }
+                { color: tab === 'year' ? '#FFF' : theme.todayBadgeText }
               ]}>
                 {selectedYear}
               </Text>
@@ -107,7 +107,7 @@ export function MonthPicker({
                   >
                     <Text style={[
                       styles.monthText,
-                      { color: (index + 1) === selectedMonth ? '#FFF' : theme.textPrimary }
+                      { color: (index + 1) === selectedMonth ? '#FFF' : theme.todayBadgeText }
                     ]}>
                       {month.slice(0, 3)}
                     </Text>
@@ -127,7 +127,7 @@ export function MonthPicker({
                   >
                     <Text style={[
                       styles.yearText,
-                      { color: year === selectedYear ? '#FFF' : theme.textPrimary }
+                      { color: year === selectedYear ? '#FFF' : theme.todayBadgeText }
                     ]}>
                       {year}
                     </Text>

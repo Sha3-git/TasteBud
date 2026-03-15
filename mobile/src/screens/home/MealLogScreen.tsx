@@ -300,9 +300,9 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
         <View style={{ height: 100 }} />
       </ScrollView>
 
-      <TouchableOpacity onPress={() => setIsAddingMeal(true)} style={[styles.fab, { backgroundColor: theme.primary }]}>
-        <Ionicons name="add" size={32} color="#FFF" />
-      </TouchableOpacity>
+      <TouchableOpacity onPress={() => setIsAddingMeal(true)} style={[styles.fab, { backgroundColor: theme.todayBadgeBg }]}>
+  <Ionicons name="add" size={32} color={theme.todayBadgeText} />
+</TouchableOpacity>
 
       <MonthPicker showMonthPicker={showMonthPicker} setShowMonthPicker={setShowMonthPicker} theme={theme} setSelectedMonth={setSelectedMonth} selectedMonth={selectedMonth} selectedYear={selectedYear} setSelectedYear={setSelectedYear} />
     </SafeAreaView>

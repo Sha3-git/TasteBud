@@ -55,7 +55,6 @@ export type RootStackParamList = {
 export type MainTabParamList = {
   Home: { userName: string };
   MealLog: undefined;
-  Scan: undefined;
   Library: undefined;
   Profile: undefined;
 };
@@ -63,24 +62,6 @@ export type MainTabParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
-function ScanScreen() {
-  const { theme } = useTheme();
-  return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: theme.background,
-      }}
-    >
-      <Ionicons name="camera" size={64} color={theme.textSecondary} />
-      <Text style={{ color: theme.textSecondary, marginTop: 16, fontSize: 18 }}>
-        Scan Coming Soon
-      </Text>
-    </View>
-  );
-}
 
 function HomeScreenWrapper({ userName }: { userName: string }) {
   const stackNavigation =
@@ -118,37 +99,31 @@ function MainTabNavigator({
   const userName = route.params?.userName || "User";
 
   const tabs = [
-    {
-      id: "Home",
-      icon: "home-outline" as const,
-      iconFilled: "home" as const,
-      label: "Home",
-    },
-    {
-      id: "MealLog",
-      icon: "restaurant-outline" as const,
-      iconFilled: "restaurant" as const,
-      label: "Meals",
-    },
-    {
-      id: "Scan",
-      icon: "camera-outline" as const,
-      iconFilled: "camera" as const,
-      label: "Scan",
-    },
-    {
-      id: "Library",
-      icon: "book-outline" as const,
-      iconFilled: "book" as const,
-      label: "Library",
-    },
-    {
-      id: "Profile",
-      icon: "person-outline" as const,
-      iconFilled: "person" as const,
-      label: "Profile",
-    },
-  ];
+  {
+    id: "Home",
+    icon: "home-outline" as const,
+    iconFilled: "home" as const,
+    label: "Home",
+  },
+  {
+    id: "MealLog",
+    icon: "restaurant-outline" as const,
+    iconFilled: "restaurant" as const,
+    label: "Meals",
+  },
+  {
+    id: "Library",
+    icon: "book-outline" as const,
+    iconFilled: "book" as const,
+    label: "Library",
+  },
+  {
+    id: "Profile",
+    icon: "person-outline" as const,
+    iconFilled: "person" as const,
+    label: "Profile",
+  },
+];
 
   return (
     <Tab.Navigator
@@ -171,7 +146,6 @@ function MainTabNavigator({
           <MealLogScreen onBack={() => navigation.navigate("Home")} />
         )}
       </Tab.Screen>
-      <Tab.Screen name="Scan" component={ScanScreen} />
       <Tab.Screen name="Library">
         {({ navigation }) => (
           <FoodLibraryScreen onBack={() => navigation.navigate("Home")} />

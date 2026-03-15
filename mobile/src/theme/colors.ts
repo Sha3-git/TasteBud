@@ -12,7 +12,7 @@ export const Colors = {
   // Light Mode
   light: {
     // Primary brand colors
-    primary: '#4A90E2',        // Calm, trustworthy medical blue
+    primary: '#0e0f0f',        // Calm, trustworthy medical blue
     primaryLight: '#EBF4FF',   // EXCELLENT for light blue tinted backgrounds/tags
     primaryDark: '#2C5282',    // Deep, confident accent for active states
     
@@ -21,6 +21,11 @@ export const Colors = {
     warning: '#F59E0B',        // Warm Amber (Less harsh than pure orange)
     danger: '#EF4444',         // Crisp Red (For alerts/symptoms)
     info: '#06B6D4',           // Modern Cyan/Teal (Great for informational icons)
+
+    // Today badge
+    todayBadgeBg: '#252627',
+    todayBadgeText: '#f7f7f7',
+    todayLabelText: '#202121',
     
     // Backgrounds - IMPROVED CONTRAST & FLOW
     background: '#F3F4F6',     // Crisp, cool light gray. Makes white cards pop distinctly.
@@ -44,7 +49,7 @@ export const Colors = {
   // Dark Mode - IMPROVED
   dark: {
     // Primary brand colors (adjusted for dark mode)
-    primary: '#60A5FA',        // Brighter blue for dark (was #5DA5FF)
+    primary: '#1f2122',        // Brighter blue for dark (was #5DA5FF)
     primaryLight: '#93C5FD',   // Even brighter
     primaryDark: '#3B82F6',    // Vibrant
     
@@ -53,6 +58,11 @@ export const Colors = {
     warning: '#FBBF24',        // Brighter yellow
     danger: '#F87171',         // Brighter red
     info: '#22D3EE',           // Brighter cyan
+
+    // Today badge
+    todayBadgeBg: '#f2f1ea',      // off-white box
+    todayBadgeText: '#1a1a1a',     // black-ish number inside
+    todayLabelText: '#e9f3ff',     // baby blue for day name + "Today"
     
     // Backgrounds - MUCH BETTER CONTRAST
     background: '#111010',     // Pure black (was #0A0A0A)
