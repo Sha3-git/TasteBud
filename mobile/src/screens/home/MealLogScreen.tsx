@@ -26,6 +26,11 @@ import { mealLogService } from "../../services/mealLogService";
 
 interface MealLogScreenProps {
   onBack: () => void;
+  route?: { params?: { startAdding?: boolean } };
+}
+interface MealLogScreenProps {
+  onBack: () => void;
+  route?: { params?: { startAdding?: boolean } };
 }
 
 interface Meal {
@@ -47,7 +52,7 @@ interface DayLog {
   isExpanded: boolean;
 }
 
-export function MealLogScreen({ onBack }: MealLogScreenProps) {
+export function MealLogScreen({ onBack, route }: MealLogScreenProps) {
   const { theme, isDark } = useTheme();
 
   const currentDate = new Date();
@@ -89,7 +94,11 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
 
   const [dayLogs, setDayLogs] = useState<DayLog[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
-
+useEffect(() => {
+  if (route?.params?.startAdding) {
+    setIsAddingMeal(true);
+  }
+}, [route?.params?.startAdding]);
   useEffect(() => {
     if (fetchedLogs) {
       const today = new Date();
@@ -301,13 +310,13 @@ export function MealLogScreen({ onBack }: MealLogScreenProps) {
       </ScrollView>
 
       <TouchableOpacity onPress={() => setIsAddingMeal(true)} style={[styles.fab, { backgroundColor: theme.todayBadgeBg }]}>
-  <Ionicons name="add" size={32} color={theme.todayBadgeText} />
-</TouchableOpacity>
+        <Ionicons name="add" size={32} color={theme.todayBadgeText} />
+      </TouchableOpacity>
 
-      <MonthPicker showMonthPicker={showMonthPicker} setShowMonthPicker={setShowMonthPicker} theme={theme} setSelectedMonth={setSelectedMonth} selectedMonth={selectedMonth} selectedYear={selectedYear} setSelectedYear={setSelectedYear} />
-    </SafeAreaView>
-  );
-}
+            <MonthPicker showMonthPicker={showMonthPicker} setShowMonthPicker={setShowMonthPicker} theme={theme} setSelectedMonth={setSelectedMonth} selectedMonth={selectedMonth} selectedYear={selectedYear} setSelectedYear={setSelectedYear} />
+          </SafeAreaView>
+        );
+      }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },

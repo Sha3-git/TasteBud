@@ -74,9 +74,9 @@ function HomeScreenWrapper({ userName }: { userName: string }) {
       onNavigate={(screen) => {
         if (screen === "mealLog") {
           tabNavigation.navigate("MealLog");
-        } else if (screen === "foodLibrary") {
-          tabNavigation.navigate("Library");
-        }
+        } else if (screen === "addMeal") {
+        tabNavigation.navigate("MealLog", { startAdding: true });
+      }
         // Stack screens - use stack navigation
         else if (screen === "symptomAnalysis") {
           stackNavigation.navigate("SymptomAnalysis");
@@ -142,8 +142,8 @@ function MainTabNavigator({
         {() => <HomeScreenWrapper userName={userName} />}
       </Tab.Screen>
       <Tab.Screen name="MealLog">
-        {({ navigation }) => (
-          <MealLogScreen onBack={() => navigation.navigate("Home")} />
+        {({ navigation, route }) => (
+          <MealLogScreen onBack={() => navigation.navigate("Home")} route={route} />
         )}
       </Tab.Screen>
       <Tab.Screen name="Library">

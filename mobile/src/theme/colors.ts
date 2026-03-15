@@ -28,7 +28,7 @@ export const Colors = {
     todayLabelText: '#202121',
     
     // Backgrounds - IMPROVED CONTRAST & FLOW
-    background: '#F3F4F6',     // Crisp, cool light gray. Makes white cards pop distinctly.
+    background: '#f6f4f0',     // Crisp, cool light gray. Makes white cards pop distinctly.
     card: '#FFFFFF',           // Pure white. Now stands out sharply against the gray background.
     elevated: '#FFFFFF',       // Modals and floating elements (relies on shadow for depth)
     
