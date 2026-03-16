@@ -84,6 +84,8 @@ function HomeScreenWrapper({ userName }: { userName: string }) {
           stackNavigation.navigate("SymptomAnalysis");
         } else if (screen === "crossReactivity") {
           stackNavigation.navigate("CrossReactivity");
+        } else if (screen === "foodLibrary") {
+          tabNavigation.navigate("Library");
         } else if (screen === "notifications") {
           stackNavigation.navigate("Notifications");
         }
@@ -98,7 +100,8 @@ function MainTabNavigator({
   route: { params: { userName: string } };
 }) {
   const { theme, isDark } = useTheme();
-  const userName = route.params?.userName || "User";
+  const { user } = useAuth();
+  const userName = user?.firstName || route.params?.userName || "User";
 
   const tabs = [
   {
