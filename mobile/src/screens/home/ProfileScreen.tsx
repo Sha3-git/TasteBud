@@ -1,13 +1,3 @@
-/**
- * PROFILE SCREEN - CLEAN, ALIVE & PERSONAL
- * 
- * Design Philosophy:
- * - Personal and warm (not corporate)
- * - Clean cards like the rest of the app
- * - Breathing room, beautiful spacing
- * - Matches home screen aesthetic
- */
-
 import React, { useState } from 'react';
 import {
   View,
@@ -23,6 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../theme/ThemeContext';
+import { useAuth } from '../../hooks/useAuth';
 
 interface ProfileScreenProps {
   onBack: () => void;
@@ -32,14 +23,10 @@ interface ProfileScreenProps {
 
 export function ProfileScreen({ onBack, onEditAllergies, onSignOut }: ProfileScreenProps) {
   const { theme, isDark } = useTheme();
-  
-  /**
-   * TODO BACKEND: Fetch user profile
-   * GET /api/users/{userId}/profile
-   */
+  const { user } = useAuth();
   const [profile] = useState({
-    name: 'Alex Morgan',
-    email: 'alex.morgan@email.com',
+    name: `${user.firstName} ${user.lastName}`,
+    email: user.email,
     allergies: ['Peanuts', 'Shellfish', 'Dairy'],
     memberSince: '2024-01-15',
     totalMeals: 247,

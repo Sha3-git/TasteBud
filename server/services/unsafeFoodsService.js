@@ -115,8 +115,7 @@ const createUnsafeFood = async (userId, data) => {
       })
     );
     result.ingredients = result.ingredients.filter(item => item.ingredient !== null);
-  }
-  
+  } 
   return result;
 };
 

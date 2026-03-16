@@ -28,3 +28,12 @@ export const getStoredUser = async () => {
   const user = await AsyncStorage.getItem("user");
   return user ? JSON.parse(user) : null;
 };
+
+export const checkVerification = async (email: string) => {
+  const res = await api.post("/auth/check-verification", {email});
+  return res.data.verified;
+};
+
+export const resendVerification = async (email: string) => {
+  return api.post("/auth/resend-verification", { email });
+};

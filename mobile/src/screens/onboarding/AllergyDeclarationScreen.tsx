@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { onboardingService } from '../../services/onboardingService';
-
+import { useAuth } from "../../hooks/useAuth";
 interface AllergyDeclarationScreenProps {
   onBack: () => void;
   onContinue: (allergyData: { allergies: string[]; symptoms: string[] }) => void;
@@ -34,7 +34,8 @@ export function AllergyDeclarationScreen({ onBack, onContinue }: AllergyDeclarat
     'Itching', 'Swelling', 'Hives', 'Nausea', 'Vomiting',
     'Diarrhea', 'Shortness of breath', 'Abdominal pain', 'Headache', 'Dizziness',
   ];
-  
+  const { userRegister } = useAuth();
+
   const toggleAllergy = (allergy: string) => {
     if (selectedAllergies.includes(allergy)) {
       setSelectedAllergies(selectedAllergies.filter(a => a !== allergy));
@@ -52,27 +53,16 @@ export function AllergyDeclarationScreen({ onBack, onContinue }: AllergyDeclarat
   };
   
   const handleContinue = async () => {
-    console.log('🏥 ALLERGY DATA TO SEND TO BACKEND:', {
-      allergies: selectedAllergies,
-      symptoms: selectedSymptoms,
-      timestamp: new Date().toISOString()
-    });
     
     setIsSaving(true);
     try {
-      // TODO: Replace with real userId from auth context when ready
-      const testUserId = "69173dd5a3866b85b59d9760";
-      
-      await onboardingService.saveAllergies(testUserId, {
+      await onboardingService.saveAllergies(userRegister.id, {
         allergies: selectedAllergies,
         symptoms: selectedSymptoms
       });
       
-      console.log('Allergies saved successfully');
       onContinue({ allergies: selectedAllergies, symptoms: selectedSymptoms });
     } catch (error) {
-      console.error('Failed to save allergies:', error);
-      // Still continue even if save fails - don't block onboarding
       onContinue({ allergies: selectedAllergies, symptoms: selectedSymptoms });
     } finally {
       setIsSaving(false);
@@ -80,11 +70,9 @@ export function AllergyDeclarationScreen({ onBack, onContinue }: AllergyDeclarat
   };
   
   const handleSkip = async () => {
-    console.log('USER SKIPPED - No known allergies');
     setIsSaving(true);
     try {
-      const testUserId = "69173dd5a3866b85b59d9760";
-      await onboardingService.saveAllergies(testUserId, {
+      await onboardingService.saveAllergies(userRegister.id, {
         allergies: [],
         symptoms: []
       });

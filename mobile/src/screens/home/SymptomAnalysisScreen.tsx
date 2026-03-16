@@ -1,16 +1,3 @@
-/**
- * SYMPTOM ANALYSIS SCREEN
- *
- * Uses TasteBud Design System:
- * - Spacing: 8pt grid (xs:4, sm:8, md:16, lg:24, xl:32, xxl:48)
- * - Typography: title1, title2, title3, body, caption
- * - Border radius: 12 (cards), 16 (large cards), 8 (badges)
- *
- * BACKEND INTEGRATION: COMPLETE
- * - GET /api/reactions/sus - top trigger foods
- * - GET /api/reactions/analysis - monthly analysis data
- */
-
 import React from "react";
 import {
   View,

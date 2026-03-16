@@ -29,6 +29,7 @@ import { FoodLibraryScreen } from "../screens/home/FoodLibraryScreen";
 import { ProfileScreen } from "../screens/home/ProfileScreen";
 import { NotificationsScreen } from "../screens/home/NotificationsScreen";
 import { SymptomAnalysisScreen } from "../screens/home/SymptomAnalysisScreen";
+import { EmailVerificationScreen } from "../screens/onboarding/EmailVerification";
 import { CrossReactivityScreen } from "../screens/home/CrossReactivityScreen";
 import { useAuth } from "../hooks/useAuth";
 
@@ -38,6 +39,7 @@ export type RootStackParamList = {
   EmailPassword: undefined;
   Login: undefined;
   NameInput: undefined;
+  EmailVerification: { email: string };
   AllergyDeclaration: undefined;
   SetupProgress: undefined;
   WelcomeUser: { userName: string };
@@ -189,7 +191,6 @@ function MainTabNavigator({
 export function AppNavigator() {
   const [userData, setUserData] = useState({
     email: "",
-    password: "",
     firstName: "",
     lastName: "",
     allergies: [] as string[],
@@ -235,10 +236,18 @@ export function AppNavigator() {
           {({ navigation }) => (
             <EmailPasswordScreen
               onBack={() => navigation.goBack()}
-              onContinue={(email, password) => {
-                setUserData({ ...userData, email, password });
-                navigation.navigate("AllergyDeclaration");
+              onContinue={(email) => {
+                setUserData({ ...userData, email });
+                navigation.navigate("EmailVerification");
               }}
+            />
+          )}
+        </Stack.Screen>
+        <Stack.Screen name="EmailVerification">
+          {({ navigation }) => (
+            <EmailVerificationScreen
+              email={userData.email}
+              onVerified={() => navigation.navigate("AllergyDeclaration")}
             />
           )}
         </Stack.Screen>
@@ -250,7 +259,7 @@ export function AppNavigator() {
                 navigation.reset({
                   index: 0,
                   routes: [
-                    { name: "MainApp", params: { userName: user.name } },
+                    { name: "MainApp", params: { userName: user.firstName } },
                   ],
                 });
               }}
@@ -281,7 +290,7 @@ export function AppNavigator() {
                   symptoms: allergyData.symptoms,
                 };
                 setUserData(updatedUserData);
-                navigation.navigate("SetupProgress");
+                navigation.navigate("Login");
               }}
             />
           )}

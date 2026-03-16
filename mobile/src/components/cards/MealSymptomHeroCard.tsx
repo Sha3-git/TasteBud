@@ -10,16 +10,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path } from 'react-native-svg';
 
-/**
- * MEAL SYMPTOM HERO CARD
- * 
- * Shows meal count with 3 progress arcs around the circle.
- * - 3 arcs represent 3 main meals (breakfast, lunch, dinner)
- * - Arcs light up as meals are logged (max 3 lit)
- * - Number in center shows actual count (can exceed 3)
- */
-
-// Helper function to create an arc path
 function createArc(
   centerX: number,
   centerY: number,
@@ -76,13 +66,11 @@ export function MealSymptomHeroCard({
   const center = size / 2;
   const radius = 65;
   const strokeWidth = 8;
-  const gap = 12; // Gap between arcs in degrees
-  const arcLength = (360 - gap * 3) / 3; // Each arc spans this many degrees
+  const gap = 12; 
+  const arcLength = (360 - gap * 3) / 3; 
 
-  // Calculate how many arcs should be filled (max 3)
   const filledArcs = Math.min(mealCount, 3);
 
-  // Generate 3 arcs starting from top (-90 degrees)
   const arcs = [
     { start: -90, end: -90 + arcLength },
     { start: -90 + arcLength + gap, end: -90 + arcLength * 2 + gap },
