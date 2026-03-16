@@ -7,16 +7,19 @@ interface AuthProviderProps {
 
 interface AuthContextType {
   user: any | null;
+  userRegister: any | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   register: (data: any) => Promise<any>;
+  checkVerification: (email: string) => Promise<boolean>;
+  resendVerification: (email: string) => Promise<void>;
   loading: boolean;
 }
-
 export const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<any | null>(null);
+  const [userRegister, setUserRegister] = useState<any | null>(null); 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -32,7 +35,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const login = async (email: string, password: string) => {
     const user = await authService.login(email, password);
     setUser(user);
-    console.log("User logged in:", user);
+    console.log("Logged in user:", user);
   };
 
   const logout = async () => {
@@ -41,11 +44,32 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   const register = async (data: any) => {
-    return authService.register(data);
+    const registeredUser = await authService.register(data);
+    setUserRegister(registeredUser);
+    return registeredUser;
+  };
+  const checkVerification = async (email: string) => {
+    return authService.checkVerification(email);
   };
 
+  const resendVerification = async (email: string) => {
+    await authService.resendVerification(email);
+  };
+console.log("user auth " + JSON.stringify(user))
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, register, loading }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        userRegister,
+        login,
+        logout,
+        register,
+        checkVerification,
+        resendVerification,
+        loading,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

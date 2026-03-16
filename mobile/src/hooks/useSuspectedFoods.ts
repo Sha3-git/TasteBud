@@ -24,8 +24,6 @@ interface SuspectedFood {
 }
 
 export function useSuspectedFoods() {
-  // TODO: Replace with real userId from auth context when ready
-  const userId = "69afd59ca39060a71363e7b7";
   
   const [data, setData] = useState<SuspectedFood[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -36,7 +34,7 @@ export function useSuspectedFoods() {
     setError(null);
     
     try {
-      const response = await api.get(`/analysis/suspected?userId=${userId}`);
+      const response = await api.get(`/analysis/suspected`);
       
       if (response.status === 200) {
         setData(response.data || []);
@@ -50,7 +48,7 @@ export function useSuspectedFoods() {
     } finally {
       setIsLoading(false);
     }
-  }, [userId]);
+  }, []);
 
   useEffect(() => {
     fetchSuspectedFoods();

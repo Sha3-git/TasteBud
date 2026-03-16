@@ -44,8 +44,7 @@ const deleteUnsafeFood = async (req, res) => {
 
 const saveOnboardingAllergies = async (req, res) => {
     try {
-       const userId = req.user;
-        const { allergies } = req.body;
+        const { allergies, userId } = req.body;
         
         if (!userId) {
             return res.status(400).json({ error: "userId is required" });

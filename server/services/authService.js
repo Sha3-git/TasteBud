@@ -31,8 +31,14 @@ const generateRefreshToken = () => {
 
 const register = async (data) => {
     const existing = await User.findOne({ email: data.email });
-    if (existing) throw new Error("duplicate email");
+    if (existing) {
+        if (existing.verified) {
+            throw new Error("duplicate email");
+        }
 
+        await resendVerification(existing.email);
+        return existing;
+    }
     const hashed = await bcrypt.hash(data.password, 10);
     const verificationToken = createVerificationToken();
 
@@ -83,8 +89,8 @@ const verifyEmail = async (token) => {
 const resendVerification = async (email) => {
     const user = await User.findOne({ email });
 
-    if (!user) throw new Error("user_not_found");
-    if (user.verified) throw new Error("already_verified");
+    if (!user) throw new Error("user not found");
+    if (user.verified) throw new Error("already verified");
 
     const newToken = crypto.randomBytes(32).toString("hex");
 
@@ -93,7 +99,7 @@ const resendVerification = async (email) => {
 
     await user.save();
 
-    const verificationUrl = `${process.env.CLIENT_URL}/auth/verify?token=${newToken}`;
+   const verificationUrl = `${process.env.CLIENT_URL}/verify?token=${newToken}`;
 
     await transporter.sendMail({
         from: `"TasteBud" <${process.env.EMAIL_USER}>`,
@@ -113,7 +119,7 @@ const resendVerification = async (email) => {
 
 const login = async (email, password) => {
     const user = await User.findOne({ email });
-    if (!user) throw new Error("invalid_credentials");
+    if (!user) throw new Error("invalid credentials");
     if (!await bcrypt.compare(password, user.password))
         throw new Error("invalid credentials");
 
@@ -129,15 +135,21 @@ const login = async (email, password) => {
 
 const refreshAccessToken = async (refreshToken) => {
     const user = await User.findOne({ "refreshTokens.token": refreshToken });
-    if (!user) throw new Error("invalid_refresh");
+    if (!user) throw new Error("invalid refresh");
 
     const accessToken = generateAccessToken(user);
     return { accessToken };
 };
-
+const checkVerificationStatus = async (email) => {
+  const user = await User.findOne({ email: email });
+  if (!user) throw new Error("user doesn't exist");
+  return user;
+};
 module.exports = {
     register,
     verifyEmail,
     login,
     refreshAccessToken,
+    resendVerification,
+    checkVerificationStatus
 };

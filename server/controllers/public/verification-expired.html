@@ -45,49 +45,10 @@
         Please request a new one.
       </p>
 
-      <button id="resendBtn" class="btn btn-dark w-100 mt-3">
-        Resend Verification Email
-      </button>
 
     </div>
   </div>
 
-  <script>
-    const button = document.getElementById("resendBtn");
-    const title = document.getElementById("statusTitle");
-    const message = document.getElementById("statusMessage");
-
-    button.addEventListener("click", async () => {
-      try {
-        button.disabled = true;
-        button.innerText = "Sending...";
-
-        const response = await fetch("http://localhost:4000/api", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          }
-        });
-
-        if (response.ok) {
-          title.classList.remove("text-danger");
-          title.classList.add("text-success");
-          title.innerText = "Email Sent";
-
-          message.innerText = "A new verification email has been sent. Please check your inbox.";
-
-          button.innerText = "Email Sent";
-        } else {
-          button.disabled = false;
-          button.innerText = "Resend Verification Email";
-        }
-
-      } catch (error) {
-        button.disabled = false;
-        button.innerText = "Resend Verification Email";
-      }
-    });
-  </script>
-
+  
 </body>
 </html>
