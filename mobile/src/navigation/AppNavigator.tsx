@@ -23,6 +23,8 @@ import {
   GreatChoiceScreen,
 } from "../screens/onboarding/WelcomeScreens";
 
+import { TutorialScreen } from "../screens/onboarding/TutorialScreen";
+
 import { HomeScreen } from "../screens/home/HomeScreen";
 import { MealLogScreen } from "../screens/home/MealLogScreen";
 import { FoodLibraryScreen } from "../screens/home/FoodLibraryScreen";
@@ -44,6 +46,8 @@ export type RootStackParamList = {
   SetupProgress: undefined;
   WelcomeUser: { userName: string };
   GreatChoice: { userName: string };
+  Tutorial: { userName: string };
+
   MainApp: { userName: string };
   Notifications: undefined;
   SymptomAnalysis: undefined;
@@ -53,7 +57,6 @@ export type RootStackParamList = {
 export type MainTabParamList = {
   Home: { userName: string };
   MealLog: undefined;
-  Scan: undefined;
   Library: undefined;
   Profile: undefined;
 };
@@ -61,24 +64,6 @@ export type MainTabParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
-function ScanScreen() {
-  const { theme } = useTheme();
-  return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: theme.background,
-      }}
-    >
-      <Ionicons name="camera" size={64} color={theme.textSecondary} />
-      <Text style={{ color: theme.textSecondary, marginTop: 16, fontSize: 18 }}>
-        Scan Coming Soon
-      </Text>
-    </View>
-  );
-}
 
 function HomeScreenWrapper({ userName }: { userName: string }) {
   const stackNavigation =
@@ -91,9 +76,9 @@ function HomeScreenWrapper({ userName }: { userName: string }) {
       onNavigate={(screen) => {
         if (screen === "mealLog") {
           tabNavigation.navigate("MealLog");
-        } else if (screen === "foodLibrary") {
-          tabNavigation.navigate("Library");
-        }
+        } else if (screen === "addMeal") {
+        tabNavigation.navigate("MealLog", { startAdding: true });
+      }
         // Stack screens - use stack navigation
         else if (screen === "symptomAnalysis") {
           stackNavigation.navigate("SymptomAnalysis");
@@ -116,37 +101,31 @@ function MainTabNavigator({
   const userName = route.params?.userName || "User";
 
   const tabs = [
-    {
-      id: "Home",
-      icon: "home-outline" as const,
-      iconFilled: "home" as const,
-      label: "Home",
-    },
-    {
-      id: "MealLog",
-      icon: "restaurant-outline" as const,
-      iconFilled: "restaurant" as const,
-      label: "Meals",
-    },
-    {
-      id: "Scan",
-      icon: "camera-outline" as const,
-      iconFilled: "camera" as const,
-      label: "Scan",
-    },
-    {
-      id: "Library",
-      icon: "book-outline" as const,
-      iconFilled: "book" as const,
-      label: "Library",
-    },
-    {
-      id: "Profile",
-      icon: "person-outline" as const,
-      iconFilled: "person" as const,
-      label: "Profile",
-    },
-  ];
+  {
+    id: "Home",
+    icon: "home-outline" as const,
+    iconFilled: "home" as const,
+    label: "Home",
+  },
+  {
+    id: "MealLog",
+    icon: "restaurant-outline" as const,
+    iconFilled: "restaurant" as const,
+    label: "Meals",
+  },
+  {
+    id: "Library",
+    icon: "book-outline" as const,
+    iconFilled: "book" as const,
+    label: "Library",
+  },
+  {
+    id: "Profile",
+    icon: "person-outline" as const,
+    iconFilled: "person" as const,
+    label: "Profile",
+  },
+];
 
   return (
     <Tab.Navigator
@@ -165,24 +144,27 @@ function MainTabNavigator({
         {() => <HomeScreenWrapper userName={userName} />}
       </Tab.Screen>
       <Tab.Screen name="MealLog">
-        {({ navigation }) => (
-          <MealLogScreen onBack={() => navigation.navigate("Home")} />
+        {({ navigation, route }) => (
+          <MealLogScreen onBack={() => navigation.navigate("Home")} route={route} />
         )}
       </Tab.Screen>
-      <Tab.Screen name="Scan" component={ScanScreen} />
       <Tab.Screen name="Library">
         {({ navigation }) => (
           <FoodLibraryScreen onBack={() => navigation.navigate("Home")} />
         )}
       </Tab.Screen>
       <Tab.Screen name="Profile">
-        {({ navigation }) => (
-          <ProfileScreen
-            onBack={() => navigation.navigate("Home")}
-            onEditAllergies={() => {}}
-            onSignOut={() => {}}
-          />
-        )}
+        {({ navigation }) => {
+          const stackNav = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+          return (
+            <ProfileScreen
+              onBack={() => navigation.navigate("Home")}
+              onEditAllergies={() => {}}
+              onSignOut={() => {}}
+              onViewTutorial={() => stackNav.navigate("Tutorial", { userName: "User" })}
+            />
+          );
+        }}
       </Tab.Screen>
     </Tab.Navigator>
   );
@@ -328,6 +310,20 @@ export function AppNavigator() {
           {({ navigation, route }) => {
             React.useEffect(() => {
               const timer = setTimeout(() => {
+                navigation.navigate("Tutorial", {
+                  userName: route.params.userName,
+                });
+              }, 2500);
+              return () => clearTimeout(timer);
+            }, []);
+            return <GreatChoiceScreen userName={route.params.userName} />;
+          }}
+        </Stack.Screen>
+
+        <Stack.Screen name="Tutorial">
+          {({ navigation, route }) => (
+            <TutorialScreen
+              onComplete={() => {
                 navigation.reset({
                   index: 0,
                   routes: [
@@ -337,11 +333,9 @@ export function AppNavigator() {
                     },
                   ],
                 });
-              }, 2500);
-              return () => clearTimeout(timer);
-            }, []);
-            return <GreatChoiceScreen userName={route.params.userName} />;
-          }}
+              }}
+            />
+          )}
         </Stack.Screen>
 
         {/* Main App with Tab Bar */}

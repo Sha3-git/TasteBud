@@ -184,10 +184,9 @@ export function HomeScreen({ userName, onNavigate }: HomeScreenProps) {
             This week
           </Text>
           <WeekCalendar
-            selectedDate={selectedDate}
-            onDateSelect={setSelectedDate}
-            theme={theme}
-          />
+          onAddMeal={() => onNavigate("addMeal")}
+          theme={theme}
+        />
         </View>
 
         {/* PRIORITY FEATURES GRID */}
