@@ -10,16 +10,18 @@
 
 export const Colors = {
   // Light Mode
+
   light: {
+
     // Primary brand colors
-    primary: '#0e0f0f',        // Calm, trustworthy medical blue
-    primaryLight: '#EBF4FF',   // EXCELLENT for light blue tinted backgrounds/tags
-    primaryDark: '#2C5282',    // Deep, confident accent for active states
+    primary: '#0e0f0f',        
+    primaryLight: '#EBF4FF',   
+    primaryDark: '#2C5282',    
     
     // Semantic colors
-    success: '#10B981',        // Premium Emerald (Matches your Get Started button)
-    warning: '#F59E0B',        // Warm Amber (Less harsh than pure orange)
-    danger: '#EF4444',         // Crisp Red (For alerts/symptoms)
+    success: '#10B981',        
+    warning: '#F59E0B',        
+    danger: '#EF4444',         
     info: '#06B6D4',           // Modern Cyan/Teal (Great for informational icons)
 
     // Today badge
@@ -27,56 +29,57 @@ export const Colors = {
     todayBadgeText: '#f7f7f7',
     todayLabelText: '#202121',
     
-    // Backgrounds - IMPROVED CONTRAST & FLOW
-    background: '#f6f4f0',     // Crisp, cool light gray. Makes white cards pop distinctly.
-    card: '#FFFFFF',           // Pure white. Now stands out sharply against the gray background.
-    elevated: '#FFFFFF',       // Modals and floating elements (relies on shadow for depth)
+    // Backgrounds
+    background: '#f6f4f0',     
+    card: '#FFFFFF',          
+    elevated: '#FFFFFF',       
     
     // Text
-    textPrimary: '#111827',    // Near-black for maximum contrast and clinical crispness
-    textSecondary: '#6B7280',  // Perfect mid-tone gray for descriptions/subtitles
-    textTertiary: '#9CA3AF',   // Subtle gray for placeholders and disabled states
+    textPrimary: '#111827',    
+    textSecondary: '#6B7280',  
+    textTertiary: '#9CA3AF',   
     
     // Borders & Dividers
-    border: '#E5E7EB',         // Soft borders to separate content cleanly
-    divider: '#E5E7EB',        // Darkened slightly to ensure it shows up on the new background
-    
+    border: '#E5E7EB',         
+    divider: '#E5E7EB',        
+
     // Glass effects
     glassTint: 'rgba(255, 255, 255, 0.85)',
     glassBlur: 20,
   },
   
-  // Dark Mode - IMPROVED
+  // Dark Mode
   dark: {
+
     // Primary brand colors (adjusted for dark mode)
-    primary: '#1f2122',        // Brighter blue for dark (was #5DA5FF)
-    primaryLight: '#93C5FD',   // Even brighter
-    primaryDark: '#3B82F6',    // Vibrant
+    primary: '#1f2122',        
+    primaryLight: '#93C5FD',   
+    primaryDark: '#3B82F6',    
     
     // Semantic colors (brightened for dark mode)
-    success: '#34D399',        // Brighter green
-    warning: '#FBBF24',        // Brighter yellow
-    danger: '#F87171',         // Brighter red
-    info: '#22D3EE',           // Brighter cyan
+    success: '#34D399',        
+    warning: '#FBBF24',        
+    danger: '#F87171',         
+    info: '#22D3EE',           
 
     // Today badge
-    todayBadgeBg: '#f2f1ea',      // off-white box
-    todayBadgeText: '#1a1a1a',     // black-ish number inside
-    todayLabelText: '#e9f3ff',     // baby blue for day name + "Today"
+    todayBadgeBg: '#f2f1ea',      
+    todayBadgeText: '#1a1a1a',     
+    todayLabelText: '#e9f3ff',     
     
-    // Backgrounds - MUCH BETTER CONTRAST
+    // Backgrounds 
     background: '#111010',     // Pure black (was #0A0A0A)
-    card: '#1C1C1E',           // iOS dark card color
-    elevated: '#2C2C2E',       // Elevated surfaces
+    card: '#1C1C1E',           
+    elevated: '#2C2C2E',       
     
-    // Text - BETTER CONTRAST
+    // Text
     textPrimary: '#FFFFFF',    // Pure white
-    textSecondary: '#9CA3AF',  // Light gray (was #A0A0A0)
-    textTertiary: '#6B7280',   // Mid gray (was #6C6C6C)
+    textSecondary: '#9CA3AF',  
+    textTertiary: '#6B7280',   
     
-    // Borders & Dividers - MORE VISIBLE
-    border: '#374151',         // Visible border (was #2C2C2E)
-    divider: '#1F2937',        // Visible divider (was #1C1C1E)
+    // Borders & Dividers
+    border: '#374151',         
+    divider: '#1F2937',       
     
     // Glass effects
     glassTint: 'rgba(28, 28, 30, 0.85)',
