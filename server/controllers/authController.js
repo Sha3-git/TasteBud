@@ -39,7 +39,14 @@ const verifyEmail = async (req, res) => {
 
 const loginUser = async (req, res) => {
     try {
+        if (!req.body || Object.keys(req.body).length === 0) {
+            return res.status(400).json({ error: "Validation error" });
+        }
+
         const { email, password } = req.body;
+        if (!email || !password) {
+            return res.status(400).json({ error: "Validation error" });
+        }
         const { user, accessToken, refreshToken } =
             await authService.login(email, password);
 
@@ -55,11 +62,11 @@ const loginUser = async (req, res) => {
         });
 
     } catch (err) {
-        if (err.message === "invalid_credentials")
-            return res.status(400).json({ error: "Invalid login" });
+        if (err.message === "invalid credentials")
+            return res.status(401).json({ error: "Unauthorized" });
 
-        if (err.message === "email_not_verified")
-            return res.status(401).json({ error: "Verify your email first" });
+        if (err.message === "email not verified")
+            return res.status(401).json({ error: "Unauthorized" });
 
         res.status(500).json({ error: "Server error" });
     }
