@@ -5,7 +5,7 @@ const auth = require("../middlewares/auth");
 const registerUser = async (req, res) => {
     try {
         const user = await authService.register(req.body);
-        res.status(201).json({
+        res.status(200).json({
             status: "success",
             message: "Check your email for verification link.",
             id: user._id,
@@ -87,20 +87,27 @@ const refreshToken = async (req, res) => {
 
 
 const resendVerificationEmail = async (req, res) => {
-  try {
-    await authService.resendVerification(req.body.email);
-    res.json({ status: "sent" });
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
+    try {
+        await authService.resendVerification(req.body.email);
+
+        res.json({ status: "sent" });
+    } catch (err) {
+        if (err.message === "user not found")
+            return res.status(404).json({ error: "User not found" });
+        res.status(400).json({ error: err.message });
+    }
 };
 
 const checkVerificationStatus = async (req, res) => {
-  const user = await authService.checkVerificationStatus(req.body.email);
-  if (!user) {
-    return res.status(404).json({ verified: false });
-  }
-  res.json({ verified: user.verified });
+    try {
+        const user = await authService.checkVerificationStatus(req.body.email);
+        res.json({ verified: user.verified });
+    } catch (err) {
+        if (err.message === "user doesn't exist")
+            return res.status(404).json({ error: "User not found" });
+        res.status(400).json({ error: err.message });
+     }
+
 };
 
 module.exports = {

@@ -6,7 +6,7 @@ const mealLogController = require("../controllers/mealLogsController")
 router.post("/create", mealLogController.createMealLog);
 router.put("/update/:id", mealLogController.updateMealLog); 
 router.delete("/delete/:id", mealLogController.deleteMealLog);
-router.get("/get/:id", mealLogController.getMealLogs)
+router.get("/get/", mealLogController.getMealLogs)
 router.get("/daily", mealLogController.getMealLogByDay);
 router.get("/stats", mealLogController.dailyStats);
 router.get("/weekly", mealLogController.getMealLogByWeek);
