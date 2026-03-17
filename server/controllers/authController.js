@@ -1,16 +1,17 @@
 const path = require("path");
 const authService = require("../services/authService");
+const auth = require("../middlewares/auth");
 
 const registerUser = async (req, res) => {
     try {
-        await authService.register(req.body);
+        const user = await authService.register(req.body);
         res.status(201).json({
             status: "success",
-            message: "Check your email for verification link."
+            message: "Check your email for verification link.",
+            id: user._id,
         });
 
     } catch (err) {
-        console.log(err);
 
         let statusCode = 500;
 
@@ -49,7 +50,6 @@ const loginUser = async (req, res) => {
         }
         const { user, accessToken, refreshToken } =
             await authService.login(email, password);
-
         res.json({
             status: "success",
             accessToken,
@@ -57,7 +57,8 @@ const loginUser = async (req, res) => {
             user: {
                 id: user._id,
                 email: user.email,
-                name: user.firstName
+                firstName: user.firstName,
+                lastName: user.lastName
             }
         });
 
@@ -84,9 +85,29 @@ const refreshToken = async (req, res) => {
     }
 };
 
+
+const resendVerificationEmail = async (req, res) => {
+  try {
+    await authService.resendVerification(req.body.email);
+    res.json({ status: "sent" });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
+
+const checkVerificationStatus = async (req, res) => {
+  const user = await authService.checkVerificationStatus(req.body.email);
+  if (!user) {
+    return res.status(404).json({ verified: false });
+  }
+  res.json({ verified: user.verified });
+};
+
 module.exports = {
     registerUser,
     loginUser,
     verifyEmail,
-    refreshToken
+    refreshToken,
+    checkVerificationStatus,
+    resendVerificationEmail
 };

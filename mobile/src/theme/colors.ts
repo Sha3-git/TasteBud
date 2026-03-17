@@ -10,63 +10,76 @@
 
 export const Colors = {
   // Light Mode
+
   light: {
+
     // Primary brand colors
-    primary: '#4A90E2',        // Calm, trustworthy blue
-    primaryLight: '#7AB3F5',   // Lighter accent
-    primaryDark: '#2E5C8A',    // Darker accent
+    primary: '#0e0f0f',        
+    primaryLight: '#EBF4FF',   
+    primaryDark: '#2C5282',    
     
     // Semantic colors
-    success: '#51CF66',        // Safe, positive
-    warning: '#FFB84D',        // Caution
-    danger: '#FF6B6B',         // Alert, symptoms
-    info: '#4ECDC4',           // Information
+    success: '#10B981',        
+    warning: '#F59E0B',        
+    danger: '#EF4444',         
+    info: '#06B6D4',           // Modern Cyan/Teal (Great for informational icons)
+
+    // Today badge
+    todayBadgeBg: '#252627',
+    todayBadgeText: '#f7f7f7',
+    todayLabelText: '#202121',
     
-    // Backgrounds - IMPROVED CONTRAST
-    background: '#FFFFFF',     // Pure white base (was #F8F9FA)
-    card: '#F8F9FA',           // Light gray cards (swapped)
-    elevated: '#FFFFFF',       // Elevated surfaces
+    // Backgrounds
+    background: '#f6f4f0',     
+    card: '#FFFFFF',          
+    elevated: '#FFFFFF',       
     
     // Text
-    textPrimary: '#1A1A1A',    // Darker for better contrast (was #2C3E50)
-    textSecondary: '#6B7280',  // Better mid-tone (was #7F8C8D)
-    textTertiary: '#9CA3AF',   // Subtle gray (was #BDC3C7)
+    textPrimary: '#111827',    
+    textSecondary: '#6B7280',  
+    textTertiary: '#9CA3AF',   
     
     // Borders & Dividers
-    border: '#E5E7EB',         // Lighter border
-    divider: '#F3F4F6',        // Very light divider
-    
+    border: '#E5E7EB',         
+    divider: '#E5E7EB',        
+
     // Glass effects
-    glassTint: 'rgba(255, 255, 255, 0.9)',
+    glassTint: 'rgba(255, 255, 255, 0.85)',
     glassBlur: 20,
   },
   
-  // Dark Mode - DRAMATICALLY IMPROVED
+  // Dark Mode
   dark: {
+
     // Primary brand colors (adjusted for dark mode)
-    primary: '#60A5FA',        // Brighter blue for dark (was #5DA5FF)
-    primaryLight: '#93C5FD',   // Even brighter
-    primaryDark: '#3B82F6',    // Vibrant
+    primary: '#1f2122',        
+    primaryLight: '#93C5FD',   
+    primaryDark: '#3B82F6',    
     
     // Semantic colors (brightened for dark mode)
-    success: '#34D399',        // Brighter green
-    warning: '#FBBF24',        // Brighter yellow
-    danger: '#F87171',         // Brighter red
-    info: '#22D3EE',           // Brighter cyan
+    success: '#34D399',        
+    warning: '#FBBF24',        
+    danger: '#F87171',         
+    info: '#22D3EE',           
+
+    // Today badge
+    todayBadgeBg: '#f2f1ea',      
+    todayBadgeText: '#1a1a1a',     
+    todayLabelText: '#e9f3ff',     
     
-    // Backgrounds - MUCH BETTER CONTRAST
-    background: '#000000',     // Pure black (was #0A0A0A)
-    card: '#1C1C1E',           // iOS dark card color
-    elevated: '#2C2C2E',       // Elevated surfaces
+    // Backgrounds 
+    background: '#111010',     // Pure black (was #0A0A0A)
+    card: '#1C1C1E',           
+    elevated: '#2C2C2E',       
     
-    // Text - BETTER CONTRAST
+    // Text
     textPrimary: '#FFFFFF',    // Pure white
-    textSecondary: '#9CA3AF',  // Light gray (was #A0A0A0)
-    textTertiary: '#6B7280',   // Mid gray (was #6C6C6C)
+    textSecondary: '#9CA3AF',  
+    textTertiary: '#6B7280',   
     
-    // Borders & Dividers - MORE VISIBLE
-    border: '#374151',         // Visible border (was #2C2C2E)
-    divider: '#1F2937',        // Visible divider (was #1C1C1E)
+    // Borders & Dividers
+    border: '#374151',         
+    divider: '#1F2937',       
     
     // Glass effects
     glassTint: 'rgba(28, 28, 30, 0.85)',

@@ -1,13 +1,3 @@
-/**
- * PROFILE SCREEN - CLEAN, ALIVE & PERSONAL
- * 
- * Design Philosophy:
- * - Personal and warm (not corporate)
- * - Clean cards like the rest of the app
- * - Breathing room, beautiful spacing
- * - Matches home screen aesthetic
- */
-
 import React, { useState } from 'react';
 import {
   View,
@@ -23,23 +13,21 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../theme/ThemeContext';
+import { useAuth } from '../../hooks/useAuth';
 
 interface ProfileScreenProps {
   onBack: () => void;
   onEditAllergies: () => void;
   onSignOut: () => void;
+  onViewTutorial: () => void;
 }
 
-export function ProfileScreen({ onBack, onEditAllergies, onSignOut }: ProfileScreenProps) {
+export function ProfileScreen({ onBack, onEditAllergies, onSignOut, onViewTutorial }: ProfileScreenProps) {
   const { theme, isDark } = useTheme();
-  
-  /**
-   * TODO BACKEND: Fetch user profile
-   * GET /api/users/{userId}/profile
-   */
+  const { user } = useAuth();
   const [profile] = useState({
-    name: 'Alex Morgan',
-    email: 'alex.morgan@email.com',
+    name: `${user.firstName} ${user.lastName}`,
+    email: user.email,
     allergies: ['Peanuts', 'Shellfish', 'Dairy'],
     memberSince: '2024-01-15',
     totalMeals: 247,
@@ -274,6 +262,18 @@ export function ProfileScreen({ onBack, onEditAllergies, onSignOut }: ProfileScr
                 <Ionicons name="information-circle" size={22} color={theme.textPrimary} />
                 <Text style={[styles.settingText, { color: theme.textPrimary }]}>
                   About TasteBud
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
+            </TouchableOpacity>
+            
+            <View style={[styles.divider, { backgroundColor: theme.border }]} />
+            
+            <TouchableOpacity style={styles.optionRow} onPress={onViewTutorial}>
+              <View style={styles.settingLeft}>
+                <Ionicons name="book-outline" size={22} color={theme.textPrimary} />
+                <Text style={[styles.settingText, { color: theme.textPrimary }]}>
+                  View Tutorial
                 </Text>
               </View>
               <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />

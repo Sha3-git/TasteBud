@@ -21,7 +21,6 @@ import { useSuspectedFoods } from '../../hooks/useSuspectedFoods';
 import { MyFoodsTab } from '../../components/tabs/MyFoodsTab';
 import { BrowseTab } from '../../components/tabs/BrowseTab';
 import { Food } from '../../types/Food';
-import api from '../../services/apiClient';
 
 interface FoodLibraryScreenProps {
   onBack: () => void;

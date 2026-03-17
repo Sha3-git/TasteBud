@@ -17,7 +17,6 @@ interface MealLog {
   date: Date;
 }
 
-// send the userID via authentication bearer token
 
 export const mealLogService = {
   getMealLogByDay: (params: MealParam) => {

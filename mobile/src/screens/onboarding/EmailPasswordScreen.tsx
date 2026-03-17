@@ -13,7 +13,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../hooks/useAuth";
 interface EmailPasswordScreenProps {
   onBack: () => void;
-  onContinue: (email: string, password: string) => void;
+  onContinue: (email: string) => void;
 }
 
 function validateEmail(email: string): boolean {
@@ -52,10 +52,7 @@ export function EmailPasswordScreen({
           lastName,
         });
 
-        alert(
-          "Signup successful! Please check your email to verify your account.",
-        );
-        onContinue(email, password);
+        onContinue(email);
       } catch (err: any) {
         alert(
           `Signup failed: ${err?.error || err?.message || "Unknown error"}`,

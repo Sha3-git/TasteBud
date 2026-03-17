@@ -87,14 +87,10 @@ export function FeatureCard({
         >
           {title}
         </Text>
-        <Text
-          style={[
-            styles.featureValue,
-            { color: isDark ? "rgba(255,255,255,0.8)" : "rgba(0,0,0,0.6)" },
-          ]}
-        >
-          {value}
-        </Text>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+          <Text style={[styles.featureValue, { color: isDark ? "rgba(255,255,255,0.8)" : "rgba(0,0,0,0.6)" }]}>{value}</Text>
+          <Ionicons name="chevron-forward" size={14} style={{ marginTop: 5 }} color={isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.2)"} />
+        </View>
       </Animated.View>
     </TouchableOpacity>
   );

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   View,
   Text,
@@ -11,13 +11,14 @@ import {
   ActivityIndicator,
   Modal,
 } from "react-native";
+import Slider from '@react-native-community/slider';
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSearchFoods, useExpandBrandedFood } from "../../hooks/useSearchFoods";
 import { useSearchSymptom } from "../../hooks/useSymptom";
 import { SearchForm } from "./SearchForm";
+import { TimingInfoModal } from "../modals/TimingInfoModal";
 
-// Time options - reframed as "how soon AFTER eating"
 const ONSET_OPTIONS = [
   { id: 'immediate', label: 'Immediately', minutes: 0, subtext: 'While eating or right after' },
   { id: '30min', label: 'Within 30 min', minutes: 30, subtext: null },
@@ -49,7 +50,6 @@ export function AddMealForm({
   showDropdown,
   setShowDropdown,
 }: any) {
-  // UPDATED: Destructure new properties from hook
   const { 
     ingredients: ingredientResults, 
     brandedFoods, 
@@ -68,14 +68,13 @@ export function AddMealForm({
   
   const [brandedSources, setBrandedSources] = useState<Record<string, string>>({});
   
-  // Reaction section state
   const [showReactionSection, setShowReactionSection] = useState(false);
   const [selectedSymptom, setSelectedSymptom] = useState<{ id: string; name: string } | null>(null);
   const [selectedOnset, setSelectedOnset] = useState<string>('immediate');
   const [symptomDropdownVisible, setSymptomDropdownVisible] = useState(false);
   
-  // Info modal
   const [showTimingInfo, setShowTimingInfo] = useState(false);
+  const scrollViewRef = useRef<ScrollView>(null);
 
   const handleSelectIngredient = (item: { _id: string; name: string }) => {
     setShowDropdown(false);
@@ -137,74 +136,7 @@ export function AddMealForm({
     return "Very Severe";
   };
 
-  // Timing Info Modal Component
-  const TimingInfoModal = () => (
-    <Modal
-      visible={showTimingInfo}
-      transparent
-      animationType="fade"
-      onRequestClose={() => setShowTimingInfo(false)}
-    >
-      <TouchableOpacity 
-        style={styles.modalOverlay}
-        activeOpacity={1}
-        onPress={() => setShowTimingInfo(false)}
-      >
-        <View style={[styles.modalContent, { backgroundColor: isDark ? '#1c1c1e' : '#fff' }]}>
-          <View style={styles.modalHeader}>
-            <Text style={[styles.modalTitle, { color: theme.textPrimary }]}>
-              Why timing matters
-            </Text>
-            <TouchableOpacity onPress={() => setShowTimingInfo(false)}>
-              <Ionicons name="close" size={24} color={theme.textSecondary} />
-            </TouchableOpacity>
-          </View>
-          
-          <Text style={[styles.modalText, { color: theme.textSecondary }]}>
-            Different reactions happen at different speeds. This helps us understand what type of sensitivity you might have.
-          </Text>
-          
-          <View style={styles.timeline}>
-            <View style={styles.timelineTrack}>
-              <LinearGradient
-                colors={['#EF4444', '#F97316', '#FBBF24', '#34D399']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.timelineGradient}
-              />
-            </View>
-            
-            <View style={styles.timelineLabels}>
-              <View style={styles.timelineItem}>
-                <View style={[styles.timelineDot, { backgroundColor: '#EF4444' }]} />
-                <Text style={[styles.timelineTime, { color: theme.textPrimary }]}>0-2h</Text>
-                <Text style={[styles.timelineType, { color: theme.textSecondary }]}>Allergy</Text>
-              </View>
-              
-              <View style={styles.timelineItem}>
-                <View style={[styles.timelineDot, { backgroundColor: '#F97316' }]} />
-                <Text style={[styles.timelineTime, { color: theme.textPrimary }]}>2-6h</Text>
-                <Text style={[styles.timelineType, { color: theme.textSecondary }]}>FODMAP</Text>
-              </View>
-              
-              <View style={styles.timelineItem}>
-                <View style={[styles.timelineDot, { backgroundColor: '#34D399' }]} />
-                <Text style={[styles.timelineTime, { color: theme.textPrimary }]}>6-24h</Text>
-                <Text style={[styles.timelineType, { color: theme.textSecondary }]}>Intolerance</Text>
-              </View>
-            </View>
-          </View>
-          
-          <View style={[styles.infoBox, { backgroundColor: isDark ? '#2c2c2e' : '#f5f5f5' }]}>
-            <Ionicons name="bulb-outline" size={18} color="#FBBF24" />
-            <Text style={[styles.infoBoxText, { color: theme.textSecondary }]}>
-              Don't worry about being exact. An estimate is fine!
-            </Text>
-          </View>
-        </View>
-      </TouchableOpacity>
-    </Modal>
-  );
+
 
   // Calculate remaining counts for "Show more"
   const remainingIngredients = ingredientsTotal - ingredientResults.length;
@@ -214,7 +146,7 @@ export function AddMealForm({
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
       
-      <TimingInfoModal />
+      <TimingInfoModal showTimingInfo={showTimingInfo} setShowTimingInfo={setShowTimingInfo} theme={theme} isDark={isDark} />
 
       <View style={styles.header}>
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
@@ -227,9 +159,11 @@ export function AddMealForm({
       </View>
 
       <ScrollView
+        ref={scrollViewRef}
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        automaticallyAdjustKeyboardInsets={true}
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.formSection}>
@@ -444,7 +378,7 @@ export function AddMealForm({
           </TouchableOpacity>
 
           {showReactionSection && (
-            <View style={[styles.reactionContent, { backgroundColor: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.02)' }]}>
+            <View style={styles.reactionContent}>
               
               {/* SYMPTOM SEARCH */}
               <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>What symptom?</Text>
@@ -483,26 +417,28 @@ export function AddMealForm({
                 <>
                   {/* SEVERITY */}
                   <Text style={[styles.fieldLabel, { color: theme.textSecondary, marginTop: 20 }]}>How severe?</Text>
-                  <View style={styles.severityRow}>
-                    <View style={styles.severityTrack}>
-                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((tick) => (
-                        <TouchableOpacity
-                          key={tick}
-                          onPress={() => setSeverity(tick)}
-                          style={[
-                            styles.severityDot,
-                            { 
-                              backgroundColor: tick <= severity ? getSeverityColor(severity) : (isDark ? '#333' : '#e5e5e5'),
-                              transform: [{ scale: tick === severity ? 1.3 : 1 }]
-                            }
-                          ]}
-                        />
-                      ))}
+                  <View style={styles.sliderContainer}>
+                    <View style={styles.sliderRow}>
+                      <Slider
+                        style={styles.slider}
+                        minimumValue={1}
+                        maximumValue={10}
+                        step={1}
+                        value={severity}
+                        onValueChange={(val) => setSeverity(val)}
+                        minimumTrackTintColor={getSeverityColor(severity)}
+                        maximumTrackTintColor={isDark ? '#333' : '#e5e5e5'}
+                        thumbTintColor={getSeverityColor(severity)}
+                      />
                     </View>
-                    <View style={[styles.severityBadge, { backgroundColor: getSeverityColor(severity) + '20' }]}>
-                      <Text style={[styles.severityBadgeText, { color: getSeverityColor(severity) }]}>
-                        {severity} · {getSeverityLabel(severity)}
-                      </Text>
+                    <View style={styles.sliderLabels}>
+                      <Text style={[styles.sliderLabelText, { color: theme.textTertiary }]}>Mild</Text>
+                      <View style={[styles.severityBadge, { backgroundColor: getSeverityColor(severity) + '20' }]}>
+                        <Text style={[styles.severityBadgeText, { color: getSeverityColor(severity) }]}>
+                          {severity} · {getSeverityLabel(severity)}
+                        </Text>
+                      </View>
+                      <Text style={[styles.sliderLabelText, { color: theme.textTertiary }]}>Severe</Text>
                     </View>
                   </View>
 
@@ -520,47 +456,49 @@ export function AddMealForm({
                     </TouchableOpacity>
                   </View>
 
-                  <View style={styles.onsetGrid}>
-                    {ONSET_OPTIONS.map((option) => (
-                      <TouchableOpacity
-                        key={option.id}
-                        style={[
-                          styles.onsetOption,
-                          {
-                            backgroundColor: selectedOnset === option.id 
-                              ? (isDark ? 'rgba(59, 130, 246, 0.2)' : 'rgba(59, 130, 246, 0.1)')
-                              : (isDark ? 'rgba(255,255,255,0.05)' : '#fff'),
-                            borderColor: selectedOnset === option.id ? '#3B82F6' : theme.border,
-                          },
-                        ]}
-                        onPress={() => setSelectedOnset(option.id)}
-                      >
-                        <Text style={[
-                          styles.onsetLabel,
-                          { 
-                            color: selectedOnset === option.id ? '#3B82F6' : theme.textPrimary,
-                            fontWeight: selectedOnset === option.id ? '600' : '400'
-                          }
-                        ]}>
-                          {option.label}
-                        </Text>
-                        {option.subtext && (
-                          <Text style={[styles.onsetSubtext, { color: theme.textTertiary }]}>
-                            {option.subtext}
+                  <View style={styles.timingGrid}>
+                    {ONSET_OPTIONS.map((option) => {
+                      const isSelected = selectedOnset === option.id;
+                      return (
+                        <TouchableOpacity
+                          key={option.id}
+                          style={[
+                            styles.timingOption,
+                            {
+                              backgroundColor: isSelected 
+                                ? (isDark ? 'rgba(59, 130, 246, 0.2)' : 'rgba(59, 130, 246, 0.1)')
+                                : (isDark ? 'rgba(255,255,255,0.05)' : '#f9fafb'),
+                              borderColor: isSelected ? '#3B82F6' : theme.border,
+                            },
+                          ]}
+                          onPress={() => setSelectedOnset(option.id)}
+                        >
+                          <Text style={[
+                            styles.timingOptionText,
+                            { 
+                              color: isSelected ? '#3B82F6' : theme.textPrimary,
+                              fontWeight: isSelected ? '600' : '500',
+                            }
+                          ]}>
+                            {option.label}
                           </Text>
-                        )}
-                      </TouchableOpacity>
-                    ))}
+                        </TouchableOpacity>
+                      );
+                    })}
                   </View>
 
                   {/* ADD SYMPTOM BUTTON */}
                   <TouchableOpacity
-                    style={styles.addSymptomBtn}
+                    style={[styles.addSymptomBtn, { 
+                      backgroundColor: 'transparent',
+                      borderWidth: 1.5,
+                      borderColor: '#3B82F6',
+                    }]}
                     onPress={handleAddSymptom}
                     activeOpacity={0.8}
                   >
-                    <Ionicons name="add" size={20} color="#FFF" />
-                    <Text style={styles.addSymptomBtnText}>Add Symptom</Text>
+                    <Ionicons name="add" size={20} color="#3B82F6" />
+                    <Text style={[styles.addSymptomBtnText, { color: '#3B82F6' }]}>Add Symptom</Text>
                   </TouchableOpacity>
                 </>
               )}
@@ -629,7 +567,7 @@ export function AddMealForm({
 const styles = StyleSheet.create({
   container: { flex: 1 },
   scrollView: { flex: 1 },
-  scrollContent: { paddingBottom: 40 },
+  scrollContent: { paddingBottom: 50 },
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -710,25 +648,19 @@ const styles = StyleSheet.create({
   reactionToggleSubtext: { fontSize: 13, marginTop: 2 },
   
   // Reaction Content
-  reactionContent: { borderRadius: 14, padding: 16, marginBottom: 8 },
+  reactionContent: { marginTop: 16 },
   fieldLabel: { fontSize: 13, fontWeight: "600", marginBottom: 10, textTransform: "uppercase", letterSpacing: 0.3 },
   selectedBadge: { flexDirection: "row", alignItems: "center", padding: 12, borderRadius: 10, marginTop: 8, gap: 8 },
   selectedBadgeText: { flex: 1, fontSize: 15, fontWeight: "500" },
   
   // Severity
   severityRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 },
-  severityTrack: { flex: 1, flexDirection: "row", justifyContent: "space-between" },
-  severityDot: { width: 20, height: 20, borderRadius: 10 },
   severityBadge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
   severityBadgeText: { fontSize: 13, fontWeight: "600" },
   
   // Timing
   timingHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 },
   infoButton: { padding: 4 },
-  onsetGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  onsetOption: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: 10, borderWidth: 1.5, minWidth: '30%' },
-  onsetLabel: { fontSize: 13 },
-  onsetSubtext: { fontSize: 11, marginTop: 2 },
   
   // Add Symptom
   addSymptomBtn: {
@@ -743,6 +675,47 @@ const styles = StyleSheet.create({
   },
   addSymptomBtnText: { color: "#FFF", fontSize: 15, fontWeight: "600" },
   
+
+  // Modern Slider
+  sliderContainer: {
+    marginTop: 8,
+  },
+  sliderRow: {
+    marginHorizontal: -8,
+  },
+  slider: {
+    width: '100%',
+    height: 40,
+  },
+  sliderLabels: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  sliderLabelText: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  
+  // Timing Grid
+  timingGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  timingOption: {
+    width: '48%',
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    alignItems: 'center',
+  },
+  timingOptionText: {
+    fontSize: 14,
+  },
+
   // Symptoms List
   symptomsList: { marginTop: 16, gap: 10 },
   symptomCard: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 14, borderRadius: 12 },
@@ -759,23 +732,5 @@ const styles = StyleSheet.create({
   saveButtonText: { fontSize: 17, fontWeight: "700" },
   helperText: { fontSize: 13, textAlign: "center", marginTop: 12 },
   
-  // Modal
-  modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "center", alignItems: "center", padding: 24 },
-  modalContent: { width: "100%", maxWidth: 340, borderRadius: 20, padding: 24 },
-  modalHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 16 },
-  modalTitle: { fontSize: 18, fontWeight: "700" },
-  modalText: { fontSize: 14, lineHeight: 20, marginBottom: 24 },
   
-  // Timeline in modal
-  timeline: { marginBottom: 20 },
-  timelineTrack: { height: 6, borderRadius: 3, marginBottom: 16 },
-  timelineGradient: { flex: 1, height: "100%", borderRadius: 3 },
-  timelineLabels: { flexDirection: "row", justifyContent: "space-between" },
-  timelineItem: { alignItems: "center" },
-  timelineDot: { width: 12, height: 12, borderRadius: 6, marginBottom: 6 },
-  timelineTime: { fontSize: 13, fontWeight: "600", marginBottom: 2 },
-  timelineType: { fontSize: 11 },
-  
-  infoBox: { flexDirection: "row", alignItems: "center", padding: 12, borderRadius: 10, gap: 10 },
-  infoBoxText: { flex: 1, fontSize: 13 },
 });

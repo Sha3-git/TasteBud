@@ -1,18 +1,3 @@
-/**
- * CROSS REACTIVE FOODS SCREEN
- * 
- * Features:
- * - Risk level filtering (High/Medium/Low/All)
- * - Collapsible allergen cards (collapsed by default)
- * - Visual risk overview
- * - Percentage bars showing reactivity likelihood
- * - Educational scientific explanations
- * 
- * BACKEND INTEGRATION: COMPLETE
- * - Fetches user's unsafe foods from /api/unsafefood/get
- * - Fetches cross-reactions from /api/crossReaction/get/:ingredientId
- */
-
 import React, { useState, useMemo } from 'react';
 import {
   View,

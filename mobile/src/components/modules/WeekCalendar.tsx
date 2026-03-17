@@ -1,31 +1,40 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  StatusBar,
   TouchableOpacity,
-  ScrollView,
-  SafeAreaView,
   Animated,
-  Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import { useTheme } from '../../theme/ThemeContext';
-import { LiquidGlassTabBar } from './LiquidGlassTabBar';
-import { MealSymptomHeroCard } from '../../components/cards/MealSymptomHeroCard';
-
 
 export function WeekCalendar({
-  selectedDate,
-  onDateSelect,
+  onAddMeal,
   theme,
 }: {
-  selectedDate: Date;
-  onDateSelect: (date: Date) => void;
+  onAddMeal?: () => void;
   theme: any;
 }) {
+  const slideAnim = useRef(new Animated.Value(0)).current;
+  
+  useEffect(() => {
+    Animated.sequence([
+      Animated.delay(400),
+      Animated.spring(slideAnim, {
+        toValue: 1,
+        useNativeDriver: true,
+        friction: 6,
+        tension: 40,
+      }),
+      Animated.delay(1500),
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        useNativeDriver: true,
+        friction: 8,
+      }),
+    ]).start();
+  }, []);
+
   const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
   
   const dates = [];
@@ -39,51 +48,78 @@ export function WeekCalendar({
     const today = new Date();
     return date.toDateString() === today.toDateString();
   };
+
+  const slideY = slideAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 36],
+  });
   
   return (
-    <View style={styles.calendar}>
-      {dates.map((date, index) => {
-        const today = isToday(date);
-        
-        return (
-          <TouchableOpacity
-            key={index}
-            onPress={() => onDateSelect(date)}
-            style={[
-              styles.calendarDay,
-              { backgroundColor: today ? '#FF6B6B' : theme.card },
-            ]}
-          >
-            <Text style={[
-              styles.calendarDayText,
-              { color: today ? '#FFF' : theme.textSecondary }
-            ]}>
-              {days[index]}
-            </Text>
-            <Text style={[
-              styles.calendarDateText,
-              { color: today ? '#FFF' : theme.textPrimary }
-            ]}>
-              {date.getDate()}
-            </Text>
-          </TouchableOpacity>
-        );
-      })}
+    <View style={styles.wrapper}>
+      <View style={styles.calendar}>
+        {dates.map((date, index) => {
+          const today = isToday(date);
+          
+          if (today) {
+            return (
+              <View key={index} style={styles.todayWrapper}>
+                <Animated.View 
+                  style={[
+                    styles.sleeve,
+                    { 
+                      backgroundColor: '#FF6B6B',
+                      transform: [{ translateY: slideY }],
+                    }
+                  ]}
+                >
+                  <View style={styles.sleeveContent}>
+                    <Ionicons name="add" size={16} color="#FFF" />
+                  </View>
+                </Animated.View>
+                <TouchableOpacity
+                  onPress={onAddMeal}
+                  activeOpacity={0.7}
+                  style={[
+                    styles.calendarDay,
+                    { backgroundColor: theme.todayBadgeBg },
+                  ]}
+                >
+                  <Text style={[styles.calendarDayText, { color: theme.todayBadgeText }]}>
+                    {days[index]}
+                  </Text>
+                  <Text style={[styles.calendarDateText, { color: theme.todayBadgeText }]}>
+                    {date.getDate()}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            );
+          }
+          
+          return (
+            <View
+              key={index}
+              style={[
+                styles.calendarDay,
+                { backgroundColor: theme.card },
+              ]}
+            >
+              <Text style={[styles.calendarDayText, { color: theme.textSecondary }]}>
+                {days[index]}
+              </Text>
+              <Text style={[styles.calendarDateText, { color: theme.textPrimary }]}>
+                {date.getDate()}
+              </Text>
+            </View>
+          );
+        })}
+      </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({ 
-    
-  weekSection: {
-    paddingHorizontal: 24,
-    marginBottom: 32,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    marginBottom: 16,
-    letterSpacing: -0.3,
+const styles = StyleSheet.create({
+  wrapper: {
+    paddingBottom: 28,
   },
   calendar: {
     flexDirection: 'row',
@@ -96,6 +132,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 4,
   },
+  todayWrapper: {
+    flex: 1,
+    position: 'relative',
+  },
   calendarDayText: {
     fontSize: 12,
     fontWeight: '600',
@@ -104,4 +144,23 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
   },
-})
+  sleeve: {
+    position: 'absolute',
+    top: 10,
+    left: 0,
+    right: 0,
+    height: 50,
+    borderTopLeftRadius: 5,
+    borderTopRightRadius: 5,
+    borderBottomLeftRadius: 16,
+    borderBottomRightRadius: 16,
+    zIndex: -1,
+  },
+  sleeveContent: {
+    position: 'absolute',
+    bottom: 8,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+});
