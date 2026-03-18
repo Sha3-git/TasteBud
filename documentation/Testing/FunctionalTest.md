@@ -14,8 +14,6 @@ https://www.postman.com/tastebud-0038/workspace/tastebud-workspace/collection/37
 
 ---
 # API Test Cases
-Postman run:
-https://www.postman.com/tastebud-0038/tastebud-workspace/run/42125615-40fb9ed7-d367-4986-89de-0f7e7da75624
 ## Authentication
 
 | Test Case  | Endpoint         | Input                  | Expected Result                                            |
