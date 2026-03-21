@@ -37,7 +37,7 @@ export function useAnalysis() {
       
       if (triggers && Array.isArray(triggers) && triggers.length > 0) {
         const top: TopTrigger = {
-          food: triggers[0].ingredient,
+          food: triggers[0].ingredientName,
           appearances: triggers[0].reactionMeals,
           avgSeverity: Math.round((triggers[0].avgSeverity || 0) * 10) / 10,
           emoji: "",
@@ -45,7 +45,7 @@ export function useAnalysis() {
         setTopTrigger(top);
 
         const formattedRes = triggers.map((t: any) => ({
-          food: t.ingredient,
+          food: t.ingredientName,
           count: t.reactionMeals,
           emoji: "",
         }));

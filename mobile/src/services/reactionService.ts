@@ -44,7 +44,7 @@ export const reactionService = {
   },
   
   getTopTriggerFoods: (userId: string) => {
-    return api.get("/reactions/sus", {
+    return api.get("/analysis/suspected", {
       params: { userId },
     });
   },

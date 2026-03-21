@@ -41,7 +41,7 @@ export function LoginScreen({ onBack, onContinue }: LoginScreenProps) {
       await login(email, password);
       onContinue();
     } catch (err: any) {
-      alert(err?.error || err?.message || "Login failed");
+      console.log(err?.error || err?.message || "Login failed");
     }
   };
 

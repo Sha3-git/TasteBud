@@ -25,7 +25,6 @@ interface CrossReactivityResult {
   crossReactivities: CrossReactivityData[];
 }
 
-// Helper to get emoji based on food group
 function getEmojiForFoodGroup(foodGroup: string): string {
   const emojiMap: Record<string, string> = {
     'Dairy': '🥛',
@@ -93,7 +92,7 @@ export function useCrossReactivity() {
     setError(null);
     
     try {
-      // Step 1: Get user's unsafe foods
+
       const unsafeFoodsResponse = await unsafeFoodsService.getUnsafeFoods();
       const unsafeFoods = unsafeFoodsResponse.data;
       
@@ -105,9 +104,7 @@ export function useCrossReactivity() {
         });
         return;
       }
-      
-      // IMPORTANT: Only get ACTUAL allergies (preExisting or confirmed)
-      // NOT suspected triggers from the algorithm
+
       const confirmedAllergies = unsafeFoods.ingredients.filter(
         item => item.preExisting === true || item.status === "confirmed" || item.status === "suspected"
       );
@@ -129,7 +126,6 @@ export function useCrossReactivity() {
       
       const userAllergies = uniqueAllergies.map(item => item.ingredient.name);
       
-      // Step 2: Fetch cross-reactions for each CONFIRMED allergy only
       const crossReactivities: CrossReactivityData[] = [];
       let highCount = 0;
       let mediumCount = 0;
@@ -143,10 +139,8 @@ export function useCrossReactivity() {
           const crossReactions = crossReactionResponse.data;
           
           if (crossReactions && crossReactions.length > 0) {
-            const reaction = crossReactions[0]; // Get the first match
+            const reaction = crossReactions[0]; 
             
-            // Transform similarities to relatedFoods
-            // Filter to show top 10 with score >= 50%
             const relatedFoods: RelatedFood[] = reaction.similarities
               .filter(sim => sim.score >= 50)
               .sort((a, b) => b.score - a.score)

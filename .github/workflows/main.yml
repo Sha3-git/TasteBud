@@ -52,16 +52,21 @@ jobs:
           nvm alias default 22.11.0
           node -v
 
-          # Clean untracked files (removes .env and package-lock.json)
           pm2 stop tastebud-api
           git clean -f .env 
           git pull origin main
+          npm install
 
           echo "MONGODB_URI=${{ secrets.MONGODB_URI}}" > .env
           echo "MAIL_ACCESS=${{secrets.MAIL_ACCESS}}" >> .env
           echo "GOOGLE_APP_PASSWORD=${{secrets.GOOGLE_APP_PASSWORD}}" >> .env
           echo "EMAIL_USER=${{secrets.EMAIL_USER}}" >> .env
           echo "CLIENT_URL=${{secrets.CLIENT_URL}}" >> .env
-          echo "CLIENT_URL=${{secrets.JWT_SECRET}}" >> .env
+          echo "JWT_SECRET=${{secrets.JWT_SECRET}}" >> .env
           
           pm2 start tastebud-api
+
+          cd /var/www/TasteBud/mobile || exit
+          pm2 delete tastebud-mobile || true
+          pm2 start "npx expo start --web --port 3001 --non-interactive" --name tastebud-mobile
+          pm2 save
