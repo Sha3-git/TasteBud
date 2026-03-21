@@ -132,7 +132,11 @@ export function AllergyDeclarationScreen({ onBack, onContinue }: AllergyDeclarat
               setShowSymptomPicker(false);
             }}
           >
-            <Ionicons name="add-circle-outline" size={24} color="#fff" />
+            <Ionicons 
+              name={showAllergyPicker ? "remove-outline" : "add-circle-outline"} 
+              size={24} 
+              color="#fff" 
+            />
             <Text style={styles.addButtonText}>
               {showAllergyPicker ? 'Hide options' : 'Add allergy'}
             </Text>
@@ -191,7 +195,11 @@ export function AllergyDeclarationScreen({ onBack, onContinue }: AllergyDeclarat
               setShowAllergyPicker(false);
             }}
           >
-            <Ionicons name="add-circle-outline" size={24} color="#fff" />
+            <Ionicons 
+              name={showSymptomPicker ? "remove-circle-outline" : "add-circle-outline"} 
+              size={24} 
+              color="#fff" 
+            />
             <Text style={styles.addButtonText}>
               {showSymptomPicker ? 'Hide options' : 'Add symptom'}
             </Text>
