@@ -67,6 +67,7 @@ jobs:
           pm2 start tastebud-api
 
           cd /var/www/TasteBud/mobile || exit
+          npm install
           pm2 delete tastebud-mobile || true
           pm2 start "npx expo start --web --port 3001 --non-interactive" --name tastebud-mobile
           pm2 save
