@@ -65,10 +65,4 @@ jobs:
           echo "JWT_SECRET=${{secrets.JWT_SECRET}}" >> .env
           
           pm2 start tastebud-api
-
-          cd /var/www/TasteBud/mobile || exit
-          npm install
-          lsof -ti:3001 | xargs kill -9 || true
-          pm2 delete tastebud-mobile || true
-          pm2 start "npx expo start --web --port 3001 --non-interactive" --name tastebud-mobile
           pm2 save
