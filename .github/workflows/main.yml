@@ -57,7 +57,7 @@ jobs:
           git pull origin main
           npm install
 
-          echo "MONGODB_URI=${{ secrets.MONGODB_URI}}" > .env
+          echo "MONGO_URI=${{ secrets.MONGODB_URI}}" > .env
           echo "MAIL_ACCESS=${{secrets.MAIL_ACCESS}}" >> .env
           echo "GOOGLE_APP_PASSWORD=${{secrets.GOOGLE_APP_PASSWORD}}" >> .env
           echo "EMAIL_USER=${{secrets.EMAIL_USER}}" >> .env
