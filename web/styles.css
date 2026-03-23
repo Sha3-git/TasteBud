@@ -565,10 +565,24 @@ html {
   border-radius: 35px;
   overflow: hidden;
   box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+  pointer-events: auto;
 }
 
 .phone-frame iframe {
   width: 100%;
   height: 100%;
   border: none;
+}
+.phone-frame iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  pointer-events: auto; 
+  position: relative;
+  z-index: 10;
+}
+
+/* Remove any overlays that might block clicks */
+.phone-frame::before {
+  display: none;
 }
