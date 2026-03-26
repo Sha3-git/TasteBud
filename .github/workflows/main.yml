@@ -63,6 +63,7 @@ jobs:
           echo "EMAIL_USER=${{secrets.EMAIL_USER}}" >> .env
           echo "CLIENT_URL=${{secrets.CLIENT_URL}}" >> .env
           echo "JWT_SECRET=${{secrets.JWT_SECRET}}" >> .env
+          echo "RESEND_API_KEY=${{secrets.RESEND_API_KEY}}" >> .env
           
           pm2 start tastebud-api
           pm2 save
