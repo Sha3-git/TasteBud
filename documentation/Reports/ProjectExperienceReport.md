@@ -37,68 +37,40 @@
 ## Purpose and Problem
 Describe the core problem your project set out to solve. Why is this problem important? Who does it affect? What are the current shortcomings in existing solutions, and how did your group intend to address them?
 
-The purpose for our project was to contribute towards a solution for a common health problem.
-Discovering allergies or intolerances can be difficult, frustrating and confusing and has been linked to the causation of food anxiety.
-We believe that we can empower our end users to understand their own health better through accessible data and intelligent tools.
-By interpreting user provided data in useful ways we wanna facilitate a better health experience
+TasteBud is an application developed to identify and track users' allergenic or intolerant foods via long term pattern recognition. It is a solution created to meet the needs of a substantially increasing population of people who experience allergies and food intolerances on a daily basis. By combining dietary logging of ingredients with symptom tracking and analytical insights, TasteBud helps users detect correlations between consumed foods and related reactions, therefore, enabling more informed dietary decisions and improved health management. Additionally, drawing upon the support of established research, the application provides users with precautionary guidance to help avoid potentially problematic foods based on factors such as cross reactivity.
+
+  The current shortcomings in existing solutions are that the applications often times have inaccurate data, lack of cross reactivity information, lump allergies and food intolerances together, have rigid profiles that require the user to input all allergies and food intolerances that they have, and a lack of integration with the medical community. 
+  
+  Our group intended to address these shortcomings by figuring out ways to ensure all data is correct and precise, to have extensive cross reactivity information, to isolate allergies and food intolerances into seperate and distinct classifications, to have dynamic and evolving user profiles that change depending on reported symptoms or a lack thereof within food logs, and to finally have detailed reports that the user can export and show to their doctors, allergists, etc... 
 
 ## Initial Vision & Plan
 
 ### Customers
-Who was your target audience or "north star" customer? Discuss any debates your team had between different target demographics (e.g., B2B vs. B2C) and why you landed on your final choice.
+Who was your target audience or "north star" customer? Discuss any debates your team had between different target demographics and why you landed on your final choice.
 
-Our target customer is those who suffer from food allergies and/or food intolerances whether they know it or not.
+Our target customer is those who suffer from food allergies and/or food intolerances whether they know it or not. 
+  However, this is a broad user group, so our final customers were split into one of three groups. 
+  Our first group are those who suffer from food allergies and are aware of said allergies, as they would be able to use our application to track their reactions, and to find out cross reactive foods. 
+  The next group was those who suffer from food intolerances, we envisioned that these users would be aware of some of the things that were causing them issues, but would be able to use our application to root out their intolerances and be able to eventually clear them up, or at least limit their symptoms.
+  The third and final group is a mixture of both of the other groups, but was those who are either unaware of symptoms, allergies or food intolerances or simply do not have symptoms, allergies or food intolerances and just would want to track their food and maybe be able to find foods that were causing them issues. 
+  
+  We landed on our final choice(s) by realzing that people who suffer from food allergies would have different experiences than those who suffered from food intolerances and vice versa, and that there would be an important group of people who either landed somewhere in the middle or laid outside of those groups. As such, we wanted to be able to curate experiences with our application based on the experience that the user was having with either their allergies or their food intolerances.
 
 ### Envisioned Requirements
 What were the concrete technical and functional requirements you initially set out to accomplish? Discuss data sources, user authentication, core features, and calculations/processes the system needed to perform.
 
-The functional requirements that we set out to achieve were: 
+The functional requirements that we set out to achieve were having a Daily Food and Reaction Logger which included: detailed ingredients logging, a reaction tracker, entry timestamping, and log updating and deletion.As well, we wanted someway to have Unique profile creation for parents or guardians.
+From the daily food and reaction logger's logs, we aimed to be able to have reaction pattern detection with System-found correlations between certain foods and user reactions and Cross reactive food finder.
+For the user's health and wellbeing, we wanted to include an Unsafe Foods Tracker that allowed for declaration of user-confirmed allergies/intolerances, archival of irrelevant or outgrown allergies/intolerances, a view of system flagged ingredients, and a confirmation of system flagged ingredients.Finally, some kind of Reports and Insights system was necessary for both the user to be able to understand, and for it to be useful for potentially sending off detailed food and symptom logs to doctors, allergists, etc..
 
-Daily Food and Reaction Logger
 
-    Detailed ingredients logging
-    Reaction tracker
-    Entry timestamping
-    Log updating and deletion
-
-Multiple User Profile Creation
-
-    Unique profile creation for parents or guardians
-
-Reaction Pattern Detection
-
-    System-found correlations between certain foods and user reactions
-    Cross reactive food finder
-
-Unsafe Foods Tracker
-
-    Declaration of user-confirmed allergies/intolerances
-    Archival of irrelevant or outgrown allergies/intolerances
-    View of system flagged ingredients
-    Confirmation of system flagged ingredients
-
-Reports and Insights
-
-The technical requirements we initial used were: 
-- **External data sources**
-  - Food protein sequence database
-  - Allergenic foods database
-  - Anecdotal symptom sourcing
-  - Food products database
-
-- **Yearly data updating script** for external database sources
-
-- **Architecture:** MVCS  
-- **Frontend:** React Native and React  
-- **Backend:** Node.js  
-- **Database:** MongoDB  
-- **Hosting:** micro service architecture
-- **CI/CD pipelining** with GitHub Actions for deployment (little to no downtime)
+The technical requirements for these features to work properly were a proper food protein sequence database (to properly associate cross reactive foods), an allergenic foods database (to be able to show which foods could be causing issues), anecdotal symptom sourcing (to be able to have a proper list of potential symptoms), and a food products database to be able to link all of the other data together with real foods.
+These databases would need some kind of script to be able to update them periodically. These databases needed to be hosted as to allow for remote development, and for that MongoDB was selected as it allowed for flexible scalability and easy indexing and querying. As well, there was a need to follow an architecture style to both code more efficiently and effectively, and the MVCS architecture was chosen to be able to seperate the front and backend effectively. For frontend development, React Native was picked due to its cross-compatibility on both Android and iOS devices for easier development on both sets of devices. On the backend side of things, Node.js was chosen for its high performance, its similarity to React (as they both use Javascript), and its asynchronous and non blocking architecture, which fits the real-time nature of the application. The application was envisioned to be hosted using micro service architecture and needed CI/CD pipelining, in which github actions was adopted for development as it has little to no downtime.
 
 ### Form
 What medium did you choose for your solution (e.g., Standalone Web App, Mobile App, Desktop Software, API)? Why did you choose this form over the alternatives?
 
-We chose to use a Mobile App for our solution...
+We chose to use a Mobile App for our solution as we felt that it was the medium that had the biggest potential userbase, as most people nowadays have their phone on them at all times. We envisioned building out a standalone web app as well, but did not quite get to the point in which it was as effective as our mobile application. Additionally, we chose a mobile application as it would allow for notifications, easier reporting, on the go functionality, future app store visibility, and smoother performance. 
 
 ### Technologies
 What programming languages, frameworks, and libraries did you initially select? Include any decision matrices or comparisons you made (e.g., React vs. Vue, different charting libraries) and justify your final stack.
@@ -108,7 +80,6 @@ We used MVCS architecture, React Native and React for the front end, Node.js for
 ## Outcome and Deviations
 
 ### Purpose and Problem
-*Note: This link will be `#purpose-and-problem-1` because the name is a duplicate.*
 
 Did the core purpose of your application change during development? Did you pivot to focus on a more specific feature or abandon an overly ambitious goal based on feedback?
 
