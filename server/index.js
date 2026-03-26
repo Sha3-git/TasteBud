@@ -44,4 +44,3 @@ app.use(`${apiPrefix}/symptoms`, auth, symptomRoute);
 app.use(`${apiPrefix}/auth`, authRoute);
 app.use(`${apiPrefix}/analysis`, auth, analysisRoute);
 app.use('/verify', publicRoute);
-

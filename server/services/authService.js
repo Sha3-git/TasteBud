@@ -3,6 +3,9 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const transporter = nodemailer.createTransport({
     service: "gmail",
@@ -52,18 +55,23 @@ const register = async (data) => {
     });
 
     const verificationUrl = `${process.env.CLIENT_URL}/verify?token=${verificationToken}`;
-
-    await transporter.sendMail({
-        from: `"TasteBud" <${process.env.EMAIL_USER}>`,
-        to: user.email,
-        subject: "Verify your email",
-        html: `
+    try {
+        await resend.emails.send({
+            from: 'Tastebud <onboarding@tastebudservice.ca>',
+            to: [`${user.email}`],
+            subject: 'Verify your email',
+            html: `
             <h2>Welcome to TasteBud!</h2>
             <p>Please verify your email by clicking below:</p>
             <a href="${verificationUrl}">Verify Email</a>
             <p>This link expires in 1 hour.</p>
         `
-    });
+        });
+    } catch (err) {
+        console.error("Failed to send verification email:", err);
+    }
+
+
 
     return user;
 };
@@ -95,23 +103,27 @@ const resendVerification = async (email) => {
     const newToken = crypto.randomBytes(32).toString("hex");
 
     user.verificationToken = newToken;
-    user.verificationExpires = Date.now() + 1000 * 60 * 60; 
+    user.verificationExpires = Date.now() + 1000 * 60 * 60;
 
     await user.save();
 
-   const verificationUrl = `${process.env.CLIENT_URL}/verify?token=${newToken}`;
+    const verificationUrl = `${process.env.CLIENT_URL}/verify?token=${newToken}`;
 
-    await transporter.sendMail({
-        from: `"TasteBud" <${process.env.EMAIL_USER}>`,
-        to: user.email,
-        subject: "Resend: Verify your email",
-        html: `
-            <h2>Verify Your Email</h2>
-            <p>Click below to verify:</p>
+    try {
+        await resend.emails.send({
+            from: 'Tastebud <onboarding@tastebudservice.ca>',
+            to: [`${user.email}`],
+            subject: 'Verify your email',
+            html: `
+            <h2>Welcome to TasteBud!</h2>
+            <p>Please verify your email by clicking below:</p>
             <a href="${verificationUrl}">Verify Email</a>
             <p>This link expires in 1 hour.</p>
         `
-    });
+        });
+    } catch (err) {
+        console.error("Failed to send verification email:", err);
+    }
 
     return true;
 };
@@ -141,10 +153,39 @@ const refreshAccessToken = async (refreshToken) => {
     return { accessToken };
 };
 const checkVerificationStatus = async (email) => {
-  const user = await User.findOne({ email: email });
-  if (!user) throw new Error("user doesn't exist");
-  return user;
+    const user = await User.findOne({ email: email });
+    if (!user) throw new Error("user doesn't exist");
+    return user;
 };
+
+async function fixSeededUsers() {
+
+  const hash = await bcrypt.hash("test123", 10);
+
+  const result = await User.updateMany(
+    {
+      email: {
+        $in: [
+          "control@test.com",
+          "lactose@test.com",
+          "peanut@test.com",
+          "fodmap@test.com",
+          "noisy@test.com"
+        ]
+      }
+    },
+    {
+      $set: {
+        password: hash,
+        verified: true
+      }
+    }
+  );
+
+  console.log("Updated users:", result);
+
+}
+//fixSeededUsers();
 module.exports = {
     register,
     verifyEmail,
