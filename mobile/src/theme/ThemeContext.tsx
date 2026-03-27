@@ -18,22 +18,17 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [mode, setMode] = useState<ThemeMode>('auto');
   const [currentColorScheme, setCurrentColorScheme] = useState(Appearance.getColorScheme());
   
-  console.log('🎨 Initial Color Scheme:', Appearance.getColorScheme());
   
-  // Listen to Appearance changes
   useEffect(() => {
-    // Set initial value
     setCurrentColorScheme(Appearance.getColorScheme());
     
     const subscription = Appearance.addChangeListener(({ colorScheme }) => {
-      console.log('🔔 Appearance changed to:', colorScheme);
       setCurrentColorScheme(colorScheme);
     });
     
     return () => subscription.remove();
   }, []);
   
-  // Also check when app comes to foreground
   useEffect(() => {
     const handleAppStateChange = (nextAppState: AppStateStatus) => {
       if (nextAppState === 'active') {
@@ -47,18 +42,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.remove();
   }, []);
   
-  // Determine if dark mode
   const isDark = useMemo(() => {
     const dark = mode === 'auto' 
       ? currentColorScheme === 'dark'
       : mode === 'dark';
-    console.log('🌓 isDark:', dark, '| currentColorScheme:', currentColorScheme);
     return dark;
   }, [mode, currentColorScheme]);
   
   const theme = useMemo(() => {
     const selectedTheme = isDark ? Colors.dark : Colors.light;
-    console.log('🎨 Theme selected:', isDark ? 'DARK 🌙' : 'LIGHT ☀️');
     return selectedTheme;
   }, [isDark]);
   

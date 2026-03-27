@@ -1,4 +1,3 @@
-/* ===== CSS Variables ===== */
 :root {
   --primary: #4a9d6e;
   --primary-dark: #3a8159;
@@ -19,7 +18,6 @@
   --radius-xl: 28px;
 }
 
-/* ===== Base Styles ===== */
 * {
   margin: 0;
   padding: 0;
@@ -110,9 +108,7 @@ h1, h2, h3, h4, h5, h6 {
   overflow: hidden;
 }
 
-.hero-content {
-  padding: 2rem 0;
-}
+
 
 .hero-content h1 {
   font-size: 3rem;

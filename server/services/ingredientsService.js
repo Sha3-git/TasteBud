@@ -21,11 +21,7 @@ const searchIngredients = async (query, limit = 10, ingredientSkip = 0, brandedS
     const q = query.trim();
     const qLower = q.toLowerCase();
 
-    // =======================================================================
-    // SEARCH 1: Base ingredients using regex (collection is small ~2800 docs)
-    // =======================================================================
-    
-    const regex = new RegExp(q, "i");  // case-insensitive substring match
+    const regex = new RegExp(q, "i");  
     
     // Get total count first
     const ingredientsTotal = await Ingredient.countDocuments({

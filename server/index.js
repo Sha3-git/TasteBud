@@ -33,6 +33,7 @@ const symptomRoute = require("./routes/symptomRoute")
 const analysisRoute = require("./routes/analysisRoute")
 const authRoute = require("./routes/authRoute")
 const publicRoute = require("./routes/public")
+const userRoute = require("./routes/userRoute");
 
 app.use(`${apiPrefix}/ingredients`, auth, ingredientsRoute);
 app.use(`${apiPrefix}/meallogs`, auth, mealLogsRoute);
@@ -44,3 +45,4 @@ app.use(`${apiPrefix}/symptoms`, auth, symptomRoute);
 app.use(`${apiPrefix}/auth`, authRoute);
 app.use(`${apiPrefix}/analysis`, auth, analysisRoute);
 app.use('/verify', publicRoute);
+app.use(`${apiPrefix}/user`, auth, userRoute);

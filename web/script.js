@@ -1,4 +1,3 @@
-// ===== Navbar scroll effect =====
 window.addEventListener('scroll', function() {
   const navbar = document.querySelector('.navbar');
   if (window.scrollY > 50) {
@@ -8,7 +7,6 @@ window.addEventListener('scroll', function() {
   }
 });
 
-// ===== Smooth scroll for anchor links =====
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   anchor.addEventListener('click', function(e) {
     e.preventDefault();
@@ -43,17 +41,14 @@ document.getElementById('waitlist-form').addEventListener('submit', function(e) 
   const button = this.querySelector('button');
   const originalText = button.innerHTML;
   
-  // Simple validation
   if (!email || !email.includes('@')) {
     alert('Please enter a valid email address.');
     return;
   }
   
-  // Show loading state
   button.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Joining...';
   button.disabled = true;
   
-  // Simulate form submission (replace with actual API call)
   setTimeout(function() {
     button.innerHTML = '<i class="bi bi-check-circle me-2"></i>You\'re on the list!';
     button.classList.remove('btn-light');
@@ -94,7 +89,6 @@ document.querySelectorAll('.problem-card, .step-card, .audience-card, .features-
   observer.observe(el);
 });
 
-// ===== Active nav link on scroll =====
 window.addEventListener('scroll', function() {
   const sections = document.querySelectorAll('section[id]');
   const navLinks = document.querySelectorAll('.nav-link');

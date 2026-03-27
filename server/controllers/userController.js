@@ -1,22 +1,24 @@
-const generateFullReport = async (userId, year, month) => {
+const { sendUserReport } = require("../services/emailService");
 
-  const user = await User.findById(userId);
+const getUserReportPDF = async (req, res) => {
+  try {
+    const userId = req.user;
+    const { year, month } = req.query;
 
-  const monthlyAnalysis = await getMonthlyAnalysis(userId, year, month);
-  const suspectedFoods = await getSuspectedFoods(userId);
+    if (!year || !month) {
+      return res.status(400).json({ error: "Year and month required" });
+    }
+console.log("reached")
+    sendUserReport(userId, Number(year), Number(month))
+      .catch(err => console.error("Background report failed:", err));
+    res.json({ message: "Report generated and emailed successfully" });
 
-  const crossReactions = [];
-  for (const food of suspectedFoods) {
-    const cr = await getCrossReactions(food.id);
-    crossReactions.push(...cr);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
   }
+};
 
-  await generateUserReport({
-    user,
-    monthlyAnalysis,
-    suspectedFoods,
-    crossReactions,
-    year,
-    month
-  });
+module.exports = {
+  getUserReportPDF
 };

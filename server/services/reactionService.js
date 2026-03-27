@@ -537,10 +537,6 @@ const detectPhysiologicalPatterns = (meals, reactions, symptomStats) => {
   return results;
 };
 
-// =============================================================================
-// MAIN DETECTION FUNCTION
-// =============================================================================
-
 const getSuspectedFoods = async (userId) => {
   console.log("🔍 Starting trigger detection for user:", userId);
   

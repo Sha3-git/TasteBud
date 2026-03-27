@@ -1,16 +1,6 @@
 const BrandedFood = require("../models/brandedFoods");
 const Ingredient = require("../models/ingredients");
 const mongoose = require("mongoose");
-
-// ============================================================
-// AI-POWERED INGREDIENT MAPPING
-// ============================================================
-// This service now uses pre-computed AI mappings from the 
-// 'ingredient_mappings' collection (created by match_ingredients.py)
-// 
-// 348,593 ingredient strings are pre-matched with 98.5% accuracy!
-// ============================================================
-
 const searchBrandedFoods = async (query, limit = 20) => {
   const search = query.trim();
   if (!search) return [];

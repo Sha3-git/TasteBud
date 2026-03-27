@@ -21,8 +21,8 @@ const getBaseURL = () => {
 };
 
 const api = axios.create({
-  //baseURL: getBaseURL(),
-  baseURL: "https://tastebudservice.ca/api",
+  baseURL: getBaseURL(),
+  //baseURL: "https://tastebudservice.ca/api",
   timeout: 30000,
 });
 

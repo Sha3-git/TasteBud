@@ -155,11 +155,11 @@ const testAllergenDetection = async (userId) => {
 const getSuspectedFoods = async (userId) => {
     const meals = await MealLog.find({ userId }).sort({ createdAt: 1 }).lean();
     if (meals.length < 3) {
-        console.log("Not enough meals for analysis");
+        //console.log("Not enough meals for analysis");
         return [];
     }
 
-    console.log("Starting suspected food detection for user:", userId);
+    //console.log("Starting suspected food detection for user:", userId);
 
     const ingredientStats = await extractIngredientReactionStats(userId);
     const symptomMap = await buildSymptomMap();
@@ -175,7 +175,7 @@ const getSuspectedFoods = async (userId) => {
 
     const suspectedFoods = [...igEResults, ...filteredFodmap, ...filteredIntolerance];
     await syncSuspectedToUnsafeFoods(userId, suspectedFoods);
-    console.log(suspectedFoods)
+    //console.log(suspectedFoods)
     return suspectedFoods;
 };
 
@@ -200,7 +200,7 @@ async function syncSuspectedToUnsafeFoods(userId, suspectedFoods) {
                     preExisting: false,
                 });
                 hasChanges = true;
-                console.log(`Added: ${suspect.ingredientName} (${suspect.track})`);
+                //console.log(`Added: ${suspect.ingredientName} (${suspect.track})`);
             }
         }
 

@@ -1,21 +1,5 @@
 const mongoose = require("mongoose");
-require("dotenv").config();
 
-const brandedFoodsConnection = mongoose.createConnection(
-  process.env.MONGO_URI,
-  {
-    serverSelectionTimeoutMS: 30000,
-    connectTimeoutMS: 30000
-  }
-);
-
-brandedFoodsConnection.on("connected", () =>
-  console.log("Foods DB connected")
-);
-
-brandedFoodsConnection.on("error", (err) =>
-  console.error("Foods DB connection error:", err.message)
-);
 
 const brandedFoodSchema = new mongoose.Schema({
   ingredients: [String],
@@ -37,4 +21,4 @@ brandedFoodSchema.index({
   name: "FoodTextIndex"
 });
 
-module.exports = brandedFoodsConnection.model("BrandedFood", brandedFoodSchema);
+module.exports = mongoose.model("BrandedFood", brandedFoodSchema);
