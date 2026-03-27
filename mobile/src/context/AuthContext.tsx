@@ -35,7 +35,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const login = async (email: string, password: string) => {
     const user = await authService.login(email, password);
     setUser(user);
-    console.log("Logged in user:", user);
   };
 
   const logout = async () => {
@@ -55,7 +54,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const resendVerification = async (email: string) => {
     await authService.resendVerification(email);
   };
-console.log("user auth " + JSON.stringify(user))
 
   return (
     <AuthContext.Provider

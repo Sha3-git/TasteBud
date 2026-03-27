@@ -9,7 +9,6 @@ export function useCreateReaction() {
     mealLogId: string,
     symptoms: Array<Symptom>,
   ) => {
-    console.log("reached hook");
       const reactionLog = {
         mealLogId,
         symptoms,

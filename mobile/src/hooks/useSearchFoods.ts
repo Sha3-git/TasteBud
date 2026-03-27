@@ -112,7 +112,6 @@ export function useSearchFoods(query: string): CombinedSearchResults {
           setBrandedTotal(0);
         }
       } catch (error) {
-        console.log("Search error:", error);
         setIngredients([]);
         setBrandedFoods([]);
         setIngredientsTotal(0);
